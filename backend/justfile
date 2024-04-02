@@ -1,0 +1,19 @@
+set dotenv-load
+set positional-arguments
+set shell := ["bash", "-uc"]
+
+run:
+    go run ./cmd/api
+
+confirm:
+    @echo -n "Are you sure? [y/N] " && read ans && [ ${ans:-N} == y ]
+
+watch:
+    watchexec -r -e go,html -- just run
+
+up: confirm
+    migrate -path=./migrations -database=$DB_DSN up
+
+migrate name:
+    migrate create -seq -ext=.sql -dir=./migrations $1
+
