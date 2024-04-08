@@ -31,12 +31,12 @@ func main() {
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("{ status: \"online\", type: \"decimal_sensor\" }"))
+	w.Write([]byte("{ \"status\": \"online\", \"type\": \"decimal_sensor\" }"))
 }
 
 func valueHandler(w http.ResponseWriter, r *http.Request) {
 	utime := time.Now().Unix()
 	value := (math.Sin(2*float64(utime))+math.Sin(math.Pi*float64(utime))+2)*(cfg.maxValue-cfg.minValue)/4 + cfg.minValue
 
-	fmt.Fprintf(w, "{ value: %f }", value)
+	fmt.Fprintf(w, "{ \"value\": %f }", value)
 }
