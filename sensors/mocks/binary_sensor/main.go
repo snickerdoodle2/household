@@ -22,12 +22,12 @@ func main() {
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("{ status: \"online\", type: \"binary_sensor\" }"))
+	w.Write([]byte("{ \"status\": \"online\", \"type\": \"binary_sensor\" }"))
 }
 
 func valueHandler(w http.ResponseWriter, r *http.Request) {
 	utime := time.Now().Unix()
 	value := math.Sin(2*float64(utime)) + math.Sin(math.Pi*float64(utime))
 
-	fmt.Fprintf(w, "{ value: %t }", value > 0)
+	fmt.Fprintf(w, "{ \"value\": %t }", value > 0)
 }
