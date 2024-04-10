@@ -12,7 +12,7 @@ watch *args:
     watchexec -r -e go,html -- just run {{args}}
 
 up: confirm
-    migrate -path=./migrations -database=$DB_DSN up
+    migrate -path=./migrations -database=$DATABASE_URL up
 
 migrate name:
     migrate create -seq -ext=.sql -dir=./migrations {{name}}
