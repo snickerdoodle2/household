@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log/slog"
-	"net/http"
 	"os"
 	"time"
 )
@@ -37,8 +36,13 @@ func main() {
 
 	app := App{
 		logger: logger,
+		config: cfg,
 	}
 
-	app.logger.Info("starting server", "addr", "http://127.0.0.1:8000")
-	http.ListenAndServe(":8000", app.routes())
+	err := app.serve()
+
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 }
