@@ -11,6 +11,9 @@ func (app *App) routes() http.Handler {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/healthcheck", app.healthcheckHandler)
+
+		r.Get("/sensor", app.listSensorsHandler)
+
 		r.NotFound(app.notFoundResponse)
 		r.MethodNotAllowed(app.methodNotAllowed)
 	})

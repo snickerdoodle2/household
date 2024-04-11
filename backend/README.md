@@ -23,3 +23,8 @@ DATABASE_URL=postgresql://postgres:<YOUR PASSWORD>@localhost:5432/<JAK NAZYWAMY>
 1. `docker compose up -d`
 1. `just up`
 1. `just run`
+
+## Routes
+```
+GET /api/v1/sensor - zwraca wszystkie sensory
+```
