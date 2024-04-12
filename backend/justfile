@@ -5,13 +5,11 @@ set shell := ["bash", "-uc"]
 run *args:
     go run ./cmd/api {{args}}
 
-confirm:
-    @echo -n "Are you sure? [y/N] " && read ans && [ ${ans:-N} == y ]
-
 watch *args:
     watchexec -r -e go,html -- just run {{args}}
 
-up: confirm
+[confirm("Run migrations [y/N]")]
+up: 
     migrate -path=./migrations -database=$DATABASE_URL up
 
 migrate name:
