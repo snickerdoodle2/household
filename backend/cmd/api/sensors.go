@@ -39,3 +39,12 @@ func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: add input validating + db insert
+
+	err := app.writeJSON(w, http.StatusNotImplemented, envelope{"status": "todo"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
