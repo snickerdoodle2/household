@@ -13,6 +13,7 @@ func (app *App) routes() http.Handler {
 		r.Get("/healthcheck", app.healthcheckHandler)
 
 		r.Get("/sensor", app.listSensorsHandler)
+		r.Get("/sensor/{id}", app.getSensorHandler)
 
 		r.NotFound(app.notFoundResponse)
 		r.MethodNotAllowed(app.methodNotAllowed)

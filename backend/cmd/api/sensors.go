@@ -31,4 +31,11 @@ func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
+	// idk co tutaj
+
+	err := app.writeJSON(w, http.StatusNotImplemented, envelope{"status": "todo"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
