@@ -26,5 +26,11 @@ DATABASE_URL=postgresql://postgres:<YOUR PASSWORD>@localhost:5432/<JAK NAZYWAMY>
 
 ## Routes
 ```
-GET /api/v1/sensor - zwraca wszystkie sensory
+GET    /api/v1/healthcheck - zwraca status serwera
+
+GET    /api/v1/sensor      - zwraca wszystkie sensory
+GET    /api/v1/sensor/{id} - web socket do sensora
+POST   /api/v1/sensor      - tworzy nowy sensor
+PUT    /api/v1/sensor/{id} - update sensora
+DELETE /api/v1/sensor/{id} - usuwa sensor
 ```
