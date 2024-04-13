@@ -25,6 +25,10 @@ func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	app.writeJSON(w, http.StatusOK, envelope{"data": sensors}, nil)
+	err := app.writeJSON(w, http.StatusOK, envelope{"data": sensors}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
 
 }
