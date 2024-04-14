@@ -2,10 +2,12 @@ package data
 
 import (
 	"context"
+	"errors"
 	"inzynierka/internal/data/validator"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -75,6 +77,39 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 	defer cancel()
 
 	return m.DB.QueryRow(ctx, query, args...).Scan(&sensor.CreatedAt, &sensor.Version)
+}
+
+func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
+	query := `
+    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version
+    FROM sensors
+    WHERE id = $1
+    `
+	var sensor Sensor
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, id).Scan(
+		&sensor.ID,
+		&sensor.Name,
+		&sensor.URI,
+		&sensor.Type,
+		&sensor.RefreshRate,
+		&sensor.CreatedAt,
+		&sensor.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &sensor, nil
 }
 
 func (m SensorModel) GetAll() ([]*Sensor, error) {
