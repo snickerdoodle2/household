@@ -41,9 +41,20 @@ func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: add input validating + db insert
+	var input struct {
+		Name        string `json:"name"`
+		URI         string `json:"uri"`
+		Type        string `json:"type"`
+		RefreshRate int    `json:"refresh_rate"`
+	}
 
-	err := app.writeJSON(w, http.StatusNotImplemented, envelope{"status": "todo"}, nil)
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusNotImplemented, envelope{"data": input}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
