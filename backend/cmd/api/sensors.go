@@ -69,6 +69,12 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = app.models.Sensors.Insert(sensor)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
 	err = app.writeJSON(w, http.StatusNotImplemented, envelope{"data": sensor}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
