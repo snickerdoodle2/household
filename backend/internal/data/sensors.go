@@ -74,3 +74,53 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 	_, err = m.DB.Exec(ctx, query, args...)
 	return err
 }
+
+func (m SensorModel) GetAll() ([]*Sensor, error) {
+	// TODO: add filtering and pagination
+	query := `
+    SELECT id, name, sensor_type
+    FROM sensors
+    ORDER BY id
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	sensors := []*Sensor{}
+
+	for rows.Next() {
+		var sensor Sensor
+
+		err := rows.Scan(
+			&sensor.ID,
+			&sensor.Name,
+			&sensor.Type,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		sensors = append(sensors, &sensor)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return sensors, nil
+}
+
+func (m SensorModel) Update(Sensor *Sensor) error {
+	return nil
+}
+
+func (m SensorModel) Delete(id uuid.UUID) error {
+	return nil
+}
