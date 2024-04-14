@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"inzynierka/internal/data"
 	"log/slog"
 	"os"
 	"time"
@@ -20,6 +21,7 @@ type Config struct {
 type App struct {
 	config Config
 	logger *slog.Logger
+	models data.Models
 }
 
 func main() {
@@ -46,6 +48,7 @@ func main() {
 	app := App{
 		logger: logger,
 		config: cfg,
+		models: data.NewModels(db),
 	}
 
 	err = app.serve()
