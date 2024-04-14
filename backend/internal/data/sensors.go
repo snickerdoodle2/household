@@ -181,5 +181,22 @@ func (m SensorModel) Update(sensor *Sensor) error {
 }
 
 func (m SensorModel) Delete(id uuid.UUID) error {
+	query := `
+        DELETE FROM sensors
+        WHERE id = $1
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := m.DB.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return ErrRecordNotFound
+	}
+
 	return nil
 }
