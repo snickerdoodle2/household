@@ -2,6 +2,7 @@ package main
 
 import (
 	"inzynierka/internal/data"
+	"inzynierka/internal/data/validator"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -54,7 +55,21 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusNotImplemented, envelope{"data": input}, nil)
+	sensor := &data.Sensor{
+		Name:        input.Name,
+		URI:         input.URI,
+		Type:        data.SensorType(input.Type),
+		RefreshRate: input.RefreshRate,
+	}
+
+	v := validator.New()
+
+	if data.ValidateSensor(v, sensor); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusNotImplemented, envelope{"data": sensor}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
