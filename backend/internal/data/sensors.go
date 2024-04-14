@@ -30,9 +30,11 @@ var SensorTypes = []SensorType{
 type Sensor struct {
 	ID          uuid.UUID  `json:"id"`
 	Name        string     `json:"name"`
-	URI         string     `json:"-"`
+	URI         string     `json:"uri"`
 	Type        SensorType `json:"type"`
-	RefreshRate int        `json:"-"`
+	RefreshRate int        `json:"refresh_rate"`
+	CreatedAt   time.Time  `json:"created_at"`
+	Version     int        `json:"version"`
 }
 
 func ValidateSensor(v *validator.Validator, sensor *Sensor) {
@@ -57,6 +59,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 	query := `
     INSERT INTO sensors (id, name, uri, sensor_type, refresh_rate)
     VALUES ($1, $2, $3, $4, $5)
+    RETURNING created_at, version
     `
 
 	uuid, err := uuid.NewRandom()
@@ -71,14 +74,13 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err = m.DB.Exec(ctx, query, args...)
-	return err
+	return m.DB.QueryRow(ctx, query, args...).Scan(&sensor.CreatedAt, &sensor.Version)
 }
 
 func (m SensorModel) GetAll() ([]*Sensor, error) {
 	// TODO: add filtering and pagination
 	query := `
-    SELECT id, name, sensor_type
+    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version
     FROM sensors
     ORDER BY id
     `
@@ -100,7 +102,11 @@ func (m SensorModel) GetAll() ([]*Sensor, error) {
 		err := rows.Scan(
 			&sensor.ID,
 			&sensor.Name,
+			&sensor.URI,
 			&sensor.Type,
+			&sensor.RefreshRate,
+			&sensor.CreatedAt,
+			&sensor.Version,
 		)
 
 		if err != nil {
