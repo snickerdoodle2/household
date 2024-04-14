@@ -1,9 +1,13 @@
 package main
 
 import (
+	"errors"
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,9 +24,27 @@ func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
-	// idk co tutaj
+	sensorIdStr := chi.URLParam(r, "id")
+	sensorId, err := uuid.Parse(sensorIdStr)
 
-	err := app.writeJSON(w, http.StatusNotImplemented, envelope{"status": "todo"}, nil)
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	sensor, err := app.models.Sensors.Get(sensorId)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusNotImplemented, envelope{"sensor": sensor}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
