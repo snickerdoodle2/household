@@ -158,8 +158,26 @@ func (m SensorModel) GetAll() ([]*Sensor, error) {
 	return sensors, nil
 }
 
-func (m SensorModel) Update(Sensor *Sensor) error {
-	return nil
+func (m SensorModel) Update(sensor *Sensor) error {
+	query := `
+    UPDATE sensors
+    SET name = $1, uri = $2, sensor_type = $3, refresh_rate = $4, version = version + 1
+    WHERE id = $5
+    RETURNING version
+    `
+
+	args := []any{
+		sensor.Name,
+		sensor.URI,
+		sensor.Type,
+		sensor.RefreshRate,
+		sensor.ID,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return m.DB.QueryRow(ctx, query, args...).Scan(&sensor.Version)
 }
 
 func (m SensorModel) Delete(id uuid.UUID) error {
