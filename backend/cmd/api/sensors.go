@@ -51,6 +51,14 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: uuid from url + db update
+
+	err := app.writeJSON(w, http.StatusNotImplemented, envelope{"status": "todo"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: uuid from url + db drop
 
 	err := app.writeJSON(w, http.StatusNotImplemented, envelope{"status": "todo"}, nil)
