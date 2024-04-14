@@ -158,9 +158,26 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: uuid from url + db drop
+	sensorIdStr := chi.URLParam(r, "id")
+	sensorId, err := uuid.Parse(sensorIdStr)
 
-	err := app.writeJSON(w, http.StatusNotImplemented, envelope{"status": "todo"}, nil)
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	err = app.models.Sensors.Delete(sensorId)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "sensor successfully deleted"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
