@@ -1,7 +1,9 @@
 package data
 
 import (
+	"context"
 	"inzynierka/internal/data/validator"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -49,4 +51,26 @@ func ValidateSensor(v *validator.Validator, sensor *Sensor) {
 
 type SensorModel struct {
 	DB *pgxpool.Pool
+}
+
+func (m SensorModel) Insert(sensor *Sensor) error {
+	query := `
+    INSERT INTO sensors (id, name, uri, sensor_type, refresh_rate)
+    VALUES ($1, $2, $3, $4, $5)
+    `
+
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+
+	sensor.ID = uuid
+
+	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = m.DB.Exec(ctx, query, args...)
+	return err
 }
