@@ -52,10 +52,10 @@ func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name        string `json:"name"`
-		URI         string `json:"uri"`
-		Type        string `json:"type"`
-		RefreshRate int    `json:"refresh_rate"`
+		Name        string          `json:"name"`
+		URI         string          `json:"uri"`
+		Type        data.SensorType `json:"type"`
+		RefreshRate int             `json:"refresh_rate"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -67,7 +67,7 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 	sensor := &data.Sensor{
 		Name:        input.Name,
 		URI:         input.URI,
-		Type:        data.SensorType(input.Type),
+		Type:        input.Type,
 		RefreshRate: input.RefreshRate,
 	}
 
