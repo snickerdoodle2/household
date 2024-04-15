@@ -5,6 +5,7 @@ import (
 	"inzynierka/internal/data"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -15,6 +16,9 @@ type Config struct {
 		maxOpenConns int
 		maxIdleConns int
 		maxIdleTime  time.Duration
+	}
+	cors struct {
+		trustedOrigins []string
 	}
 }
 
@@ -30,6 +34,10 @@ func main() {
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "Database DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.DurationVar(&cfg.db.maxIdleTime, "db-max-idle-time", 15*time.Minute, "PostgreSQL max connection idle time")
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
+		cfg.cors.trustedOrigins = strings.Fields(val)
+		return nil
+	})
 
 	flag.Parse()
 
