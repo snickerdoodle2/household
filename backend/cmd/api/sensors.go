@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +52,17 @@ func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	listener, ok := app.listeners[id]
+	if !ok {
+		app.errorResponse(w, r, http.StatusInternalServerError, nil)
+	}
+
 	// TODO: Change broker depending on sensor id
 	conn, err := app.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -71,6 +83,12 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}()
+
+	msgCh := listener.GetBroker().Subscribe()
+
+	for msg := range msgCh {
+		conn.WriteMessage(websocket.TextMessage, msg)
+	}
 
 	// TODO: Send messages to client
 }
