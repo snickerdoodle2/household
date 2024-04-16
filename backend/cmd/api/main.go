@@ -4,9 +4,12 @@ import (
 	"flag"
 	"inzynierka/internal/data"
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Config struct {
@@ -23,9 +26,10 @@ type Config struct {
 }
 
 type App struct {
-	config Config
-	logger *slog.Logger
-	models data.Models
+	config   Config
+	logger   *slog.Logger
+	models   data.Models
+	upgrader websocket.Upgrader
 }
 
 func main() {
@@ -57,6 +61,18 @@ func main() {
 		logger: logger,
 		config: cfg,
 		models: data.NewModels(db),
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				for _, v := range cfg.cors.trustedOrigins {
+					if r.Header.Get("Origin") == v {
+						return true
+					}
+				}
+				return false
+			},
+		},
 	}
 
 	err = app.serve()

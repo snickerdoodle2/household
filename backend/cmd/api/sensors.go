@@ -50,6 +50,31 @@ func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: Change broker depending on sensor id
+	conn, err := app.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	defer conn.Close()
+
+	endCh := make(chan struct{})
+	go func() {
+		// TODO: Handle closing ws from server (this function never ends)
+		for {
+			_, _, err := conn.ReadMessage()
+			if err != nil {
+				endCh <- struct{}{}
+				return
+			}
+		}
+	}()
+
+	// TODO: Send messages to client
+}
+
 func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Name        string          `json:"name"`
