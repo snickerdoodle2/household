@@ -29,6 +29,10 @@ var SensorTypes = []SensorType{
 	Button,
 }
 
+type SensorReturn interface {
+	int | float64 | bool
+}
+
 type Sensor struct {
 	ID          uuid.UUID  `json:"id"`
 	Name        string     `json:"name"`
