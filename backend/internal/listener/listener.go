@@ -52,9 +52,12 @@ func (l *Listener[T]) Start() error {
 			return nil
 		default:
 		}
+		delay := delayMultiplier * l.sensor.RefreshRate
+		time.Sleep(time.Duration(delay) * time.Second)
 
 		res, err := http.Get(fmt.Sprintf("%v/value", l.sensor.URI))
 		if err != nil {
+			fmt.Printf(err.Error())
 			msg := Response[T]{
 				Status: "OFFLINE",
 				Values: make([]T, 0),
@@ -96,13 +99,11 @@ func (l *Listener[T]) Start() error {
 		l.Broker.Publish(json)
 
 		delayMultiplier = 1
-		delay := delayMultiplier * l.sensor.RefreshRate
-		time.Sleep(time.Duration(delay) * time.Second)
 	}
 }
 
-func (l *Listener[T]) GetBroker() broker.Broker[[]byte] {
-	return *l.Broker
+func (l *Listener[T]) GetBroker() *broker.Broker[[]byte] {
+	return l.Broker
 }
 
 func (l *Listener[T]) GetStopCh() chan struct{} {
