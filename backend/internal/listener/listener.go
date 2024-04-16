@@ -10,12 +10,17 @@ import (
 	"time"
 )
 
+type ListenerT interface {
+	GetBroker() *broker.Broker[[]byte]
+	GetStopCh() chan struct{}
+}
+
 func New[T any](sensor *data.Sensor) *Listener[T] {
 	return &Listener[T]{
 		sensor: sensor,
 		values: make([]T, 0),
 		StopCh: make(chan struct{}),
-		Broker: broker.NewBroker[Response[T]](),
+		Broker: broker.NewBroker[[]byte](),
 	}
 }
 
@@ -29,7 +34,7 @@ type Listener[T any] struct {
 	sensor *data.Sensor
 	values []T
 	StopCh chan struct{}
-	Broker *broker.Broker[Response[T]]
+	Broker *broker.Broker[[]byte]
 }
 
 func (l *Listener[T]) Start() error {
@@ -50,10 +55,16 @@ func (l *Listener[T]) Start() error {
 
 		res, err := http.Get(fmt.Sprintf("%v/value", l.sensor.URI))
 		if err != nil {
-			l.Broker.Publish(Response[T]{
+			msg := Response[T]{
 				Status: "OFFLINE",
 				Values: make([]T, 0),
-			})
+			}
+
+			json, err := json.Marshal(msg)
+			if err != nil {
+				return err
+			}
+			l.Broker.Publish(json)
 
 			delayMultiplier += 1
 			continue
@@ -74,13 +85,26 @@ func (l *Listener[T]) Start() error {
 			l.values = l.values[1:]
 		}
 
-		l.Broker.Publish(Response[T]{
+		msg := Response[T]{
 			Status: "ONLINE",
 			Values: l.values,
-		})
+		}
+		json, err := json.Marshal(msg)
+		if err != nil {
+			return err
+		}
+		l.Broker.Publish(json)
 
 		delayMultiplier = 1
 		delay := delayMultiplier * l.sensor.RefreshRate
 		time.Sleep(time.Duration(delay) * time.Second)
 	}
+}
+
+func (l *Listener[T]) GetBroker() broker.Broker[[]byte] {
+	return *l.Broker
+}
+
+func (l *Listener[T]) GetStopCh() chan struct{} {
+	return l.StopCh
 }
