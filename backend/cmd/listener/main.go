@@ -1,21 +1,28 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"inzynierka/internal/data/broker"
-	"io"
-	"net/http"
+	"inzynierka/internal/broker"
+	"inzynierka/internal/data"
+	"inzynierka/internal/listener"
 	"time"
 )
 
 // Assuming that a decimal sensor is listening on 127.0.0.1:10002
 func main() {
-	b := broker.NewBroker[float32]()
-	go b.Start()
+	stpCh := make(chan struct{})
+	l := listener.Listener[float64]{
+		Sensor: &data.Sensor{
+			URI:         "http://localhost:10002",
+			RefreshRate: 1,
+		},
+		Values: make([]float64, 0),
+		Broker: broker.NewBroker[listener.Response[float64]](),
+		StopCh: stpCh,
+	}
 
 	clientFunc := func(id int) {
-		msgCh := b.Subscribe()
+		msgCh := l.Broker.Subscribe()
 		for {
 			fmt.Printf("Client %d got message: %v\n", id, <-msgCh)
 		}
@@ -25,29 +32,11 @@ func main() {
 		go clientFunc(i)
 	}
 
-	go func() {
-		for {
-			res, err := http.Get("http://127.0.0.1:10002/value")
-			if err != nil {
-				continue
-			}
+	fmt.Println("Starting...")
 
-			body, err := io.ReadAll(res.Body)
+	go l.Start()
+	time.Sleep(10 * time.Second)
+	l.StopCh <- struct{}{}
 
-			var input struct {
-				Value float32 `json:"value"`
-			}
-
-			err = json.Unmarshal(body, &input)
-			if err != nil {
-				continue
-			}
-
-			b.Publish(input.Value)
-
-			time.Sleep(5 * time.Second)
-		}
-	}()
-
-	time.Sleep(time.Minute)
+	time.Sleep(10 * time.Second)
 }
