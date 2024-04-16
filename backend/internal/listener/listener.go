@@ -10,14 +10,15 @@ import (
 	"time"
 )
 
-type Response[T data.SensorReturn] struct {
-	values []T
-	status string
+// TODO: Make it work with SensorResult
+type Response[T any] struct {
+	Values []T    `json:"values"`
+	Status string `json:"status"`
 }
 
-type Listener[T data.SensorReturn] struct {
-	Sensor *data.Sensor
-	Values []T
+type Listener[T any] struct {
+	sensor *data.Sensor
+	values []T
 	StopCh chan struct{}
 	Broker *broker.Broker[Response[T]]
 }
@@ -38,11 +39,11 @@ func (l *Listener[T]) Start() error {
 		default:
 		}
 
-		res, err := http.Get(fmt.Sprintf("%v/value", l.Sensor.URI))
+		res, err := http.Get(fmt.Sprintf("%v/value", l.sensor.URI))
 		if err != nil {
 			l.Broker.Publish(Response[T]{
-				status: "OFFLINE",
-				values: make([]T, 0),
+				Status: "OFFLINE",
+				Values: make([]T, 0),
 			})
 
 			delayMultiplier += 1
@@ -59,18 +60,18 @@ func (l *Listener[T]) Start() error {
 			return err
 		}
 
-		l.Values = append(l.Values, input.Value)
-		if len(l.Values) > 5 {
-			l.Values = l.Values[1:]
+		l.values = append(l.values, input.Value)
+		if len(l.values) > 5 {
+			l.values = l.values[1:]
 		}
 
 		l.Broker.Publish(Response[T]{
-			status: "ONLINE",
-			values: l.Values,
+			Status: "ONLINE",
+			Values: l.values,
 		})
 
 		delayMultiplier = 1
-		delay := delayMultiplier * l.Sensor.RefreshRate
+		delay := delayMultiplier * l.sensor.RefreshRate
 		time.Sleep(time.Duration(delay) * time.Second)
 	}
 }
