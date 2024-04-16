@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"inzynierka/internal/broker"
 	"inzynierka/internal/data"
 	"inzynierka/internal/listener"
 	"time"
@@ -10,16 +9,12 @@ import (
 
 // Assuming that a decimal sensor is listening on 127.0.0.1:10002
 func main() {
-	stpCh := make(chan struct{})
-	l := listener.Listener[float64]{
-		Sensor: &data.Sensor{
-			URI:         "http://localhost:10002",
-			RefreshRate: 1,
-		},
-		Values: make([]float64, 0),
-		Broker: broker.NewBroker[listener.Response[float64]](),
-		StopCh: stpCh,
+	sensor := &data.Sensor{
+		URI:         "http://localhost:10002",
+		RefreshRate: 1,
 	}
+
+	l := listener.New[float64](sensor)
 
 	clientFunc := func(id int) {
 		msgCh := l.Broker.Subscribe()

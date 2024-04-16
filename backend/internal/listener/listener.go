@@ -10,6 +10,15 @@ import (
 	"time"
 )
 
+func New[T any](sensor *data.Sensor) *Listener[T] {
+	return &Listener[T]{
+		sensor: sensor,
+		values: make([]T, 0),
+		StopCh: make(chan struct{}),
+		Broker: broker.NewBroker[Response[T]](),
+	}
+}
+
 // TODO: Make it work with SensorResult
 type Response[T any] struct {
 	Values []T    `json:"values"`
