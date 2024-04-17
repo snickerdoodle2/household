@@ -12,6 +12,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type envelope map[string]any
@@ -132,4 +134,12 @@ func (app *App) startSensorListener(sensor *data.Sensor) {
 	}
 	go l.Start()
 	app.listeners[sensor.ID] = l
+}
+
+func (app *App) stopSensorListener(sensorId uuid.UUID) {
+	if l, ok := app.listeners[sensorId]; ok {
+		l.GetStopCh() <- struct{}{}
+	}
+
+	delete(app.listeners, sensorId)
 }
