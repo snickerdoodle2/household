@@ -209,6 +209,13 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// stop and remove listener
+	if l, ok := app.listeners[sensorId]; ok {
+		l.GetStopCh() <- struct{}{}
+	}
+
+	delete(app.listeners, sensorId)
+
 	err = app.models.Sensors.Delete(sensorId)
 	if err != nil {
 		switch {
