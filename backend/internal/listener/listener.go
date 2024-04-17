@@ -56,7 +56,7 @@ func (l *Listener[T]) Start() error {
 		delay := delayMultiplier * l.sensor.RefreshRate
 		time.Sleep(time.Duration(delay) * time.Second)
 
-		res, err := http.Get(fmt.Sprintf("%v/value", l.sensor.URI))
+		res, err := http.Get(fmt.Sprintf("http://%v/value", l.sensor.URI))
 		if err != nil {
 			fmt.Printf(err.Error())
 			msg := Response[T]{
