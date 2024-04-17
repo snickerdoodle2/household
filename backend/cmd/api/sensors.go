@@ -63,7 +63,6 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 		app.errorResponse(w, r, http.StatusInternalServerError, nil)
 	}
 
-	// TODO: Change broker depending on sensor id
 	conn, err := app.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -75,6 +74,7 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 	endCh := make(chan struct{})
 	go func() {
 		// TODO: Handle closing ws from server (this function never ends)
+		// + closing on listener terminating
 		for {
 			_, _, err := conn.ReadMessage()
 			if err != nil {
