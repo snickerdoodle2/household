@@ -11,6 +11,7 @@ import (
 )
 
 type ListenerT interface {
+	Start() error
 	GetBroker() *broker.Broker[[]byte]
 	GetStopCh() chan struct{}
 }
