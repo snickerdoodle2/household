@@ -127,6 +127,8 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.startSensorListener(sensor)
+
 	err = app.writeJSON(w, http.StatusCreated, envelope{"data": sensor}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -193,6 +195,9 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+
+	app.stopSensorListener(sensorId)
+	app.startSensorListener(sensor)
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"sensor": sensor}, nil)
 	if err != nil {
