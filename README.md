@@ -3,4 +3,4 @@
 Skład: Krzysztof Dziechciarz, Dominik Pilipczuk, Jakub Woś
 
 ## Wymagania do uruchomienia:
-- [Rust](https://rustup.rs/)
+Wymagania do frontend/backend są w odpowiednich folderach
