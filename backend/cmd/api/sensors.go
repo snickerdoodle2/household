@@ -60,7 +60,7 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 
 	listener, ok := app.listeners[id]
 	if !ok {
-		app.errorResponse(w, r, http.StatusInternalServerError, nil)
+		app.notFoundResponse(w, r)
 	}
 
 	conn, err := app.upgrader.Upgrade(w, r, nil)
