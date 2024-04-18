@@ -5,6 +5,11 @@ import (
 	"slices"
 )
 
+// TODO: regex also handle URI with normal domain name
+var (
+	UriRX = regexp.MustCompile(`^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):(\d+)$`)
+)
+
 type Validator struct {
 	Errors map[string]string
 }

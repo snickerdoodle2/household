@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
+	"inzynierka/internal/listener"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type envelope map[string]any
@@ -118,4 +122,24 @@ func (app *App) readInt(qs url.Values, key string, defaulValue int, v *validator
 	}
 
 	return i
+}
+
+func (app *App) startSensorListener(sensor *data.Sensor) {
+	var l listener.ListenerT
+	switch {
+	case sensor.Type == "binary_switch" || sensor.Type == "binary_sensor" || sensor.Type == "button":
+		l = listener.New[bool](sensor)
+	case sensor.Type == "decimal_switch" || sensor.Type == "decimal_sensor":
+		l = listener.New[float64](sensor)
+	}
+	go l.Start()
+	app.listeners[sensor.ID] = l
+}
+
+func (app *App) stopSensorListener(sensorId uuid.UUID) {
+	if l, ok := app.listeners[sensorId]; ok {
+		l.GetStopCh() <- struct{}{}
+	}
+
+	delete(app.listeners, sensorId)
 }
