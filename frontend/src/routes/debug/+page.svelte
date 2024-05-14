@@ -1,10 +1,11 @@
 <script lang="ts">
+    import { Input } from "$lib/components/ui/input/index.js";
     let message = {};
     let id = "";
 
     let socket: WebSocket | undefined = undefined;
 
-    const updateSocket = (id) => {
+    const updateSocket = (id: string) => {
         if (id.length === 0) return;
         if (socket) socket.close();
 
@@ -28,8 +29,8 @@
     }
 </script>
 
-<main>
-    <input bind:value={id} />
+<main class="w-screen h-screen flex flex-col justify-center items-center">
+    <Input class="max-w-xs" bind:value={id} />
 
     <p>Listening for sensor: <code>{id}</code></p>
     <code>{JSON.stringify(message)}</code>
