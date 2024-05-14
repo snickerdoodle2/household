@@ -16,7 +16,7 @@ Uzupełnij plik `.env`:
 DATABASE_ADDRESS=localhost:5432
 POSTGRES_PASSWORD=<YOUR PASSWORD>
 POSTGRES_DB=<JAK NAZYWAMY>
-DATABASE_URL=postgresql://postgres:<YOUR PASSWORD>@localhost:5432/<JAK NAZYWAMY>
+DATABASE_URL=postgresql://postgres:<YOUR PASSWORD>@localhost:5432/<JAK NAZYWAMY>?sslmode=disable
 ```
 
 ### Pierwsze uruchomienie
