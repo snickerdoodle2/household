@@ -1,32 +1,32 @@
 <script lang="ts">
-    import { Input } from "$lib/components/ui/input/index.js";
-    let message = {};
-    let id = "";
+import { Input } from "$lib/components/ui/input/index.js";
+let message = {};
+let id = "";
 
-    let socket: WebSocket | undefined = undefined;
+let socket: WebSocket | undefined = undefined;
 
-    const updateSocket = (id: string) => {
-        if (id.length === 0) return;
-        if (socket) socket.close();
+const updateSocket = (id: string) => {
+	if (id.length === 0) return;
+	if (socket) socket.close();
 
-        socket = new WebSocket(`ws://localhost:8080/api/v1/sensor/${id}/value`);
+	socket = new WebSocket(`ws://localhost:8080/api/v1/sensor/${id}/value`);
 
-        socket.addEventListener("open", () => {
-            console.log("Opened");
-        });
+	socket.addEventListener("open", () => {
+		console.log("Opened");
+	});
 
-        socket.addEventListener("message", (data) => {
-            message = JSON.parse(data.data);
-        });
+	socket.addEventListener("message", (data) => {
+		message = JSON.parse(data.data);
+	});
 
-        socket.addEventListener("close", () => {
-            console.log("Closed");
-        });
-    };
+	socket.addEventListener("close", () => {
+		console.log("Closed");
+	});
+};
 
-    $: {
-        updateSocket(id);
-    }
+$: {
+	updateSocket(id);
+}
 </script>
 
 <main class="w-screen h-screen flex flex-col justify-center items-center">
