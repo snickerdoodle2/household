@@ -41,7 +41,7 @@ func main() {
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "Database DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.DurationVar(&cfg.db.maxIdleTime, "db-max-idle-time", 15*time.Minute, "PostgreSQL max connection idle time")
-	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated) (eg. http://localhost:5173)", func(val string) error {
 		cfg.cors.trustedOrigins = strings.Fields(val)
 		return nil
 	})
