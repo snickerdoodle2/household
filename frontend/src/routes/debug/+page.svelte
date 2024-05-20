@@ -1,7 +1,13 @@
 <script lang="ts">
-import { Input } from "$lib/components/ui/input/index.js";
+import { SERVER_URL } from "$lib/const.js";
+import { type Sensor } from "$lib/types/sensor";
 let message = {};
-let id = "";
+let selectedId = "";
+
+const WS_URL = SERVER_URL.replace("http", "ws");
+
+// HACK: generating types not working :(
+export let data: { ids: { data: Sensor[] } };
 
 let socket: WebSocket | undefined = undefined;
 
@@ -9,7 +15,9 @@ const updateSocket = (id: string) => {
 	if (id.length === 0) return;
 	if (socket) socket.close();
 
-	socket = new WebSocket(`ws://localhost:8080/api/v1/sensor/${id}/value`);
+	message = {};
+
+	socket = new WebSocket(`${WS_URL}/api/v1/sensor/${id}/value`);
 
 	socket.addEventListener("open", () => {
 		console.log("Opened");
@@ -25,14 +33,17 @@ const updateSocket = (id: string) => {
 };
 
 $: {
-	updateSocket(id);
+	updateSocket(selectedId);
 }
 </script>
 
 <main class="w-screen h-screen flex flex-col justify-center items-center">
-    <Input class="max-w-xs" bind:value={id} />
-
-    <p>Listening for sensor: <code>{id}</code></p>
+    <select bind:value={selectedId} placeholder="Select a sensor...">
+        {#each data.ids.data as sensor}
+            <option value={sensor.id}>{sensor.name}</option>
+        {/each}
+    </select>
+    <p>Listening for sensor: <code>{selectedId}</code></p>
     <code>{JSON.stringify(message)}</code>
 </main>
 
