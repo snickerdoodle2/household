@@ -1,19 +1,21 @@
 <script lang="ts">
 import * as Select from "$lib/components/ui/select";
-import { SERVER_URL } from "$lib/const.js";
+import { getWSUrl } from "@/const";
 import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
 
-let message = {};
+const WS_URL = getWSUrl();
 
-const WS_URL = SERVER_URL.replace(/^http/, "ws");
+let message = {};
 
 export let data: PageData;
 
 let socket: WebSocket | undefined = undefined;
 
 let selected: string | undefined;
+
+console.log(WS_URL);
 
 const updateSocket = (item: Selected<string> | undefined) => {
     if (!item || item.value.length === 0) return;

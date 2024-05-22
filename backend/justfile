@@ -15,3 +15,7 @@ up:
 migrate name:
     migrate create -seq -ext=.sql -dir=./migrations {{name}}
 
+build:
+    rm -rf ./static/generated
+    cd ../frontend; bun run build
+    mv ../frontend/build ./static/generated
