@@ -6,13 +6,17 @@
 // uri : "127.0.0.1:10001"
 // version : 3
 
-type SensorType = 'binary_switch' | 'binary_sensor' | 'decimal_switch' | 'decimal_sensor' | 'button'
+import { z } from 'zod';
 
-export type Sensor = {
-    id: string
-    name: string
-    type: SensorType
-    uri: string
-    created_at: string
-    version: number
-}
+const SensorType = z.enum(['binary_switch', 'binary_sensor', 'decimal_switch', 'decimal_sensor', 'button'])
+
+export const Sensor = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    type: SensorType,
+    uri: z.string(),
+    created_at: z.string().datetime({ offset: true }), // TODO: add day.js to this :)
+    version: z.number()
+})
+
+export type SensorType = z.infer<typeof Sensor>
