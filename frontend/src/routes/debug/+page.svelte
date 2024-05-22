@@ -1,8 +1,8 @@
 <script lang="ts">
 import * as Select from "$lib/components/ui/select";
 import { SERVER_URL } from "$lib/const.js";
-
 import type { Selected } from "bits-ui";
+import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
 
 let message = {};
@@ -24,18 +24,14 @@ const updateSocket = (item: Selected<string> | undefined) => {
 
     socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
 
-    socket.addEventListener("open", () => {
-        console.log("Opened");
-    });
-
     socket.addEventListener("message", (data) => {
         message = JSON.parse(data.data);
     });
-
-    socket.addEventListener("close", () => {
-        console.log("Closed");
-    });
 };
+
+onDestroy(() => {
+    if (socket) socket.close();
+});
 </script>
 
 <div class="flex flex-col">
