@@ -173,7 +173,7 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.URI != nil {
-		sensor.URI = *&sensor.URI
+		sensor.URI = *input.URI
 	}
 
 	if input.Type != nil {
