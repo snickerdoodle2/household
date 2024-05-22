@@ -1,0 +1,1 @@
+ALTER TABLE sensors ADD CONSTRAINT uri_unique UNIQUE (uri);

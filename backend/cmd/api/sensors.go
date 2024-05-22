@@ -123,7 +123,13 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = app.models.Sensors.Insert(sensor)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrDuplicateUri):
+			v.AddError("uri", "a sensor with this URI already exists")
+			app.failedValidationResponse(w, r, v.Errors)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
@@ -173,7 +179,7 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.URI != nil {
-		sensor.URI = *&sensor.URI
+		sensor.URI = *input.URI
 	}
 
 	if input.Type != nil {
@@ -192,7 +198,13 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = app.models.Sensors.Update(sensor)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrDuplicateUri):
+			v.AddError("uri", "a sensor with this URI already exists")
+			app.failedValidationResponse(w, r, v.Errors)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
