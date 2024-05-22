@@ -14,6 +14,7 @@ type ListenerT interface {
 	Start() error
 	GetBroker() *broker.Broker[[]byte]
 	GetStopCh() chan struct{}
+	GetCurrentValue() ([]byte, error)
 }
 
 func New[T any](sensor *data.Sensor) *Listener[T] {
@@ -109,4 +110,25 @@ func (l *Listener[T]) GetBroker() *broker.Broker[[]byte] {
 
 func (l *Listener[T]) GetStopCh() chan struct{} {
 	return l.StopCh
+}
+
+func (l *Listener[T]) GetCurrentValue() ([]byte, error) {
+	var msg Response[T]
+	if l.values == nil {
+		msg = Response[T]{
+			Status: "OFFLINE",
+			Values: make([]T, 0),
+		}
+	} else {
+		msg = Response[T]{
+			Status: "ONLINE",
+			Values: l.values,
+		}
+	}
+
+	json, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	return json, nil
 }

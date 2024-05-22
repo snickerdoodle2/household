@@ -85,12 +85,12 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	msgCh := listener.GetBroker().Subscribe()
+	initMsg, _ := listener.GetCurrentValue()
+	_ = conn.WriteMessage(websocket.TextMessage, initMsg) // TODO: Handle error
 
 	for msg := range msgCh {
 		conn.WriteMessage(websocket.TextMessage, msg)
 	}
-
-	// TODO: Send messages to client
 }
 
 func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
