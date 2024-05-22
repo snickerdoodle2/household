@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"inzynierka/internal/data/validator"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,10 @@ import (
 )
 
 type SensorType string
+
+var (
+	ErrDuplicateUri = errors.New("duplicate uri")
+)
 
 const (
 	BinarySwitch  SensorType = "binary_switch"
@@ -79,8 +84,20 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	// TODO: handle not unique uuid edge case
 
-	return m.DB.QueryRow(ctx, query, args...).Scan(&sensor.CreatedAt, &sensor.Version)
+	err = m.DB.QueryRow(ctx, query, args...).Scan(&sensor.CreatedAt, &sensor.Version)
+
+	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: duplicate key value violates unique constraint \"uri_unique\""):
+			return ErrDuplicateUri
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
