@@ -1,10 +1,9 @@
 <script lang="ts">
 import * as Select from "$lib/components/ui/select";
 import { SERVER_URL } from "$lib/const.js";
-
 import type { Selected } from "bits-ui";
-import type { PageData } from "./$types";
 import { onDestroy } from "svelte";
+import type { PageData } from "./$types";
 
 let message = {};
 
