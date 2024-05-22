@@ -1,0 +1,1 @@
+ALTER TABLE sensors DROP CONSTRAINT uri_unique;
