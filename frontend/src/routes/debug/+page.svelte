@@ -3,23 +3,26 @@ import { SERVER_URL } from "$lib/const.js";
 import * as Select from "$lib/components/ui/select";
 
 import type { PageData } from "./$types";
+import type { Selected } from "bits-ui";
 
 let message = {};
-let selectedId = "";
 
-const WS_URL = SERVER_URL.replace("http", "ws");
+const WS_URL = SERVER_URL.replace(/^http/, "ws");
 
 export let data: PageData;
 
 let socket: WebSocket | undefined = undefined;
 
-const updateSocket = (id: string) => {
-	if (id.length === 0) return;
+let selected: string | undefined;
+
+const updateSocket = (item: Selected<string> | undefined) => {
+	if (!item || item.value.length === 0) return;
 	if (socket) socket.close();
 
 	message = {};
+	selected = item.label;
 
-	socket = new WebSocket(`${WS_URL}/api/v1/sensor/${id}/value`);
+	socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
 
 	socket.addEventListener("open", () => {
 		console.log("Opened");
@@ -33,26 +36,23 @@ const updateSocket = (id: string) => {
 		console.log("Closed");
 	});
 };
-
-$: {
-	updateSocket(selectedId);
-}
 </script>
 
-<main class="w-screen h-screen flex flex-col justify-center items-center">
-    <Select.Root>
-        <Select.Trigger>
+<div class="flex flex-col">
+    <Select.Root items={data.sensors} onSelectedChange={updateSocket}>
+        <Select.Trigger class="max-w-96">
             <Select.Value placeholder="Select a sensor..." />
         </Select.Trigger>
         <Select.Content>
-            {#each data.ids.data as sensor}
-                <Select.Item value={sensor.id}>{sensor.name}</Select.Item>
+            {#each data.sensors as sensor}
+                <Select.Item value={sensor.value} label={sensor.label}
+                    >{sensor.label}</Select.Item
+                >
             {/each}
         </Select.Content>
     </Select.Root>
-    <p>Listening for sensor: <code>{selectedId}</code></p>
-    <code>{JSON.stringify(message)}</code>
-</main>
-
-<style>
-</style>
+    {#if selected}
+        <p>Listening for sensor: <code>{selected}</code></p>
+    {/if}
+    <code><pre>{JSON.stringify(message, null, 4)}</pre></code>
+</div>
