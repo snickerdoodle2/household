@@ -35,5 +35,7 @@ func (app *App) routes() http.Handler {
 		r.MethodNotAllowed(app.methodNotAllowed)
 	})
 
+	r.NotFound(app.spaHandler)
+
 	return r
 }
