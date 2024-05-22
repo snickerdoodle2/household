@@ -198,7 +198,18 @@ func (m SensorModel) Update(sensor *Sensor) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return m.DB.QueryRow(ctx, query, args...).Scan(&sensor.Version)
+	err := m.DB.QueryRow(ctx, query, args...).Scan(&sensor.Version)
+
+	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: duplicate key value violates unique constraint \"uri_unique\""):
+			return ErrDuplicateUri
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m SensorModel) Delete(id uuid.UUID) error {
