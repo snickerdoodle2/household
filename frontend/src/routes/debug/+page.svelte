@@ -15,6 +15,8 @@ let socket: WebSocket | undefined = undefined;
 
 let selected: string | undefined;
 
+console.log(WS_URL);
+
 const updateSocket = (item: Selected<string> | undefined) => {
     if (!item || item.value.length === 0) return;
     if (socket) socket.close();

@@ -2,5 +2,5 @@ package static
 
 import "embed"
 
-//go:embed "_app" "favicon.png" "index.html"
+//go:embed "all:generated"
 var StaticFiles embed.FS

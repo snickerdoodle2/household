@@ -5,21 +5,20 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
-	"strings"
+	"path/filepath"
 )
 
 func (app *App) spaHandler(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, "/")
+	path := filepath.Join("generated", r.URL.Path)
 
 	fi, err := fs.Stat(static.StaticFiles, path)
 
-	app.logger.Info("SPA", "path", path, "exist?", !os.IsNotExist(err))
 	if os.IsNotExist(err) || fi.IsDir() {
 		// no caching
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
 		// just serve initial page lool
-		http.ServeFileFS(w, r, static.StaticFiles, "index.html")
+		http.ServeFileFS(w, r, static.StaticFiles, filepath.Join("generated", "index.html"))
 		return
 	}
 	if err != nil {
