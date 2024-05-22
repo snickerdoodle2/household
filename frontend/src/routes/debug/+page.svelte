@@ -1,13 +1,11 @@
 <script lang="ts">
 import * as Select from "$lib/components/ui/select";
-import { SERVER_URL } from "$lib/const.js";
+import { WS_URL } from "$lib/const.js";
 import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
 
 let message = {};
-
-const WS_URL = SERVER_URL.replace(/^http/, "ws");
 
 export let data: PageData;
 
