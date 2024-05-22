@@ -16,25 +16,25 @@ let socket: WebSocket | undefined = undefined;
 let selected: string | undefined;
 
 const updateSocket = (item: Selected<string> | undefined) => {
-	if (!item || item.value.length === 0) return;
-	if (socket) socket.close();
+    if (!item || item.value.length === 0) return;
+    if (socket) socket.close();
 
-	message = {};
-	selected = item.label;
+    message = {};
+    selected = item.label;
 
-	socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
+    socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
 
-	socket.addEventListener("open", () => {
-		console.log("Opened");
-	});
+    socket.addEventListener("open", () => {
+        console.log("Opened");
+    });
 
-	socket.addEventListener("message", (data) => {
-		message = JSON.parse(data.data);
-	});
+    socket.addEventListener("message", (data) => {
+        message = JSON.parse(data.data);
+    });
 
-	socket.addEventListener("close", () => {
-		console.log("Closed");
-	});
+    socket.addEventListener("close", () => {
+        console.log("Closed");
+    });
 };
 </script>
 

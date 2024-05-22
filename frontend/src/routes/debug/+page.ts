@@ -13,11 +13,13 @@ export const load: PageLoad = async ({ fetch }) => {
 
     const parsed = z.object({ data: Sensor.array() }).safeParse(data);
     if (!parsed.success) {
-        console.log(parsed.error)
+        console.log(parsed.error);
         error(500, { message: "Error parsing the data" });
     }
 
     return {
-        sensors: parsed.data.data.map(e => { return { label: e.name, value: e.id } })
-    }
-}
+        sensors: parsed.data.data.map((e) => {
+            return { label: e.name, value: e.id };
+        }),
+    };
+};

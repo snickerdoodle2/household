@@ -2,14 +2,14 @@
 import LightSwitch from "./LightSwitch.svelte";
 
 const LINKS = [
-	{
-		name: "Home",
-		url: "/",
-	},
-	{
-		name: "Debug",
-		url: "/debug",
-	},
+    {
+        name: "Home",
+        url: "/",
+    },
+    {
+        name: "Debug",
+        url: "/debug",
+    },
 ];
 </script>
 
