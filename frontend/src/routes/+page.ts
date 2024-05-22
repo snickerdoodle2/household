@@ -10,8 +10,6 @@ export const load: PageLoad = async ({ fetch }) => {
     }
 
     return {
-        sensors: sensors.data.map((e) => {
-            return { label: e.name, value: e.id };
-        }),
+        sensors: sensors.data,
     };
 };
