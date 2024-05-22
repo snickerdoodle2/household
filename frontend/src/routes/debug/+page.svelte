@@ -1,9 +1,11 @@
 <script lang="ts">
 import * as Select from "$lib/components/ui/select";
-import { WS_URL } from "$lib/const.js";
 import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
+import { getWSUrl } from "@/const";
+
+const WS_URL = getWSUrl();
 
 let message = {};
 
