@@ -1,8 +1,8 @@
 import { SERVER_URL } from "$lib/const";
-import { error } from "@sveltejs/kit";
-import type { PageLoad } from "./$types";
-import { z } from "zod";
 import { Sensor } from "@/types/sensor";
+import { error } from "@sveltejs/kit";
+import { z } from "zod";
+import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ fetch }) => {
     const res = await fetch(`${SERVER_URL}/api/v1/sensor`);

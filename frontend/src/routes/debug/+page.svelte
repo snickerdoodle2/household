@@ -1,9 +1,9 @@
 <script lang="ts">
-import { SERVER_URL } from "$lib/const.js";
 import * as Select from "$lib/components/ui/select";
+import { SERVER_URL } from "$lib/const.js";
 
-import type { PageData } from "./$types";
 import type { Selected } from "bits-ui";
+import type { PageData } from "./$types";
 
 let message = {};
 
