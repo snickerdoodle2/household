@@ -3,16 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"inzynierka/internal/data"
 	"inzynierka/internal/listener"
-	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 )
 
 type Config struct {
@@ -30,7 +29,7 @@ type Config struct {
 
 type App struct {
 	config    Config
-	logger    *slog.Logger
+	logger    *log.Logger
 	models    data.Models
 	upgrader  websocket.Upgrader
 	listeners map[uuid.UUID]listener.ListenerT
@@ -49,7 +48,9 @@ func main() {
 
 	flag.Parse()
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := log.NewWithOptions(os.Stdout, log.Options{
+		ReportTimestamp: true,
+	})
 
 	db, err := openDB(cfg)
 	if err != nil {
