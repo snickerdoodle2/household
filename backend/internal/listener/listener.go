@@ -21,7 +21,7 @@ func New[T any](sensor *data.Sensor) *Listener[T] {
 	return &Listener[T]{
 		sensor: sensor,
 		values: make([]T, 0),
-		StopCh: make(chan struct{}),
+		StopCh: make(chan struct{}, 2),
 		Broker: broker.NewBroker[[]byte](),
 	}
 }
