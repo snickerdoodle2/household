@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -60,4 +62,12 @@ func (app *App) recoverPanic(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (mw *wrappedResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := mw.wrapped.(http.Hijacker)
+	if !ok {
+		return nil, nil, fmt.Errorf("wrapped ResponseWriter does not implement http.Hijacker")
+	}
+	return hijacker.Hijack()
 }
