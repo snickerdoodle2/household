@@ -1,0 +1,1 @@
+<h1>Tutaj będzie można dodać nowe urządzenie</h1>

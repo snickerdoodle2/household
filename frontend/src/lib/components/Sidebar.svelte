@@ -10,6 +10,10 @@ const LINKS = [
         name: "Debug",
         url: "/debug",
     },
+    {
+        name: "Add device",
+        url: "/add-device"
+    },
 ];
 </script>
 
