@@ -8,7 +8,7 @@
 
 import { z } from "zod";
 
-const SensorType = z.enum([
+export const SensorTypeEnum = z.enum([
     "binary_switch",
     "binary_sensor",
     "decimal_switch",
@@ -19,7 +19,7 @@ const SensorType = z.enum([
 export const Sensor = z.object({
     id: z.string().uuid(),
     name: z.string(),
-    type: SensorType,
+    type: SensorTypeEnum,
     uri: z.string(),
     created_at: z.string().datetime({ offset: true }), // TODO: add day.js to this :)
     version: z.number(),
