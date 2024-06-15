@@ -14,6 +14,10 @@ const LINKS = [
         name: "Add device",
         url: "/add-device"
     },
+    {
+        name: "Sensor Page",
+        url: "/sensor-page"
+    },
 ];
 </script>
 
