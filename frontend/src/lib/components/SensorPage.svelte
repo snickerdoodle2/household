@@ -2,8 +2,9 @@
     import { SensorType, type Sensor } from '@/types/sensor';
     import { onMount } from 'svelte';
     import { Checkbox, Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Spinner, Button } from 'flowbite-svelte';
-  
-    let sensors: Sensor[] = [];
+    import { writable } from 'svelte/store';
+  import { sensors } from '@/stores/stores';
+
     let loading = true;
     let error: string | null = null;
   
@@ -14,7 +15,9 @@
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        sensors = data.data;
+        
+        
+        sensors.set(data.data);
         console.log('Fetched sensors:', sensors);
       } catch (err) {
         error = 'Failed to fetch sensors';
@@ -24,6 +27,25 @@
       }
     }
   
+    // Function to delete a sensor
+    async function deleteSensor(id: string) {
+        console.log("Deleting sensor with id:", id);
+        try {
+        const response = await fetch(`http://localhost:8080/api/v1/sensor/${id}`, {
+            method: 'DELETE',
+        });
+
+        if (response.ok) {
+        } else {
+            console.error('Error deleting sensor:', response.statusText);
+        }
+        } catch (error) {
+            console.error('Error deleting sensor:', error);
+        }
+
+        fetchSensors();
+    };
+
     onMount(fetchSensors);
   
     const selectedTypes: Record<SensorType, boolean> = {
@@ -32,10 +54,6 @@
       [SensorType.BUTTON]: true,
       [SensorType.DECIMAL_SENSOR]: true,
       [SensorType.DECIMAL_SWITCH]: true,
-    }
-  
-    function filteredSensors() {
-      return sensors.filter(sensor => selectedTypes[sensor.type]);
     }
   </script>
   
@@ -76,7 +94,7 @@
             <TableHeadCell>Actions</TableHeadCell>
           </TableHead>
           <TableBody tableBodyClass="divide-y">
-            {#each filteredSensors() as sensor}
+            {#each $sensors as sensor}
               {#if selectedTypes[sensor.type]}
                 <TableBodyRow>
                   <TableBodyCell></TableBodyCell>
@@ -89,7 +107,7 @@
                   <TableBodyCell>{sensor.version}</TableBodyCell>
                   <TableBodyCell>
                     <Button on:click={() => console.log("Edit")} color="blue" class="mr-2">Edit</Button>
-                    <Button on:click={() => console.log("Remove")} color="red" class="mr-2">Remove</Button>
+                    <Button on:click={() => deleteSensor(sensor.id)} color="red" class="mr-2">Remove</Button>
                     <Button on:click={() => console.log("Monitor")} color="green">Monitor</Button>
                   </TableBodyCell>
                   
