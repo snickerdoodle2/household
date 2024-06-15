@@ -1,10 +1,8 @@
 <!-- src/routes/AddSensorForm.svelte -->
 <script lang="ts">
     import * as Select from "$lib/components/ui/select";
-    import { SensorTypeEnum } from "@/types/sensor";
+    import { SensorType } from "@/types/sensor";
     import type { Selected } from "bits-ui";
-
-    const sensorTypes = SensorTypeEnum.options;
 
     let name: string = "";
     let uri: string = "";
@@ -113,7 +111,7 @@
                     <Select.Value placeholder="Select sensor type..." />
                 </Select.Trigger>
                 <Select.Content>
-                    {#each sensorTypes as sensor}
+                    {#each Object.values(SensorType) as sensor}
                         <Select.Item value={sensor} label={sensor}>
                             {sensor}
                         </Select.Item>

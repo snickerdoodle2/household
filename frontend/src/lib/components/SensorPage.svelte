@@ -1,15 +1,6 @@
 <script lang="ts">
+  import { SensorType, type Sensor } from '@/types/sensor';
     import { onMount } from 'svelte';
-
-    interface Sensor {
-        id: string;
-        name: string;
-        uri: string;
-        type: string;
-        refresh_rate: number;
-        created_at: string;
-        version: number;
-    }
 
     let sensors: Sensor[] = [];
     let loading = true;
@@ -33,6 +24,18 @@
     }
 
     onMount(fetchSensors);
+
+    const selectedTypes: Record<SensorType, boolean> = {
+        [SensorType.BINARY_SENSOR]: true,
+        [SensorType.BINARY_SWITCH]: true,
+        [SensorType.BUTTON]: true,
+        [SensorType.DECIMAL_SENSOR]: true,
+        [SensorType.DECIMAL_SWITCH]: true,
+    }
+
+    function filteredSensors() {
+        return sensors.filter(sensor => selectedTypes[sensor.type]);
+    }
 </script>
 
 
@@ -42,6 +45,18 @@
     {:else if error}
         <p class="error">{error}</p>
     {:else}
+        <div class="filter">
+            <h2>Filter Sensors</h2>
+            {#each Object.values(SensorType) as type}
+                <div>
+                    <label>
+                        <input type="checkbox" bind:checked={selectedTypes[type]} />
+                        {type}
+                    </label>
+                </div>
+            {/each}
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -55,16 +70,18 @@
                 </tr>
             </thead>
             <tbody>
-                {#each sensors as sensor}
-                    <tr>
-                        <td>{sensor.id}</td>
-                        <td>{sensor.name}</td>
-                        <td>{sensor.uri}</td>
-                        <td>{sensor.type}</td>
-                        <td>{sensor.refresh_rate}</td>
-                        <td>{sensor.created_at}</td>
-                        <td>{sensor.version}</td>
-                    </tr>
+                {#each filteredSensors() as sensor}
+                    {#if selectedTypes[sensor.type]}
+                        <tr>
+                            <td>{sensor.id}</td>
+                            <td>{sensor.name}</td>
+                            <td>{sensor.uri}</td>
+                            <td>{sensor.type}</td>
+                            <td>{sensor.refresh_rate}</td>
+                            <td>{sensor.created_at}</td>
+                            <td>{sensor.version}</td>
+                        </tr>
+                    {/if}
                 {/each}
             </tbody>
         </table>
@@ -86,8 +103,12 @@
     }
     th {
         background-color: #616161;
+        color: white;
     }
     .error {
         color: red;
+    }
+    .filter {
+        margin-bottom: 1rem;
     }
 </style>

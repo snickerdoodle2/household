@@ -8,21 +8,24 @@
 
 import { z } from "zod";
 
-export const SensorTypeEnum = z.enum([
-    "binary_switch",
-    "binary_sensor",
-    "decimal_switch",
-    "decimal_sensor",
-    "button",
-]);
+export enum SensorType {
+    BINARY_SWITCH = "binary_switch",
+    BINARY_SENSOR = "binary_sensor",
+    DECIMAL_SWITCH = "decimal_switch",
+    DECIMAL_SENSOR = "decimal_sensor",
+    BUTTON = "button",
+}
 
-export const Sensor = z.object({
+export const SensorTypeSchema = z.nativeEnum(SensorType);
+
+export const SensorSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
-    type: SensorTypeEnum,
+    type: SensorTypeSchema,
     uri: z.string(),
     created_at: z.string().datetime({ offset: true }), // TODO: add day.js to this :)
     version: z.number(),
+    refresh_rate: z.number(),
 });
 
-export type SensorType = z.infer<typeof Sensor>;
+export type Sensor = z.infer<typeof SensorSchema>;

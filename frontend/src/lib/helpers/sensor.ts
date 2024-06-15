@@ -1,6 +1,6 @@
 import { SERVER_URL } from "@/const";
 import type { Result } from "@/types/result";
-import { Sensor, type SensorType } from "@/types/sensor";
+import { SensorSchema, type SensorType } from "@/types/sensor";
 import { z } from "zod";
 
 export const getAllSensors = async (
@@ -18,7 +18,7 @@ export const getAllSensors = async (
         };
     }
 
-    const parsed = z.object({ data: Sensor.array() }).safeParse(data);
+    const parsed = z.object({ data: SensorSchema.array() }).safeParse(data);
     if (!parsed.success) {
         return {
             isError: true,
