@@ -191,9 +191,7 @@
                                 <TableBodyCell>{sensor.version}</TableBodyCell>
                                 <TableBodyCell>
                                     <Button
-                                        on:click={() => {
-                                            () => editDevice(sensor);
-                                        }}
+                                        on:click={() => editDevice(sensor)}
                                         color="blue"
                                         class="mr-2">Edit</Button
                                     >
