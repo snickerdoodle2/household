@@ -2,7 +2,6 @@
     import { SensorType, type Sensor } from '@/types/sensor';
     import { onMount } from 'svelte';
     import {
-        Checkbox,
         Table,
         TableHead,
         TableHeadCell,
@@ -11,6 +10,8 @@
         TableBodyCell,
         Spinner,
         Button,
+        Dropdown,
+        Checkbox,
     } from 'flowbite-svelte';
     import { sensors } from '@/stores/stores';
 
@@ -59,7 +60,7 @@
 
     onMount(fetchSensors);
 
-    const selectedTypes: Record<SensorType, boolean> = {
+    const sensorVisibility = {
         [SensorType.BINARY_SENSOR]: true,
         [SensorType.BINARY_SWITCH]: true,
         [SensorType.BUTTON]: true,
@@ -74,32 +75,41 @@
     {:else if error}
         <p class="error">{error}</p>
     {:else}
-        <div class="filter">
-            <Table
-                bordered={true}
-                class="w-full text-sm text-left text-gray-500"
+        <div class="p-2 place-content-end">
+            <script>
+                import {
+                    Button,
+                    Dropdown,
+                    DropdownItem,
+                    Checkbox,
+                } from 'flowbite-svelte';
+                import { ChevronDownOutline } from 'flowbite-svelte-icons';
+            </script>
+
+            <Button
+                class="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded"
+                >Filter</Button
             >
-                <TableHead>
-                    <TableHeadCell>Filter by type</TableHeadCell>
-                </TableHead>
-                <TableBody>
-                    {#each Object.values(SensorType) as type}
-                        <TableBodyRow>
-                            <Checkbox
-                                id={type}
-                                bind:checked={selectedTypes[type]}
-                                >{type}</Checkbox
-                            >
-                        </TableBodyRow>
-                    {/each}
-                </TableBody>
-            </Table>
+
+            <Dropdown placement={"right"} class="w-48 p-3 space-y-1 text-sm">
+                {#each Object.values(SensorType) as type}
+                    <li
+                        class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    >
+                        <Checkbox
+                            id={type}
+                            bind:checked={sensorVisibility[type]}
+                        >
+                            {type}
+                        </Checkbox>
+                    </li>
+                {/each}
+            </Dropdown>
         </div>
 
         <div class="table-container">
-            <Table hoverable={true}>
+            <Table class="tables" hoverable={true}>
                 <TableHead>
-                    <TableHeadCell></TableHeadCell>
                     <TableHeadCell>ID</TableHeadCell>
                     <TableHeadCell>Name</TableHeadCell>
                     <TableHeadCell>URI</TableHeadCell>
@@ -111,9 +121,8 @@
                 </TableHead>
                 <TableBody tableBodyClass="divide-y">
                     {#each $sensors as sensor}
-                        {#if selectedTypes[sensor.type]}
+                        {#if sensorVisibility[sensor.type]}
                             <TableBodyRow>
-                                <TableBodyCell></TableBodyCell>
                                 <TableBodyCell>{sensor.id}</TableBodyCell>
                                 <TableBodyCell>{sensor.name}</TableBodyCell>
                                 <TableBodyCell>{sensor.uri}</TableBodyCell>
@@ -154,15 +163,19 @@
     main {
         display: flex;
         flex-direction: column;
+        height: 100%;
+        width: 100%;
     }
 
-    .filter {
-        top: 0;
-        left: 0;
-    }
     .table-container {
+        min-width: 100%;
         flex: 1;
         overflow: auto; /* Enable scrolling if content overflows */
+        max-width: 100%; /* Ensure the table doesn't exceed the container's width */
+        height: 100%;
+        top: 0;
+        left: 0;
+        margin: 0 auto; /* Center the container */
     }
 
     .error {
