@@ -29,3 +29,10 @@ export const SensorSchema = z.object({
 });
 
 export type Sensor = z.infer<typeof SensorSchema>;
+
+export type SensorData = {
+    name: string;
+    uri: string;
+    type: string;
+    refresh_rate: number;
+};

@@ -13,10 +13,15 @@
         Dropdown,
         Checkbox,
     } from 'flowbite-svelte';
-    import { sensors } from '@/stores/stores';
+    import { ModifySensorModalData, sensors } from '@/stores/stores';
+    import AddSensorModal from './AddSensorModal.svelte';
+    import ModifySensorModal from './ModifySensorModal.svelte';
+    import { get } from 'svelte/store';
 
     let loading = true;
     let error: string | null = null;
+    let addSensorModalVisible = false;
+    let modifySensorModalVisible = false;
 
     async function fetchSensors() {
         try {
@@ -75,23 +80,30 @@
     {:else if error}
         <p class="error">{error}</p>
     {:else}
+        <AddSensorModal
+            bind:isOpen={addSensorModalVisible}
+            afterSubmit={fetchSensors}
+        />
+
+        <ModifySensorModal
+            bind:isOpen={modifySensorModalVisible}
+            afterSubmit={fetchSensors}
+        />
+
         <div class="p-2 place-content-end">
-            <script>
-                import {
-                    Button,
-                    Dropdown,
-                    DropdownItem,
-                    Checkbox,
-                } from 'flowbite-svelte';
-                import { ChevronDownOutline } from 'flowbite-svelte-icons';
-            </script>
+            <Button
+                class="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded"
+                on:click={() => {
+                    addSensorModalVisible = true;
+                }}>Add device</Button
+            >
 
             <Button
                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded"
                 >Filter</Button
             >
 
-            <Dropdown placement={"right"} class="w-48 p-3 space-y-1 text-sm">
+            <Dropdown placement={'right'} class="w-48 p-3 space-y-1 text-sm">
                 {#each Object.values(SensorType) as type}
                     <li
                         class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
@@ -136,10 +148,23 @@
                                 <TableBodyCell>{sensor.version}</TableBodyCell>
                                 <TableBodyCell>
                                     <Button
-                                        on:click={() => console.log('Edit')}
+                                        on:click={() => {
+                                            ModifySensorModalData.set({
+                                                id: sensor.id,
+                                                name: sensor.name,
+                                                uri: sensor.uri,
+                                                type: sensor.type,
+                                                refresh_rate:
+                                                    sensor.refresh_rate,
+                                                created_at: sensor.created_at,
+                                                version: sensor.version,
+                                            });
+                                            modifySensorModalVisible = true;
+                                        }}
                                         color="blue"
                                         class="mr-2">Edit</Button
                                     >
+
                                     <Button
                                         on:click={() => deleteSensor(sensor.id)}
                                         color="red"

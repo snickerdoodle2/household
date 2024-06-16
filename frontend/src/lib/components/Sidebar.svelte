@@ -2,18 +2,14 @@
     import LightSwitch from './LightSwitch.svelte';
 
     const LINKS = [
-        {
-            name: 'Home',
-            url: '/',
-        },
-        {
-            name: 'Debug',
-            url: '/debug',
-        },
-        {
-            name: 'Add device',
-            url: '/add-device',
-        },
+        // {
+        //     name: 'Home',
+        //     url: '/',
+        // },
+        // {
+        //     name: 'Debug',
+        //     url: '/debug',
+        // },
         {
             name: 'Sensor Page',
             url: '/sensor-page',
