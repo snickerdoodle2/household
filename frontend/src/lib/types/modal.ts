@@ -1,4 +1,4 @@
 export enum SensorInputModalType {
-    ADD = "add",
-    MODIFY = "modify"
+    ADD = 'add',
+    MODIFY = 'modify',
 }

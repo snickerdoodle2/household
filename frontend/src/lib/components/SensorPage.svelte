@@ -105,7 +105,10 @@
                 // TODO: nice pop-up window instead of alert
                 const responseData = await response.json();
                 console.log('Success:', responseData);
-                alert('Sensor monitored successfully!' + JSON.stringify(responseData));
+                alert(
+                    'Sensor monitored successfully!' +
+                        JSON.stringify(responseData)
+                );
             }
         } catch (error) {
             console.error('Network Error:', error);

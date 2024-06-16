@@ -55,7 +55,12 @@
 </script>
 
 <main>
-    <SensorInputModal title={"Modify Device"} onSubmit={modifySensor} bind:isOpen bind:sensorData={$ModifySensorModalData}/>
+    <SensorInputModal
+        title={'Modify Device'}
+        onSubmit={modifySensor}
+        bind:isOpen
+        bind:sensorData={$ModifySensorModalData}
+    />
 </main>
 
 <style>
