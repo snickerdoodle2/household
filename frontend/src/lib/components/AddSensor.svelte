@@ -1,12 +1,12 @@
 <!-- src/routes/AddSensorForm.svelte -->
 <script lang="ts">
-    import * as Select from "$lib/components/ui/select";
-    import { SensorType } from "@/types/sensor";
-    import type { Selected } from "bits-ui";
+    import * as Select from '$lib/components/ui/select';
+    import { SensorType } from '@/types/sensor';
+    import type { Selected } from 'bits-ui';
 
-    let name: string = "";
-    let uri: string = "";
-    let type: string = "";
+    let name: string = '';
+    let uri: string = '';
+    let type: string = '';
     let refreshRate: number = 0;
 
     let isInvalidType: boolean = false;
@@ -26,30 +26,30 @@
 
             try {
                 const response = await fetch(
-                    "http://localhost:8080/api/v1/sensor",
+                    'http://localhost:8080/api/v1/sensor',
                     {
-                        method: "POST",
+                        method: 'POST',
                         headers: {
-                            "Content-Type": "application/json",
+                            'Content-Type': 'application/json',
                         },
                         body: JSON.stringify(sensorData),
-                    },
+                    }
                 );
 
                 if (!response.ok) {
                     // TODO: error json handling
                     const errorData = await response.json();
-                    console.error("Error:", errorData);
+                    console.error('Error:', errorData);
                     alert(`Error: ${errorData.error}`);
                 } else {
                     // TODO: nice pop-up window instead of alert
                     const responseData = await response.json();
-                    console.log("Success:", responseData);
-                    alert("Sensor added successfully!");
+                    console.log('Success:', responseData);
+                    alert('Sensor added successfully!');
                 }
             } catch (error) {
-                console.error("Network Error:", error);
-                alert("Network error. Please try again later.");
+                console.error('Network Error:', error);
+                alert('Network error. Please try again later.');
             }
         }
     };
@@ -59,7 +59,7 @@
         const uriRegex =
             /^(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?):([1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d|655[0-2]\d|6553[0-5])$/;
 
-        if (type === "") {
+        if (type === '') {
             isInvalidType = true;
             isInvalid = true;
         } else {
@@ -101,7 +101,7 @@
             type="text"
             id="uri"
             bind:value={uri}
-            class={isInvalidURI ? "invalid" : ""}
+            class={isInvalidURI ? 'invalid' : ''}
         />
     </div>
     <div class="row">
@@ -125,7 +125,7 @@
                 type="number"
                 id="refreshRate"
                 bind:value={refreshRate}
-                class={isInvalidRefreshRate ? "invalid" : ""}
+                class={isInvalidRefreshRate ? 'invalid' : ''}
             />
         </div>
     </div>

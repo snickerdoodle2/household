@@ -1,37 +1,37 @@
 <script lang="ts">
-import * as Select from "$lib/components/ui/select";
-import { getWSUrl } from "@/const";
-import type { Selected } from "bits-ui";
-import { onDestroy } from "svelte";
-import type { PageData } from "./$types";
+    import * as Select from '$lib/components/ui/select';
+    import { getWSUrl } from '@/const';
+    import type { Selected } from 'bits-ui';
+    import { onDestroy } from 'svelte';
+    import type { PageData } from './$types';
 
-const WS_URL = getWSUrl();
+    const WS_URL = getWSUrl();
 
-let message = {};
+    let message = {};
 
-export let data: PageData;
+    export let data: PageData;
 
-let socket: WebSocket | undefined = undefined;
+    let socket: WebSocket | undefined = undefined;
 
-let selected: string | undefined;
+    let selected: string | undefined;
 
-const updateSocket = (item: Selected<string> | undefined) => {
-    if (!item || item.value.length === 0) return;
-    if (socket) socket.close();
+    const updateSocket = (item: Selected<string> | undefined) => {
+        if (!item || item.value.length === 0) return;
+        if (socket) socket.close();
 
-    message = {};
-    selected = item.label;
+        message = {};
+        selected = item.label;
 
-    socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
+        socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
 
-    socket.addEventListener("message", (data) => {
-        message = JSON.parse(data.data);
+        socket.addEventListener('message', (data) => {
+            message = JSON.parse(data.data);
+        });
+    };
+
+    onDestroy(() => {
+        if (socket) socket.close();
     });
-};
-
-onDestroy(() => {
-    if (socket) socket.close();
-});
 </script>
 
 <div class="flex flex-col">

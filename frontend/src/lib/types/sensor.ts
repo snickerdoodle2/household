@@ -6,14 +6,14 @@
 // uri : "127.0.0.1:10001"
 // version : 3
 
-import { z } from "zod";
+import { z } from 'zod';
 
 export enum SensorType {
-    BINARY_SWITCH = "binary_switch",
-    BINARY_SENSOR = "binary_sensor",
-    DECIMAL_SWITCH = "decimal_switch",
-    DECIMAL_SENSOR = "decimal_sensor",
-    BUTTON = "button",
+    BINARY_SWITCH = 'binary_switch',
+    BINARY_SENSOR = 'binary_sensor',
+    DECIMAL_SWITCH = 'decimal_switch',
+    DECIMAL_SENSOR = 'decimal_sensor',
+    BUTTON = 'button',
 }
 
 export const SensorTypeSchema = z.nativeEnum(SensorType);

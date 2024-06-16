@@ -1,13 +1,13 @@
-import { SERVER_URL } from "@/const";
-import type { Result } from "@/types/result";
-import { SensorSchema, type SensorType } from "@/types/sensor";
-import { z } from "zod";
+import { SERVER_URL } from '@/const';
+import type { Result } from '@/types/result';
+import { SensorSchema, type SensorType } from '@/types/sensor';
+import { z } from 'zod';
 
 export const getAllSensors = async (
     fetch: (
         input: RequestInfo | URL,
-        init?: RequestInit | undefined,
-    ) => Promise<Response>,
+        init?: RequestInit | undefined
+    ) => Promise<Response>
 ): Promise<Result<SensorType[], string>> => {
     const res = await fetch(`${SERVER_URL}/api/v1/sensor`);
     const data = await res.json();
@@ -22,7 +22,7 @@ export const getAllSensors = async (
     if (!parsed.success) {
         return {
             isError: true,
-            error: "Error while parsing the data! (getAllSensors)",
+            error: 'Error while parsing the data! (getAllSensors)',
         };
     }
 

@@ -1,8 +1,8 @@
 <script>
-import "../app.css";
-import { ModeWatcher } from "mode-watcher";
+    import '../app.css';
+    import { ModeWatcher } from 'mode-watcher';
 
-import Sidebar from "@/components/Sidebar.svelte";
+    import Sidebar from '@/components/Sidebar.svelte';
 </script>
 
 <ModeWatcher />

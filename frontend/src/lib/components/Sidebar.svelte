@@ -1,24 +1,24 @@
 <script lang="ts">
-import LightSwitch from "./LightSwitch.svelte";
+    import LightSwitch from './LightSwitch.svelte';
 
-const LINKS = [
-    {
-        name: "Home",
-        url: "/",
-    },
-    {
-        name: "Debug",
-        url: "/debug",
-    },
-    {
-        name: "Add device",
-        url: "/add-device"
-    },
-    {
-        name: "Sensor Page",
-        url: "/sensor-page"
-    },
-];
+    const LINKS = [
+        {
+            name: 'Home',
+            url: '/',
+        },
+        {
+            name: 'Debug',
+            url: '/debug',
+        },
+        {
+            name: 'Add device',
+            url: '/add-device',
+        },
+        {
+            name: 'Sensor Page',
+            url: '/sensor-page',
+        },
+    ];
 </script>
 
 <nav

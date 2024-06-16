@@ -1,5 +1,5 @@
 <script lang="ts">
-    import  AddSensorForm  from '$lib/components/AddSensor.svelte';
+    import AddSensorForm from '$lib/components/AddSensor.svelte';
 </script>
 
 <main>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SensorPage from '@/components/SensorPage.svelte';
+    import SensorPage from '@/components/SensorPage.svelte';
 </script>
 
 <main>
