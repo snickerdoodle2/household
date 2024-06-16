@@ -16,7 +16,6 @@
     import { ModifySensorModalData, sensors } from '@/stores/stores';
     import AddSensorModal from './AddSensorModal.svelte';
     import ModifySensorModal from './ModifySensorModal.svelte';
-    import { get } from 'svelte/store';
 
     let loading = true;
     let error: string | null = null;
@@ -41,8 +40,18 @@
         }
     }
 
-    // Function to delete a sensor
-    async function deleteSensor(id: string) {
+    onMount(fetchSensors);
+
+    const sensorVisibility = {
+        [SensorType.BINARY_SENSOR]: true,
+        [SensorType.BINARY_SWITCH]: true,
+        [SensorType.BUTTON]: true,
+        [SensorType.DECIMAL_SENSOR]: true,
+        [SensorType.DECIMAL_SWITCH]: true,
+    };
+
+    // Function to delete a device
+    async function deleteDevice(id: Sensor['id']) {
         console.log('Deleting sensor with id:', id);
         try {
             const response = await fetch(
@@ -63,15 +72,46 @@
         fetchSensors();
     }
 
-    onMount(fetchSensors);
+    function editDevice(sensor: Sensor) {
+        {
+            ModifySensorModalData.set({
+                id: sensor.id,
+                name: sensor.name,
+                uri: sensor.uri,
+                type: sensor.type,
+                refresh_rate: sensor.refresh_rate,
+                created_at: sensor.created_at,
+                version: sensor.version,
+            });
+            modifySensorModalVisible = true;
+        }
+    }
 
-    const sensorVisibility = {
-        [SensorType.BINARY_SENSOR]: true,
-        [SensorType.BINARY_SWITCH]: true,
-        [SensorType.BUTTON]: true,
-        [SensorType.DECIMAL_SENSOR]: true,
-        [SensorType.DECIMAL_SWITCH]: true,
-    };
+    async function monitorDevice(id: Sensor['id']) {
+        console.log('Deleting sensor with id:', id);
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/v1/sensor/${id}/value`,
+                {
+                    method: 'GET',
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error:', errorData);
+                alert(`Error: ${errorData.error}`);
+            } else {
+                // TODO: nice pop-up window instead of alert
+                const responseData = await response.json();
+                console.log('Success:', responseData);
+                alert('Sensor monitored successfully!' + JSON.stringify(responseData));
+            }
+        } catch (error) {
+            console.error('Network Error:', error);
+            alert('Network error. Please try again later.');
+        }
+    }
 </script>
 
 <main>
@@ -149,29 +189,20 @@
                                 <TableBodyCell>
                                     <Button
                                         on:click={() => {
-                                            ModifySensorModalData.set({
-                                                id: sensor.id,
-                                                name: sensor.name,
-                                                uri: sensor.uri,
-                                                type: sensor.type,
-                                                refresh_rate:
-                                                    sensor.refresh_rate,
-                                                created_at: sensor.created_at,
-                                                version: sensor.version,
-                                            });
-                                            modifySensorModalVisible = true;
+                                            () => editDevice(sensor);
                                         }}
                                         color="blue"
                                         class="mr-2">Edit</Button
                                     >
 
                                     <Button
-                                        on:click={() => deleteSensor(sensor.id)}
+                                        on:click={() => deleteDevice(sensor.id)}
                                         color="red"
                                         class="mr-2">Remove</Button
                                     >
                                     <Button
-                                        on:click={() => console.log('Monitor')}
+                                        on:click={() =>
+                                            monitorDevice(sensor.id)}
                                         color="green">Monitor</Button
                                     >
                                 </TableBodyCell>
