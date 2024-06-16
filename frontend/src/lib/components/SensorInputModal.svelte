@@ -7,6 +7,8 @@
 
     export let isOpen = true;
 
+    export let title = '';
+
     export let sensorData: SensorData = {
         name: '',
         uri: '',
@@ -63,7 +65,7 @@
     };
 </script>
 
-<Modal autoclose={false} bind:open={isOpen}>
+<Modal {title} autoclose={false} bind:open={isOpen}>
     <form on:submit={handleSubmit}>
         <div>
             <label for="name">Name:</label>
@@ -103,7 +105,7 @@
                 />
             </div>
         </div>
-        <button type="submit">AddSensor</button>
+        <button type="submit">Submit</button>
     </form>
 </Modal>
 

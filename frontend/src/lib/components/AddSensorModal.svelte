@@ -45,7 +45,7 @@
 </script>
 
 <main>
-    <SensorInputModal onSubmit={addSensor} bind:isOpen />
+    <SensorInputModal title={"Add New Device"} onSubmit={addSensor} bind:isOpen />
 </main>
 
 <style>
