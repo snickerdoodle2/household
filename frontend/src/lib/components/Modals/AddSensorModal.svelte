@@ -2,15 +2,22 @@
 <script lang="ts">
     import type { SensorData } from '@/types/sensor';
     import SensorInputModal from './SensorInputModal.svelte';
+    import { ModalType, isModalData } from '@/types/modal';
+    import { openedModalStore } from '@/stores/stores';
+    import { SERVER_URL } from '@/const';
 
-    export let isOpen = true;
+    export let onClose: () => Promise<void> = async () => {};
 
-    export let afterSubmit: () => Promise<void> = async () => {};
+    let open = false;
+
+    openedModalStore.subscribe((value) => {
+        open = isModalData(ModalType.ADD_SENSOR, value);
+    });
 
     async function addSensor({ name, uri, type, refresh_rate }: SensorData) {
         try {
             const response = await fetch(
-                'http://localhost:8080/api/v1/sensor',
+                `${SERVER_URL}/api/v1/sensor`,
                 {
                     method: 'POST',
                     headers: {
@@ -40,16 +47,14 @@
             console.error('Network Error:', error);
             alert('Network error. Please try again later.');
         }
-        afterSubmit();
+        onClose();
     }
 </script>
 
 <main>
-    <SensorInputModal
-        title={'Add New Device'}
-        onSubmit={addSensor}
-        bind:isOpen
-    />
+    {#if isModalData(ModalType.ADD_SENSOR, $openedModalStore)}
+        <SensorInputModal title={'Add New Device'} onSubmit={addSensor} bind:open />
+    {/if}
 </main>
 
 <style>

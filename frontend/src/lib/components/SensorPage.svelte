@@ -13,31 +13,26 @@
         Dropdown,
         Checkbox,
     } from 'flowbite-svelte';
-    import { ModifySensorModalData, sensors } from '@/stores/stores';
-    import AddSensorModal from './AddSensorModal.svelte';
-    import ModifySensorModal from './ModifySensorModal.svelte';
+    import { sensorStore } from '@/stores/stores';
+    import AddSensorModal from './Modals/AddSensorModal.svelte';
+    import ModifySensorModal from './Modals/ModifySensorModal.svelte';
+    import { openModal } from '@/stores/stores.utils';
+    import { ModalType } from '@/types/modal';
+    import MonitorSensorModal from './Modals/MonitorSensorModal.svelte';
+    import { getAllSensors } from '@/helpers/sensor';
+    import { SERVER_URL } from '@/const';
 
     let loading = true;
     let error: string | null = null;
-    let addSensorModalVisible = false;
-    let modifySensorModalVisible = false;
 
     async function fetchSensors() {
-        try {
-            const response = await fetch('http://localhost:8080/api/v1/sensor');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-
-            sensors.set(data.data);
-            console.log('Fetched sensors:', sensors);
-        } catch (err) {
-            error = 'Failed to fetch sensors';
-            console.error('Failed to fetch sensors:', err);
-        } finally {
-            loading = false;
+        const response = await getAllSensors(fetch);
+        if (response.isError) {
+            console.error('Failed to fetch sensors!', response.error);
+            return;
         }
+        sensorStore.set(response.data);
+        loading = false;
     }
 
     onMount(fetchSensors);
@@ -54,12 +49,9 @@
     async function deleteDevice(id: Sensor['id']) {
         console.log('Deleting sensor with id:', id);
         try {
-            const response = await fetch(
-                `http://localhost:8080/api/v1/sensor/${id}`,
-                {
-                    method: 'DELETE',
-                }
-            );
+            const response = await fetch(`${SERVER_URL}/api/v1/sensor/${id}`, {
+                method: 'DELETE',
+            });
 
             if (response.ok) {
             } else {
@@ -71,50 +63,6 @@
 
         fetchSensors();
     }
-
-    function editDevice(sensor: Sensor) {
-        {
-            ModifySensorModalData.set({
-                id: sensor.id,
-                name: sensor.name,
-                uri: sensor.uri,
-                type: sensor.type,
-                refresh_rate: sensor.refresh_rate,
-                created_at: sensor.created_at,
-                version: sensor.version,
-            });
-            modifySensorModalVisible = true;
-        }
-    }
-
-    async function monitorDevice(id: Sensor['id']) {
-        console.log('Deleting sensor with id:', id);
-        try {
-            const response = await fetch(
-                `http://localhost:8080/api/v1/sensor/${id}/value`,
-                {
-                    method: 'GET',
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error:', errorData);
-                alert(`Error: ${errorData.error}`);
-            } else {
-                // TODO: nice pop-up window instead of alert
-                const responseData = await response.json();
-                console.log('Success:', responseData);
-                alert(
-                    'Sensor monitored successfully!' +
-                        JSON.stringify(responseData)
-                );
-            }
-        } catch (error) {
-            console.error('Network Error:', error);
-            alert('Network error. Please try again later.');
-        }
-    }
 </script>
 
 <main>
@@ -123,21 +71,16 @@
     {:else if error}
         <p class="error">{error}</p>
     {:else}
-        <AddSensorModal
-            bind:isOpen={addSensorModalVisible}
-            afterSubmit={fetchSensors}
-        />
-
-        <ModifySensorModal
-            bind:isOpen={modifySensorModalVisible}
-            afterSubmit={fetchSensors}
-        />
+        <AddSensorModal onClose={fetchSensors} />
+        <ModifySensorModal onClose={fetchSensors} />
+        <MonitorSensorModal />
 
         <div class="p-2 place-content-end">
+            
             <Button
                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded"
                 on:click={() => {
-                    addSensorModalVisible = true;
+                    openModal(ModalType.ADD_SENSOR, undefined);
                 }}>Add device</Button
             >
 
@@ -175,7 +118,7 @@
                     <TableHeadCell>Actions</TableHeadCell>
                 </TableHead>
                 <TableBody tableBodyClass="divide-y">
-                    {#each $sensors as sensor}
+                    {#each $sensorStore as sensor}
                         {#if sensorVisibility[sensor.type]}
                             <TableBodyRow>
                                 <TableBodyCell>{sensor.id}</TableBodyCell>
@@ -191,7 +134,11 @@
                                 <TableBodyCell>{sensor.version}</TableBodyCell>
                                 <TableBodyCell>
                                     <Button
-                                        on:click={() => editDevice(sensor)}
+                                        on:click={() =>
+                                            openModal(
+                                                ModalType.MODIFY_SENSOR,
+                                                sensor
+                                            )}
                                         color="blue"
                                         class="mr-2">Edit</Button
                                     >
@@ -203,7 +150,10 @@
                                     >
                                     <Button
                                         on:click={() =>
-                                            monitorDevice(sensor.id)}
+                                            openModal(
+                                                ModalType.MONITOR_SENSOR,
+                                                sensor
+                                            )}
                                         color="green">Monitor</Button
                                     >
                                 </TableBodyCell>
