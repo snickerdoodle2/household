@@ -78,3 +78,77 @@ func TestRuleGTProcessError(t *testing.T) {
 	}
 
 }
+
+func TestRuleAndDependency(t *testing.T) {
+	sensorId1 := uuid.New()
+	rulegt1 := rule.RuleGT{
+		SensorID: sensorId1,
+	}
+
+	sensorId2 := uuid.New()
+	rulegt2 := rule.RuleGT{
+		SensorID: sensorId2,
+	}
+
+	ids := []uuid.UUID{sensorId1, sensorId2}
+
+	ruleAnd := rule.RuleAnd{
+		Children: []rule.RuleInternal{&rulegt1, &rulegt2},
+	}
+
+	deps := ruleAnd.Dependencies()
+
+	for _, id := range ids {
+		if !slices.Contains(deps, id) {
+			t.Errorf("deps does not contain %q", id)
+		}
+	}
+}
+
+var AndTests = []struct {
+	in  []float64
+	out bool
+}{
+	{[]float64{7.5, 10}, true},
+	{[]float64{3.5, 10}, false},
+	{[]float64{2.5, 8}, false},
+}
+
+func TestRuleAndProcess(t *testing.T) {
+	sensorId1 := uuid.New()
+
+	rulegt1 := rule.RuleGT{
+		SensorID: sensorId1,
+		Value:    5,
+	}
+
+	sensorId2 := uuid.New()
+	rulegt2 := rule.RuleGT{
+		SensorID: sensorId2,
+		Value:    9,
+	}
+
+	ruleAnd := rule.RuleAnd{
+		Children: []rule.RuleInternal{&rulegt1, &rulegt2},
+	}
+
+	for _, test := range AndTests {
+		data := map[uuid.UUID]float64{
+			sensorId1: test.in[0],
+			sensorId2: test.in[1],
+		}
+
+		got, err := ruleAnd.Process(data)
+		if err != nil {
+			if err != nil {
+				t.Errorf("test case %v returned error", test.in)
+			}
+		}
+
+		if got != test.out {
+			t.Errorf("test case %f: wanted %t, got %t", test.in, test.out, got)
+		}
+
+	}
+
+}

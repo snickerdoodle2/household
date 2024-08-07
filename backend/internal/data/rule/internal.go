@@ -2,6 +2,7 @@ package rule
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -16,6 +17,39 @@ type RuleData map[uuid.UUID]float64
 type RuleInternal interface {
 	Process(data RuleData) (bool, error)
 	Dependencies() []uuid.UUID
+}
+
+type RuleAnd struct {
+	Children []RuleInternal
+}
+
+func (r *RuleAnd) Process(data RuleData) (bool, error) {
+	for _, child := range r.Children {
+		ret, err := child.Process(data)
+		if err != nil {
+			return false, err
+		}
+
+		if !ret {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func (r *RuleAnd) Dependencies() []uuid.UUID {
+	res := make([]uuid.UUID, len(r.Children))
+
+	for _, child := range r.Children {
+		for _, dep := range child.Dependencies() {
+			if !slices.Contains(res, dep) {
+				res = append(res, dep)
+			}
+		}
+	}
+
+	return res
 }
 
 type RuleGT struct {
