@@ -103,3 +103,22 @@ func (r *RuleGT) Process(data RuleData) (bool, error) {
 func (r *RuleGT) Dependencies() []uuid.UUID {
 	return []uuid.UUID{r.SensorID}
 }
+
+type RuleLT struct {
+	SensorID uuid.UUID
+	Value    float64
+}
+
+func (r *RuleLT) Process(data RuleData) (bool, error) {
+	val, ok := data[r.SensorID]
+
+	if !ok {
+		return false, ErrMissingVal
+	}
+
+	return val < r.Value, nil
+}
+
+func (r *RuleLT) Dependencies() []uuid.UUID {
+	return []uuid.UUID{r.SensorID}
+}

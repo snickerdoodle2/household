@@ -79,6 +79,76 @@ func TestRuleGTProcessError(t *testing.T) {
 
 }
 
+func TestRuleLTDependency(t *testing.T) {
+	sensorId := uuid.New()
+
+	rule := rule.RuleLT{
+		SensorID: sensorId,
+		Value:    10,
+	}
+
+	deps := rule.Dependencies()
+
+	if len(deps) != 1 {
+		t.Errorf("got %d, wanted 1", len(deps))
+	}
+
+	if !slices.Contains(deps, sensorId) {
+		t.Errorf("returned slice does not contain %q", sensorId)
+	}
+}
+
+var LTtests = []struct {
+	in  float64
+	out bool
+}{
+	{7.5, true},
+	{11, false},
+	{10, false},
+}
+
+func TestRuleLTProcess(t *testing.T) {
+	sensorId := uuid.New()
+
+	rule := rule.RuleLT{
+		SensorID: sensorId,
+		Value:    10,
+	}
+
+	for _, test := range LTtests {
+		data := map[uuid.UUID]float64{
+			sensorId: test.in,
+		}
+
+		got, err := rule.Process(data)
+		if err != nil {
+			t.Errorf("test case %f returned error", test.in)
+			continue
+		}
+
+		if got != test.out {
+			t.Errorf("test case %f: wanted %t, got %t", test.in, test.out, got)
+		}
+	}
+
+}
+
+func TestRuleLTProcessError(t *testing.T) {
+	sensorId := uuid.New()
+
+	rulegt := rule.RuleGT{
+		SensorID: sensorId,
+		Value:    10,
+	}
+
+	data := make(map[uuid.UUID]float64)
+
+	if _, err := rulegt.Process(data); !errors.Is(err, rule.ErrMissingVal) {
+		t.Errorf("wanted error, got %s", err.Error())
+	}
+
+}
+
 func TestRuleAndDependency(t *testing.T) {
 	sensorId1 := uuid.New()
 	rulegt1 := rule.RuleGT{
