@@ -2,11 +2,12 @@
     import '../app.css';
     import { ModeWatcher } from 'mode-watcher';
 
-    import Sidebar from '@/components/Sidebar.svelte';
+    import SensorPage from '@/components/MainPage.svelte';
 </script>
 
+
 <ModeWatcher />
-<div class="flex min-h-screen">
-    <Sidebar />
-    <slot />
+
+<div>
+    <SensorPage  />
 </div>

@@ -1,4 +1,4 @@
-import { getAllSensors } from '@/helpers/sensor';
+import { getAllSensors } from '@/helpers/requests/sensor';
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 

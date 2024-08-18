@@ -19,7 +19,7 @@
     import { openModal } from '@/stores/stores.utils';
     import { ModalType } from '@/types/modal';
     import MonitorSensorModal from './Modals/MonitorSensorModal.svelte';
-    import { getAllSensors } from '@/helpers/sensor';
+    import { getAllSensors } from '@/helpers/requests/sensor';
     import { SERVER_URL } from '@/const';
 
     let loading = true;
