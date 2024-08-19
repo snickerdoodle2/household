@@ -63,49 +63,51 @@
     };
 </script>
 
-<Modal {title} autoclose={false}>
-    <form on:submit={handleSubmit}>
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" id="name" bind:value={sensorData.name} />
-        </div>
-        <div>
-            <label for="uri">URI:</label>
-            <input
-                type="text"
-                id="uri"
-                bind:value={sensorData.uri}
-                class={isInvalidURI ? 'invalid' : ''}
-            />
-        </div>
-        <div class="row">
-            <div class="select-container {isInvalidType ? 'invalid' : ''}">
-                <Select.Root onSelectedChange={updateSelected}>
-                    <Select.Trigger class="max-w-96">
-                        <Select.Value placeholder="Select sensor type..." />
-                    </Select.Trigger>
-                    <Select.Content>
-                        {#each Object.values(SensorType) as sensor}
-                            <Select.Item value={sensor} label={sensor}>
-                                {sensor}
-                            </Select.Item>
-                        {/each}
-                    </Select.Content>
-                </Select.Root>
+<main>
+    <Modal {title} open={true} autoclose={false} on:close={closeModal}>
+        <form on:submit={handleSubmit}>
+            <div>
+                <label for="name">Name:</label>
+                <input type="text" id="name" bind:value={sensorData.name} />
             </div>
-            <div class="refresh-rate-container">
-                <label for="refreshRate">Refresh Rate:</label>
+            <div>
+                <label for="uri">URI:</label>
                 <input
-                    type="number"
-                    id="refreshRate"
-                    bind:value={sensorData.refresh_rate}
-                    class={isInvalidRefreshRate ? 'invalid' : ''}
+                    type="text"
+                    id="uri"
+                    bind:value={sensorData.uri}
+                    class={isInvalidURI ? 'invalid' : ''}
                 />
             </div>
-        </div>
-        <button type="submit">Submit</button>
-    </form>
-</Modal>
+            <div class="row">
+                <div class="select-container {isInvalidType ? 'invalid' : ''}">
+                    <Select.Root onSelectedChange={updateSelected}>
+                        <Select.Trigger class="max-w-96">
+                            <Select.Value placeholder="Select sensor type..." />
+                        </Select.Trigger>
+                        <Select.Content>
+                            {#each Object.values(SensorType) as sensor}
+                                <Select.Item value={sensor} label={sensor}>
+                                    {sensor}
+                                </Select.Item>
+                            {/each}
+                        </Select.Content>
+                    </Select.Root>
+                </div>
+                <div class="refresh-rate-container">
+                    <label for="refreshRate">Refresh Rate:</label>
+                    <input
+                        type="number"
+                        id="refreshRate"
+                        bind:value={sensorData.refresh_rate}
+                        class={isInvalidRefreshRate ? 'invalid' : ''}
+                    />
+                </div>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </Modal>
+</main>
 
 <style>
     form {

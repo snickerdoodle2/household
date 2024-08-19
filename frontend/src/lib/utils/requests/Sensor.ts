@@ -1,4 +1,5 @@
 import { SERVER_URL } from '@/config/const';
+import { sensorStore } from '@/stores/Stores';
 import type { Result } from '@/types/Result.types';
 import { SensorSchema, type Sensor } from '@/types/Sensor.types';
 import { z } from 'zod';
@@ -39,7 +40,6 @@ async function fetchSensors() {
         return;
     }
     sensorStore.set(response.data);
-    loading = false;
 }
 
 async function deleteDevice(id: Sensor['id']) {
