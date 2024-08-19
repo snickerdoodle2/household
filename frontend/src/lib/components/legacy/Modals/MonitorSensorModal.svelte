@@ -1,11 +1,11 @@
 <!-- src/routes/AddSensorForm.svelte -->
 <script lang="ts">
     import { Modal } from 'flowbite-svelte';
-    import { getWSUrl } from '@/const';
+    import { getWSUrl } from '@/config/const';
     import { onDestroy, } from 'svelte';
-    import { openedModalStore } from '@/stores/stores';
-    import { ModalType, isModalData } from '@/types/modal';
-    import type { Sensor } from '@/types/sensor';
+    import { openedModalStore } from '@/stores/Stores';
+    import { ModalType, isModalData } from '@/types/Modal.types';
+    import type { Sensor } from '@/types/Sensor.types';
 
     
     let socket: WebSocket | undefined = undefined;

@@ -1,6 +1,6 @@
 <script lang="ts">
     import * as Select from '$lib/components/ui/select';
-    import { getWSUrl } from '@/const';
+    import { getWSUrl } from '@/config/const';
     import type { Selected } from 'bits-ui';
     import { onDestroy } from 'svelte';
     import type { PageData } from './$types';

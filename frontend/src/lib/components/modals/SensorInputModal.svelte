@@ -1,13 +1,12 @@
 <!-- src/routes/AddSensorForm.svelte -->
 <script lang="ts">
     import * as Select from '$lib/components/ui/select';
-    import { closeModal } from '@/utils/Store.utils';
     import { SensorType, type SensorData } from '@/types/Sensor.types';
+    import { closeModal } from '@/utils/Modal.utils';
     import type { Selected } from 'bits-ui';
     import { Modal } from 'flowbite-svelte';
 
     export let title = '';
-    export let open = false;
     export let sensorData: SensorData = {
         name: '',
         uri: '',
@@ -64,7 +63,7 @@
     };
 </script>
 
-<Modal {title} autoclose={false} bind:open>
+<Modal {title} autoclose={false}>
     <form on:submit={handleSubmit}>
         <div>
             <label for="name">Name:</label>

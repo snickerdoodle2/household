@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { SensorType, type Sensor } from '@/types/sensor';
+    import { SensorType, type Sensor } from '@/types/Sensor.types';
     import { onMount } from 'svelte';
     import {
         Table,
@@ -13,14 +13,14 @@
         Dropdown,
         Checkbox,
     } from 'flowbite-svelte';
-    import { sensorStore } from '@/stores/stores';
+    import { sensorStore } from '@/stores/Stores';
     import AddSensorModal from './Modals/AddSensorModal.svelte';
     import ModifySensorModal from './Modals/ModifySensorModal.svelte';
-    import { openModal } from '@/stores/stores.utils';
-    import { ModalType } from '@/types/modal';
+    import { ModalType } from '@/types/Modal.types';
     import MonitorSensorModal from './Modals/MonitorSensorModal.svelte';
-    import { getAllSensors } from '@/helpers/requests/sensor';
-    import { SERVER_URL } from '@/const';
+    import { getAllSensors } from '@/utils/requests/Sensor';
+    import { SERVER_URL } from '@/config/const';
+    import { openModal } from '@/utils/Modal.utils';
 
     let loading = true;
     let error: string | null = null;

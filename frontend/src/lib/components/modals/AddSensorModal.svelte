@@ -2,17 +2,12 @@
 <script lang="ts">
     import type { SensorData } from '@/types/Sensor.types';
     import SensorInputModal from './SensorInputModal.svelte';
-    import { ModalType, isModalData } from '@/types/Modal.types';
+    import { ModalType } from '@/types/Modal.types';
     import { openedModalStore } from '@/stores/Stores';
     import { SERVER_URL } from '@/config/const';
+    import { isModalData } from '@/utils/Modal.utils';
 
     export let onClose: () => Promise<void> = async () => {};
-
-    let open = false;
-
-    openedModalStore.subscribe((value) => {
-        open = isModalData(ModalType.ADD_SENSOR, value);
-    });
 
     async function addSensor({ name, uri, type, refresh_rate }: SensorData) {
         try {
@@ -53,7 +48,7 @@
 
 <main>
     {#if isModalData(ModalType.ADD_SENSOR, $openedModalStore)}
-        <SensorInputModal title={'Add New Device'} onSubmit={addSensor} bind:open />
+        <SensorInputModal title={'Add New Device'} onSubmit={addSensor}/>
     {/if}
 </main>
 

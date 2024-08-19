@@ -1,4 +1,6 @@
 <script>
+    import { ModalType } from '@/types/Modal.types';
+    import { openModal } from '@/utils/Modal.utils';
     import {
         Button,
         Dropdown,
@@ -58,7 +60,7 @@
             </div>
 
             <Button
-                on:click={() => console.log('lol')}
+                on:click={() => openModal(ModalType.ADD_SENSOR, undefined)}
                 class="bg-secondary rounded-lg"
             >
                 <DotsHorizontal

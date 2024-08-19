@@ -1,10 +1,10 @@
 <!-- src/routes/AddSensorForm.svelte -->
 <script lang="ts">
-    import type { SensorData } from '@/types/sensor';
+    import type { SensorData } from '@/types/Sensor.types';
     import SensorInputModal from './SensorInputModal.svelte';
-    import { openedModalStore } from '@/stores/stores';
-    import { ModalType, isModalData } from '@/types/modal';
-    import { SERVER_URL } from '@/const';
+    import { openedModalStore } from '@/stores/Stores';
+    import { ModalType, isModalData } from '@/types/Modal.types';
+    import { SERVER_URL } from '@/config/const';
 
     let open = false;
     let id: string = '';
