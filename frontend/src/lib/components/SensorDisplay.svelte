@@ -17,11 +17,11 @@
 
 <main>
     <div
-        class="flex items-center justify-between bg-black w-full h-0.3 rounded-lg p-2"
+        class="card flex items-center justify-between h-24 p-5 w-full  rounded-lg p-2"
     >
         <div class="flex flex-nowrap flex-row space-x-4 overflow-x-auto">
             {#each categories as category}
-                <Button class="bg-secondary rounded-lg">
+                <Button class="btn-primary rounded-lg text-2xl ">
                     {category}
                 </Button>
             {/each}
@@ -29,19 +29,19 @@
 
         <Button
             on:click={() => openModal(ModalType.ADD_SENSOR, undefined)}
-            class="bg-secondary rounded-lg"
+            class="btn-primary rounded-lg"
         >
             <DotsHorizontal class="w-6 h-6 mr-2 text-white dark:text-white" />
         </Button>
     </div>
 
     {#each $sensorStore as sensor}
-        <div class="flex flex-wrap overflow-y-auto p-2">
-            <button class="flex px-3 py-4 bg-black rounded-full">
-                <p class="text-4xl">🌐</p>
+        <div class="flex flex-wrap overflow-y-auto p-8">
+            <button class="btn-secondary flex px-8 py-6 rounded-full">
+                <p class="text-5xl">🌐</p>
                 <div class="flex flex-col px-2">
-                    <p class="text-md">{sensor.name}</p>
-                    <p class="text-sm">
+                    <p class="text-2xl">{sensor.name}</p>
+                    <p class="text-md">
                         {$sensorValueMap.find(
                             (sensorValue) => sensorValue.id === sensor.id
                         )?.val ?? '---'}

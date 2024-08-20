@@ -26,12 +26,12 @@
     });
 </script>
 
-<main class="bg-primary px-[2.5vw] py-[2.5vh]">
-    <div class="bg-card flex rounded-lg h-[10vh] md-[2.5vh] p-10">
+<main class="bg-background text-foreground px-[2.5vw] py-[2.5vh]">
+    <div class="card-muted flex rounded-lg h-[10vh] md-[2.5vh] p-10">
         <div class="flex items-center">
             <button id="list-outline">
                 <ListOutline
-                    class="w-12 h-12 mr-2 text-white dark:text-white"
+                    class="w-12 h-12 mr-2 text-foreground"
                 />
             </button>
             <span class="font-semibold text-3xl">Nazwa Naszego Systemu</span>
@@ -50,7 +50,7 @@
         </Dropdown>
     </div>
 
-    <div class="bg-card rounded-lg h-[80vh] my-[2.5vw]">
+    <div class="card-muted p-0 rounded-lg h-[80vh] my-[2.5vw]">
         {#if $currentPageStore === PageType.SENSOR}
             <SensorDisplay />
         {/if}
