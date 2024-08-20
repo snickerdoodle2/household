@@ -1,15 +1,35 @@
 <script lang="ts">
     import { currentPageStore } from '@/stores/Stores';
     import { PageType } from '@/types/Page.types';
-    import { Dropdown, DropdownItem, Navbar, NavBrand } from 'flowbite-svelte';
-    import { ChevronDownOutline, ListOutline } from 'flowbite-svelte-icons';
+    import { ListOutline } from 'flowbite-svelte-icons';
     import SensorDisplay from './SensorDisplay.svelte';
     import { onDestroy, onMount } from 'svelte';
     import { initializeSensorData, syncSensorValues } from '@/utils/Sync.utils';
     import { SENSOR_VALUE_INTERVAL } from '@/config/const';
-    import Button from './ui/button/button.svelte';
+    import { Dropdown, DropdownItem } from 'flowbite-svelte';
+    import MyDropdown from './generic/MyDropdown.svelte';
 
     let syncInterval: number;
+    let dropDown = {
+        open: false,
+        trigger: null as HTMLButtonElement | null,
+    };
+
+    const dropDownMenuConfig = [
+        { text: 'See Rules', callback: () => console.log('See Rules clicked') },
+        {
+            text: 'Set Server URL',
+            callback: () => console.log('Set Server URL clicked'),
+        },
+        {
+            text: 'Do ---- nothing',
+            callback: () => console.log('Do ---- nothing clicked'),
+        },
+        {
+            text: 'just --------- placeholder',
+            callback: () => console.log('Placeholder clicked'),
+        },
+    ];
 
     onMount(() => {
         // Initialization
@@ -29,25 +49,25 @@
 <main class="bg-background text-foreground px-[2.5vw] py-[2.5vh]">
     <div class="card-muted flex rounded-lg h-[10vh] md-[2.5vh] p-10">
         <div class="flex items-center">
-            <button id="list-outline">
-                <ListOutline
-                    class="w-12 h-12 mr-2 text-foreground"
-                />
+            <button
+                id="list-outline"
+                bind:this={dropDown.trigger}
+                on:click={() => (dropDown.open = !dropDown.open)}
+            >
+                <ListOutline class="w-12 h-12 mr-2 text-foreground" />
             </button>
             <span class="font-semibold text-3xl">Nazwa Naszego Systemu</span>
         </div>
 
-        <Dropdown
-            triggeredBy="#list-outline"
-            placement="bottom"
-            class="bg-popover rounded-lg"
-        >
-            {#each ['See Rules', 'Set Server URL', 'Do ---- nothing', 'just --------- placeholder'] as option}
-                <DropdownItem>
-                    <p class="text-xl">{option}</p>
-                </DropdownItem>
-            {/each}
-        </Dropdown>
+        <div class="absolute mt-8">
+            <MyDropdown
+                optionsWithCallbacks={dropDownMenuConfig}
+                triggerButtonRef={dropDown.trigger}
+                isOpen={dropDown.open}
+            ></MyDropdown>
+        </div>
+
+        <p>{dropDown.open}</p>
     </div>
 
     <div class="card-muted p-0 rounded-lg h-[80vh] my-[2.5vw]">
