@@ -1,6 +1,6 @@
 <script lang="ts">
     import { SensorType, type Sensor } from '@/types/Sensor.types';
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import {
         Table,
         TableHead,
@@ -24,18 +24,6 @@
 
     let loading = true;
     let error: string | null = null;
-
-    async function fetchSensors() {
-        const response = await getAllSensors(fetch);
-        if (response.isError) {
-            console.error('Failed to fetch sensors!', response.error);
-            return;
-        }
-        sensorStore.set(response.data);
-        loading = false;
-    }
-
-    onMount(fetchSensors);
 
     const sensorVisibility = {
         [SensorType.BINARY_SENSOR]: true,

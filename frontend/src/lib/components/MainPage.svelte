@@ -1,24 +1,28 @@
-<script>
-    import { ModalType } from '@/types/Modal.types';
-    import { openModal } from '@/utils/Modal.utils';
-    import {
-        Button,
-        Dropdown,
-        DropdownItem,
-        Navbar,
-        NavBrand,
-    } from 'flowbite-svelte';
+<script lang="ts">
+    import { currentPageStore } from '@/stores/Stores';
+    import { PageType } from '@/types/Page.types';
+    import { Dropdown, DropdownItem, Navbar, NavBrand } from 'flowbite-svelte';
     import { ListOutline } from 'flowbite-svelte-icons';
-    import { DotsHorizontal } from 'radix-icons-svelte';
+    import SensorDisplay from './SensorDisplay.svelte';
+    import { onDestroy, onMount } from 'svelte';
+    import { initializeSensorData, syncSensorValues } from '@/utils/Sync.utils';
+    import { SENSOR_VALUE_INTERVAL } from '@/config/const';
 
-    const categories = [
-        'Kitchen',
-        'Living Room',
-        'Bedroom',
-        'Bathroom',
-        'Garage',
-        'Garden',
-    ];
+    let syncInterval: number;
+
+    onMount(() => {
+        // Initialization
+        initializeSensorData()
+
+        // Sync interval
+        syncInterval = setInterval(() => {
+            syncSensorValues();
+        }, SENSOR_VALUE_INTERVAL.toMilliseconds());
+    });
+
+    onDestroy(() => {
+        clearInterval(syncInterval);
+    });
 </script>
 
 <main class="bg-primary px-[2.5vw] py-[2.5vh]">
@@ -48,37 +52,8 @@
     </Navbar>
 
     <div class="bg-card rounded-lg h-[80vh] my-[2.5vw]">
-        <div
-            class="flex items-center justify-between bg-black w-full h-0.3 rounded-lg p-2"
-        >
-            <div class="flex flex-nowrap flex-row space-x-4 overflow-x-auto">
-                {#each categories as category}
-                    <Button class="bg-secondary rounded-lg">
-                        {category}
-                    </Button>
-                {/each}
-            </div>
-
-            <Button
-                on:click={() => openModal(ModalType.ADD_SENSOR, undefined)}
-                class="bg-secondary rounded-lg"
-            >
-                <DotsHorizontal
-                    class="w-6 h-6 mr-2 text-white dark:text-white"
-                />
-            </Button>
-        </div>
-
-        <div class="flex flex-wrap overflow-y-auto p-2">
-
-            <button class="flex px-3 py-4 bg-black rounded-full">
-                <p class="text-4xl">🌐</p> 
-                <div class="flex flex-col px-2">
-                    <p class="text-md">Termometr przy oknie</p>
-                    <p class="text-sm">25🌡️</p>
-                </div>
-            </button>
-            <!-- <h1 class="text-4xl font-bold text-white">Sensor Page</h1> -->
-        </div>
+        {#if $currentPageStore === PageType.SENSOR}
+            <SensorDisplay />
+        {/if}
     </div>
 </main>
