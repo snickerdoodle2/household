@@ -1,11 +1,13 @@
 import { sensorStore, sensorValueMap as sensorValues } from '@/stores/Stores';
-import { getAllSensors, getSensorData } from './requests/Sensor';
+import { getAllSensors, getSensorData } from './requests/Sensor.requests';
 import { get } from 'svelte/store';
 import type { Sensor } from '@/types/Sensor.types';
+import { syncCategories } from './requests/Categories.requests';
 
-export async function initializeSensorData() {
+export async function initializeStores() {
     await syncSensorConfig();
     await syncSensorValues();
+    await syncCategories();
     console.log('Sensor data initialized!');
 }
 
@@ -20,7 +22,7 @@ export async function syncSensorConfig() {
 }
 
 export async function syncSensorValues() {
-    const values: {id: Sensor['id']; val: number}[] = [];
+    const values: { id: Sensor['id']; val: number }[] = [];
     for (const sensor of get(sensorStore)) {
         const value = await getSensorData(sensor.id);
         values.push({ id: sensor.id, val: value });

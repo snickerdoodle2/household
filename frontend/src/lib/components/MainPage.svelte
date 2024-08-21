@@ -4,7 +4,7 @@
     import { ListOutline } from 'flowbite-svelte-icons';
     import SensorDisplay from './SensorDisplay.svelte';
     import { onDestroy, onMount } from 'svelte';
-    import { initializeSensorData, syncSensorValues } from '@/utils/Sync.utils';
+    import { initializeStores, syncSensorValues } from '@/utils/Sync.utils';
     import { SENSOR_VALUE_INTERVAL } from '@/config/const';
     import { Dropdown, DropdownItem } from 'flowbite-svelte';
     import MyDropdown from './generic/MyDropdown.svelte';
@@ -33,7 +33,7 @@
 
     onMount(() => {
         // Initialization
-        initializeSensorData();
+        initializeStores();
 
         // Sync interval
         syncInterval = setInterval(() => {
@@ -63,11 +63,9 @@
             <MyDropdown
                 optionsWithCallbacks={dropDownMenuConfig}
                 triggerButtonRef={dropDown.trigger}
-                isOpen={dropDown.open}
+                bind:isOpen={dropDown.open}
             ></MyDropdown>
         </div>
-
-        <p>{dropDown.open}</p>
     </div>
 
     <div class="card-muted p-0 rounded-lg h-[80vh] my-[2.5vw]">

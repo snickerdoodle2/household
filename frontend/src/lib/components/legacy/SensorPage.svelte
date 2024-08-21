@@ -18,7 +18,7 @@
     import ModifySensorModal from './Modals/ModifySensorModal.svelte';
     import { ModalType } from '@/types/Modal.types';
     import MonitorSensorModal from './Modals/MonitorSensorModal.svelte';
-    import { getAllSensors } from '@/utils/requests/Sensor';
+    import { getAllSensors } from '@/utils/requests/Sensor.requests';
     import { SERVER_URL } from '@/config/const';
     import { openModal } from '@/utils/Modal.utils';
 

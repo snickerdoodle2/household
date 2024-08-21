@@ -1,38 +1,50 @@
-<script>
+<script lang="ts">
     import { ModalType } from '@/types/Modal.types';
     import { openModal } from '@/utils/Modal.utils';
     import { DotsHorizontal } from 'radix-icons-svelte';
-    import { Button } from 'flowbite-svelte';
-    import { sensorStore, sensorValueMap } from '@/stores/Stores';
+    import { categoryStore, sensorStore, sensorValueMap } from '@/stores/Stores';
+    import MyDropdown from './generic/MyDropdown.svelte';
 
-    const categories = [
-        'Kitchen',
-        'Living Room',
-        'Bedroom',
-        'Bathroom',
-        'Garage',
-        'Garden',
-    ];
+    const dropDown = {
+        triggerRef: null as HTMLButtonElement | null,
+        isOpen: false,
+        menuConfig: [
+            { text: 'Add Sensor', callback: () => openModal(ModalType.ADD_SENSOR, undefined) },
+            {
+                text: 'Add Category',
+                callback: () => console.log('open add category modal'),
+            },
+        ],
+    };
 </script>
 
 <main>
-    <div
-        class="card flex items-center justify-between h-24 p-5 w-full  rounded-lg p-2"
-    >
+    <div class="card flex items-center justify-between h-24 p-5 w-full rounded-lg p-2">
         <div class="flex flex-nowrap flex-row space-x-4 overflow-x-auto">
-            {#each categories as category}
-                <Button class="btn-primary rounded-lg text-2xl ">
+            {#each $categoryStore as category}
+                <button class="btn-primary text-2xl">
                     {category}
-                </Button>
+                </button>
             {/each}
         </div>
 
-        <Button
-            on:click={() => openModal(ModalType.ADD_SENSOR, undefined)}
-            class="btn-primary rounded-lg"
-        >
-            <DotsHorizontal class="w-6 h-6 mr-2 text-white dark:text-white" />
-        </Button>
+        <div>
+            <button
+                on:click={() => (dropDown.isOpen = !dropDown.isOpen)}
+                bind:this={dropDown.triggerRef}
+                class="btn-primary"
+            >
+                <DotsHorizontal class="w-6 h-6 mr-2 text-white dark:text-white" />
+            </button>
+
+            <div class="absolute right-0">
+                <MyDropdown
+                    bind:isOpen={dropDown.isOpen}
+                    optionsWithCallbacks={dropDown.menuConfig}
+                    triggerButtonRef={dropDown.triggerRef}
+                />
+            </div>
+        </div>
     </div>
 
     {#each $sensorStore as sensor}
@@ -42,9 +54,8 @@
                 <div class="flex flex-col px-2">
                     <p class="text-2xl">{sensor.name}</p>
                     <p class="text-md">
-                        {$sensorValueMap.find(
-                            (sensorValue) => sensorValue.id === sensor.id
-                        )?.val ?? '---'}
+                        {$sensorValueMap.find((sensorValue) => sensorValue.id === sensor.id)?.val ??
+                            '---'}
                     </p>
                 </div>
             </button>
