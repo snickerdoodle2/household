@@ -42,6 +42,21 @@ const config = {
                     },
                 },
 
+                // Submit Button
+                '.btn-submit': {
+                    backgroundColor: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    borderRadius: 'var(--radius)',
+                    padding: '0.5rem 1rem',
+                    textAlign: 'center',
+                    display: 'inline-block',
+                    fontWeight: '600',
+                    transition: 'background-color 0.3s ease',
+                    '&:hover': {
+                        backgroundColor: 'hsl(var(--primary-hover))',
+                    },
+                },
+
                 // Card
                 '.card': {
                     backgroundColor: 'hsl(var(--card))',
@@ -109,6 +124,35 @@ const config = {
                     '&[disabled]': {
                         backgroundColor: 'hsl(var(--muted))',
                         color: 'hsl(var(--muted-foreground))',
+                        cursor: 'not-allowed',
+                    },
+                },
+                // Exit Button
+                '.btn-exit': {
+                    backgroundColor: 'hsl(var(--background))',
+                    color: 'hsl(var(--error))',
+                    border: '1px solid hsl(var(--error))',
+                    borderRadius: 'var(--radius)',
+                    padding: '0.5rem 1rem',
+                    textAlign: 'center',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: '600',
+                    transition:
+                        'color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease',
+                    '&:hover': {
+                        backgroundColor: 'hsl(var(--error) / 0.1)',
+                        color: 'hsl(var(--error) / 0.8)',
+                    },
+                    '&:focus': {
+                        outline: 'none',
+                        boxShadow: '0 0 0 2px hsl(var(--error) / 0.5)',
+                    },
+                    '&:disabled': {
+                        backgroundColor: 'hsl(var(--muted))',
+                        color: 'hsl(var(--muted-foreground))',
+                        borderColor: 'hsl(var(--muted))',
                         cursor: 'not-allowed',
                     },
                 },

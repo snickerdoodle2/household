@@ -1,3 +1,4 @@
+<!-- src/routes/AddCategoryModal.svelte -->
 <script lang="ts">
     import { closeModal } from '@/utils/Modal.utils';
     import { submitNewCategory } from '@/utils/requests/Categories.requests';
@@ -34,20 +35,28 @@
     }
 </script>
 
-<main>
-    <p class="text-primary-foreground text-2xl font-bold justify-center">Add new category</p>
-    <div class="card flex flex-col p-4">
-        <div class="flex items-center">
+<main class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="card bg-background p-6 max-w-sm w-full relative">
+        <!-- Close button -->
+        <button type="button" class="btn-exit absolute top-2 right-2" on:click={closeModal}>
+            &times;
+        </button>
+
+        <p class="text-2xl font-bold mb-4">Add new category</p>
+
+        <div class="flex flex-col space-y-4">
             <input
                 type="text"
-                class="input-field mr-2"
+                class="input-field w-full"
                 placeholder="Enter your category name here"
                 bind:value={category}
             />
-            <button class="btn-primary" on:click={submit}>Submit</button>
+            {#if errorMessage}
+                <p class="text-error mt-2">{errorMessage}</p>
+            {/if}
+            <div class="flex justify-end gap-2">
+                <button class="btn-primary" on:click={submit}>Submit</button>
+            </div>
         </div>
-        {#if errorMessage}
-            <p class="text-error mt-2">{errorMessage}</p>
-        {/if}
     </div>
 </main>

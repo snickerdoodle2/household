@@ -1,6 +1,7 @@
 import { categoryStore } from '@/stores/Stores';
 import type { Result } from '@/types/Result.types';
 import { get } from 'svelte/store';
+import { validateName } from '../Misc.utils';
 
 export async function syncCategories() {
     categoryStore.set(['Kitchen', 'Living Room', 'Bedroom', 'Bathroom', 'Garage', 'Garden']); // temporary for now
@@ -11,22 +12,8 @@ export async function submitNewCategory(newCategory: string): Promise<Result<str
     const trimmedCategory = newCategory.trim();
 
     // Validate the new category
-    const isValidCategory = /^[A-Za-z]+$/.test(trimmedCategory);
-    const isValidLength = trimmedCategory.length >= 3 && trimmedCategory.length <= 15;
-
-    if (!isValidCategory) {
-        return {
-            isError: true,
-            error: 'Category name must be a single word containing only letters.',
-        };
-    }
-
-    if (!isValidLength) {
-        return {
-            isError: true,
-            error: 'Category name must be between 3 and 15 letters long.',
-        };
-    }
+    const result = validateName(newCategory);
+    if (result.isError) return result;
 
     // Get the current categories from the store
     const currentCategories = get(categoryStore);

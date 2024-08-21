@@ -2,9 +2,9 @@
 <script lang="ts">
     import * as Select from '$lib/components/ui/select';
     import { SensorType, type SensorData } from '@/types/Sensor.types';
+    import { validateName } from '@/utils/Misc.utils';
     import { closeModal } from '@/utils/Modal.utils';
     import type { Selected } from 'bits-ui';
-    import { Modal } from 'flowbite-svelte';
 
     export let title = '';
     export let sensorData: SensorData = {
@@ -16,6 +16,7 @@
 
     export let onSubmit: (data: SensorData) => Promise<void>;
 
+    let isInvalidName: boolean = false;
     let isInvalidType: boolean = false;
     let isInvalidURI: boolean = false;
     let isInvalidRefreshRate: boolean = false;
@@ -31,6 +32,13 @@
         let isInvalid = false;
         const uriRegex =
             /^(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?):([1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d|655[0-2]\d|6553[0-5])$/;
+
+        if (validateName(sensorData.name).isError) {
+            isInvalidName = true;
+            isInvalid = true;
+        } else {
+            isInvalidName = false;
+        }
 
         if (sensorData.type === '') {
             isInvalidType = true;
@@ -64,94 +72,70 @@
 </script>
 
 <main>
-    <Modal {title} open={true} autoclose={false} on:close={closeModal}>
-        <form on:submit={handleSubmit}>
-            <div>
-                <label for="name">Name:</label>
-                <input type="text" id="name" bind:value={sensorData.name} />
-            </div>
-            <div>
-                <label for="uri">URI:</label>
-                <input
-                    type="text"
-                    id="uri"
-                    bind:value={sensorData.uri}
-                    class={isInvalidURI ? 'invalid' : ''}
-                />
-            </div>
-            <div class="row">
-                <div class="select-container {isInvalidType ? 'invalid' : ''}">
-                    <Select.Root onSelectedChange={updateSelected}>
-                        <Select.Trigger class="max-w-96">
-                            <Select.Value placeholder="Select sensor type..." />
-                        </Select.Trigger>
-                        <Select.Content>
-                            {#each Object.values(SensorType) as sensor}
-                                <Select.Item value={sensor} label={sensor}>
-                                    {sensor}
-                                </Select.Item>
-                            {/each}
-                        </Select.Content>
-                    </Select.Root>
-                </div>
-                <div class="refresh-rate-container">
-                    <label for="refreshRate">Refresh Rate:</label>
+    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+            <button type="button" class="absolute top-2 right-2 btn-exit" on:click={closeModal}>
+                &times;
+            </button>
+            <h2 class="text-2xl font-bold mb-4">{title}</h2>
+            <form on:submit={handleSubmit} class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium mb-1">Name:</label>
                     <input
-                        type="number"
-                        id="refreshRate"
-                        bind:value={sensorData.refresh_rate}
-                        class={isInvalidRefreshRate ? 'invalid' : ''}
+                        type="text"
+                        id="name"
+                        bind:value={sensorData.name}
+                        class={`input-field w-full ${isInvalidName ? 'border-red-500' : ''}`}
                     />
                 </div>
-            </div>
-            <button type="submit">Submit</button>
-        </form>
-    </Modal>
+                <div>
+                    <label for="uri" class="block text-sm font-medium mb-1">URI:</label>
+                    <input
+                        type="text"
+                        id="uri"
+                        bind:value={sensorData.uri}
+                        class={`input-field w-full ${isInvalidURI ? 'border-red-500' : ''}`}
+                    />
+                </div>
+                <div class="flex gap-4">
+                    <div class={`w-3/4 ${isInvalidType ? 'border-red-500' : ''}`}>
+                        <label class="block text-sm font-medium mb-1">Sensor Type:</label>
+                        <Select.Root onSelectedChange={updateSelected}>
+                            <Select.Trigger class="input-field w-full">
+                                <Select.Value placeholder="Select sensor type..." />
+                            </Select.Trigger>
+                            <Select.Content>
+                                {#each Object.values(SensorType) as sensor}
+                                    <Select.Item value={sensor} label={sensor}>
+                                        {sensor}
+                                    </Select.Item>
+                                {/each}
+                            </Select.Content>
+                        </Select.Root>
+                    </div>
+                    <div class="w-1/4">
+                        <label for="refreshRate" class="block text-sm font-medium mb-1"
+                            >Refresh Rate:</label
+                        >
+                        <input
+                            type="number"
+                            id="refreshRate"
+                            bind:value={sensorData.refresh_rate}
+                            class={`input-field w-full ${isInvalidRefreshRate ? 'border-red-500' : ''}`}
+                        />
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit w-full">Submit</button>
+            </form>
+        </div>
+    </div>
 </main>
 
 <style>
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 1em;
-    }
-    .row {
-        display: flex;
-        gap: 1em;
-        align-items: flex-end;
-        flex-flow: nowrap;
-    }
-    .select-container {
-        width: 75%;
-    }
-    .refresh-rate-container {
-        width: 25%;
-    }
     .invalid {
         border-color: red;
         border-style: solid;
         border-width: 2px;
-        border-radius: 5px;
-    }
-    div {
-        display: flex;
-        flex-direction: column;
-    }
-    label {
-        margin-bottom: 0.5em;
-    }
-    input {
-        padding: 0.5em;
-        font-size: 1em;
-    }
-    button {
-        align-self: center;
-        border-style: solid;
-        border-width: 2px;
-        border-color: white;
-        border-radius: 5px;
-        padding: 0.5em 1em;
-        font-size: 1em;
-        cursor: pointer;
+        border-radius: var(--radius);
     }
 </style>
