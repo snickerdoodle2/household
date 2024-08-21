@@ -7,6 +7,7 @@
     import AddSensorModal from '@/components/modals/AddSensorModal.svelte';
     import SensorInputModal from '@/components/modals/SensorInputModal.svelte';
     import { Modal } from 'flowbite-svelte';
+    import AddCategoryModal from '@/components/modals/AddCategoryModal.svelte';
 </script>
 
 <main>
@@ -15,16 +16,23 @@
     </div>
 
     {#if $openedModalStore}
-        <div class="absolute top-0 left-0 w-full h-full">
-            <div class="flex items-center">
-                <svelte:component
-                    this={svelteModalMap[$openedModalStore.type]}
-                />
-            </div>
+        <div class="container">
+            <svelte:component this={svelteModalMap[$openedModalStore.type]} />
         </div>
     {/if}
-    <Modal>
-        <p>wtf</p>
-        <p>wtf</p>
-    </Modal>
 </main>
+
+<style>
+    .container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center; /* Vertically center the content */
+        justify-content: center; /* Horizontally center the content */
+        background-color: rgba(0, 0, 0, 0.7);
+        transition: 0.2;
+    }
+</style>

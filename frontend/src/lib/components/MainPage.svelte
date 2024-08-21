@@ -6,7 +6,6 @@
     import { onDestroy, onMount } from 'svelte';
     import { initializeStores, syncSensorValues } from '@/utils/Sync.utils';
     import { SENSOR_VALUE_INTERVAL } from '@/config/const';
-    import { Dropdown, DropdownItem } from 'flowbite-svelte';
     import MyDropdown from './generic/MyDropdown.svelte';
 
     let syncInterval: number;

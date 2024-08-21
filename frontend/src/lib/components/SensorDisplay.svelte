@@ -10,10 +10,7 @@
         isOpen: false,
         menuConfig: [
             { text: 'Add Sensor', callback: () => openModal(ModalType.ADD_SENSOR, undefined) },
-            {
-                text: 'Add Category',
-                callback: () => console.log('open add category modal'),
-            },
+            { text: 'Add Category', callback: () => openModal(ModalType.ADD_CATEGORY, undefined) },
         ],
     };
 </script>

@@ -10,13 +10,21 @@ export async function submitNewCategory(newCategory: string): Promise<Result<str
     // Trim the new category
     const trimmedCategory = newCategory.trim();
 
-    // Validate the new category - it must contain only letters and be a single word
+    // Validate the new category
     const isValidCategory = /^[A-Za-z]+$/.test(trimmedCategory);
+    const isValidLength = trimmedCategory.length >= 3 && trimmedCategory.length <= 15;
 
     if (!isValidCategory) {
         return {
             isError: true,
             error: 'Category name must be a single word containing only letters.',
+        };
+    }
+
+    if (!isValidLength) {
+        return {
+            isError: true,
+            error: 'Category name must be between 3 and 15 letters long.',
         };
     }
 

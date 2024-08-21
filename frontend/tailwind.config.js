@@ -83,6 +83,35 @@ const config = {
                         backgroundColor: 'hsl(var(--destructive-hover))',
                     },
                 },
+                // Input Field
+                '.input-field': {
+                    backgroundColor: 'hsl(var(--input))',
+                    color: 'hsl(var(--foreground))',
+                    borderRadius: 'var(--radius)',
+                    padding: '0.5rem 1rem',
+                    border: '1px solid hsl(var(--border))',
+                    transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+                    width: '100%',
+                    fontSize: '1rem',
+                    lineHeight: '1.5',
+                    '&:focus': {
+                        borderColor: 'hsl(var(--primary))',
+                        boxShadow: '0 0 0 3px hsl(var(--primary) / 0.5)',
+                        outline: 'none',
+                    },
+                    '&:hover': {
+                        borderColor: 'hsl(var(--primary-hover))',
+                    },
+                    '&::placeholder': {
+                        color: 'hsl(var(--muted-foreground))',
+                        opacity: '0.7',
+                    },
+                    '&[disabled]': {
+                        backgroundColor: 'hsl(var(--muted))',
+                        color: 'hsl(var(--muted-foreground))',
+                        cursor: 'not-allowed',
+                    },
+                },
             });
         },
     ],
@@ -100,23 +129,21 @@ const config = {
                 border: 'hsl(var(--border) / <alpha-value>)',
                 input: 'hsl(var(--input) / <alpha-value>)',
                 ring: 'hsl(var(--ring) / <alpha-value>)',
+                error: 'hsl(var(--error) / <alpha-value>)',
                 background: 'hsl(var(--background) / <alpha-value>)',
                 foreground: 'hsl(var(--foreground) / <alpha-value>)',
                 primary: {
                     DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
                     hover: 'hsl(var(--primary-hover))',
-                    foreground:
-                        'hsl(var(--primary-foreground) / <alpha-value>)',
+                    foreground: 'hsl(var(--primary-foreground) / <alpha-value>)',
                 },
                 secondary: {
                     DEFAULT: 'hsl(var(--secondary) / <alpha-value>)',
-                    foreground:
-                        'hsl(var(--secondary-foreground) / <alpha-value>)',
+                    foreground: 'hsl(var(--secondary-foreground) / <alpha-value>)',
                 },
                 destructive: {
                     DEFAULT: 'hsl(var(--destructive) / <alpha-value>)',
-                    foreground:
-                        'hsl(var(--destructive-foreground) / <alpha-value>)',
+                    foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)',
                 },
                 muted: {
                     DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
@@ -128,8 +155,7 @@ const config = {
                 },
                 popover: {
                     DEFAULT: 'hsl(var(--popover) / <alpha-value>)',
-                    foreground:
-                        'hsl(var(--popover-foreground) / <alpha-value>)',
+                    foreground: 'hsl(var(--popover-foreground) / <alpha-value>)',
                 },
                 card: {
                     DEFAULT: 'hsl(var(--card) / <alpha-value>)',
