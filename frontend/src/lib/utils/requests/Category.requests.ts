@@ -62,3 +62,31 @@ export async function submitCategoryModification(
         data: newName,
     };
 }
+
+export async function submitCategoryDeletion(
+    categoryToDelete: string
+): Promise<Result<string, string>> {
+    // Get the current categories from the store
+    const categories = get(categoryStore);
+
+    // Check if the category exists
+    const categoryIndex = categories.indexOf(categoryToDelete);
+    if (categoryIndex === -1) {
+        return {
+            isError: true,
+            error: 'Category does not exist.',
+        };
+    }
+
+    // Remove the category from the store
+    categoryStore.update((categories) => {
+        categories.splice(categoryIndex, 1);
+        return [...categories];
+    });
+
+    // Return success result with the deleted category name
+    return {
+        isError: false,
+        data: categoryToDelete,
+    };
+}

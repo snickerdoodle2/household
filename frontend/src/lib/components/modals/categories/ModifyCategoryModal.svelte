@@ -6,17 +6,20 @@
     import { ModalType } from '@/types/Modal.types';
     import { closeModal, isModalData } from '@/utils/Modal.utils';
     let storeData = get(openedModalStore);
-    let modifiedCategory = undefined as string | undefined;
+    let modifiedCategory = getModifiedCategory();
 
-    if (storeData && isModalData(ModalType.MODIFY_CATEGORY, storeData)) {
-        modifiedCategory = storeData.data;
-    } else {
-        closeModal();
-        modifiedCategory = '';
+    function getModifiedCategory() {
+        if (storeData && isModalData(ModalType.MODIFY_CATEGORY, storeData)) {
+            return storeData.data;
+        } else {
+            closeModal();
+            return '';
+        }
     }
 </script>
 
 <CategoryInputModal
     title="Modify Category"
+    category={modifiedCategory}
     submit={(newCategoryName) => submitCategoryModification(modifiedCategory, newCategoryName)}
 />
