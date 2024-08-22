@@ -1,21 +1,25 @@
 <!-- src/routes/AddCategoryModal.svelte -->
 <script lang="ts">
+    import type { Result } from '@/types/Result.types';
+    import { validateCategory } from '@/utils/Category.utils';
     import { closeModal } from '@/utils/Modal.utils';
-    import { submitNewCategory } from '@/utils/requests/Categories.requests';
 
-    let category = '';
+    export let title;
+    export let submit: (newCategory: string) => Promise<Result<string, string>>;
+    export let category = '';
     let errorMessage = '';
 
-    async function submit() {
+    async function onSubmit() {
         // Clear previous error messages
         errorMessage = '';
 
         try {
-            const result = await submitNewCategory(category);
+            const result = await validateCategory(category);
 
             if (result.isError) {
                 throw new Error(result.error);
             }
+            submit(category);
 
             // Clear the input field or redirect
             category = '';
@@ -42,7 +46,7 @@
             &times;
         </button>
 
-        <p class="text-2xl font-bold mb-4">Add new category</p>
+        <p class="text-2xl font-bold mb-4">{title}</p>
 
         <div class="flex flex-col space-y-4">
             <input
@@ -55,7 +59,7 @@
                 <p class="text-error mt-2">{errorMessage}</p>
             {/if}
             <div class="flex justify-end gap-2">
-                <button class="btn-primary" on:click={submit}>Submit</button>
+                <button class="btn-primary" on:click={onSubmit}>Submit</button>
             </div>
         </div>
     </div>

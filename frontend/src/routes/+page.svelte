@@ -4,10 +4,10 @@
     import MainPage from '@/components/MainPage.svelte';
     import { openedModalStore } from '@/stores/Stores';
     import { svelteModalMap } from '@/types/Modal.types';
-    import AddSensorModal from '@/components/modals/AddSensorModal.svelte';
-    import SensorInputModal from '@/components/modals/SensorInputModal.svelte';
+    import AddSensorModal from '@/components/modals/sensor/AddSensorModal.svelte';
+    import SensorInputModal from '@/components/modals/sensor/SensorInputModal.svelte';
     import { Modal } from 'flowbite-svelte';
-    import AddCategoryModal from '@/components/modals/AddCategoryModal.svelte';
+    import AddCategoryModal from '@/components/modals/categories/AddCategoryModal.svelte';
 </script>
 
 <main>

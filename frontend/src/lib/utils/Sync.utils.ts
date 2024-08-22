@@ -2,7 +2,7 @@ import { sensorStore, sensorValueMap as sensorValues } from '@/stores/Stores';
 import { getAllSensors, getSensorData } from './requests/Sensor.requests';
 import { get } from 'svelte/store';
 import type { Sensor } from '@/types/Sensor.types';
-import { syncCategories } from './requests/Categories.requests';
+import { syncCategories } from './requests/Category.requests';
 
 export async function initializeStores() {
     await syncSensorConfig();

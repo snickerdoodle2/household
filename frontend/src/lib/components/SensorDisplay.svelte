@@ -19,7 +19,13 @@
     <div class="card flex items-center justify-between h-24 p-5 w-full rounded-lg p-2">
         <div class="flex flex-nowrap flex-row space-x-4 overflow-x-auto">
             {#each $categoryStore as category}
-                <button class="btn-primary text-2xl">
+                <button
+                    class="btn-primary text-2xl"
+                    on:contextmenu={(event) => {
+                        event.preventDefault(); // Prevent default context menu
+                        openModal(ModalType.MODIFY_CATEGORY, category);
+                    }}
+                >
                     {category}
                 </button>
             {/each}
