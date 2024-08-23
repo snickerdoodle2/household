@@ -12,6 +12,16 @@ const RuleLT = z.object({
     value: z.number(),
 });
 
+type RuleNotType = {
+    type: "not";
+    wrapped: RuleInternalType;
+};
+
+const RuleNot: z.ZodType<RuleNotType> = z.object({
+    type: z.literal("not"),
+    wrapped: z.lazy(() => RuleInternal),
+});
+
 type RuleAndType = {
     type: "and";
     children: RuleInternalType[];
@@ -32,11 +42,12 @@ const RuleOr: z.ZodType<RuleOrType> = z.object({
     children: z.lazy(() => RuleInternal.array()),
 });
 
-const RuleInternal = z.union([RuleAnd, RuleOr, RuleGT, RuleLT]);
+const RuleInternal = z.union([RuleAnd, RuleOr, RuleNot, RuleGT, RuleLT]);
 
 type RuleInternalType =
     | RuleAndType
     | RuleOrType
+    | RuleNotType
     | z.infer<typeof RuleGT>
     | z.infer<typeof RuleLT>;
 
