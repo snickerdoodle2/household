@@ -10,7 +10,7 @@ import (
 func (app *App) routes() http.Handler {
 	r := chi.NewRouter()
 
-	r.Use(app.logRequest, app.recoverPanic, cors.Handler(cors.Options{
+	r.Use(app.recoverPanic, cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 		AllowedOrigins: app.config.cors.trustedOrigins,
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
