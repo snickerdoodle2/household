@@ -98,6 +98,67 @@ func TestRuleUnmarshalling(t *testing.T) {
 			t.Errorf("Slice does not contain %v", uuid)
 		}
 	}
+}
 
-	t.Logf("%+v\n", a)
+func TestMarshalUnmarshal(t *testing.T) {
+	tmp := uuid.New()
+	internal := rule.RuleOr{
+		Children: []rule.RuleInternal{
+			&rule.RuleAnd{
+				Children: []rule.RuleInternal{
+					&rule.RuleLT{
+						SensorID: tmp,
+						Value:    5,
+					},
+					&rule.RuleGT{
+						SensorID: tmp,
+						Value:    8,
+					},
+				},
+			},
+			&rule.RuleNot{
+				Wrapped: &rule.RuleGT{
+					SensorID: uuid.New(),
+					Value:    8,
+				},
+			},
+		},
+	}
+	iRule := rule.Rule{
+		ID:          uuid.New(),
+		Description: "Nowa reguła",
+		Internal:    &internal,
+		OnValid: rule.ValidRuleAction{
+			To:      uuid.New(),
+			Payload: map[string]string{"data": "loool"},
+		},
+	}
+
+	marshalled, err := json.Marshal(iRule)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	uRule := rule.Rule{}
+	err = json.Unmarshal(marshalled, &uRule)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	if uRule.ID != iRule.ID {
+		t.Errorf("Expected: %v; Got: %v", iRule.ID, uRule.ID)
+	}
+
+	if uRule.Description != iRule.Description {
+		t.Errorf("Expected: %v; Got: %v", iRule.Description, uRule.Description)
+	}
+
+	iDeps := iRule.Internal.Dependencies()
+	uDeps := uRule.Internal.Dependencies()
+
+	for _, child := range iDeps {
+		if !slices.Contains(uDeps, child) {
+			t.Errorf("Missing %v deps", child)
+		}
+	}
 }
