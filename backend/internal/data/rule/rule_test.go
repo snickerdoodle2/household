@@ -126,7 +126,8 @@ func TestMarshalUnmarshal(t *testing.T) {
 	}
 	iRule := rule.Rule{
 		ID:          uuid.New(),
-		Description: "Nowa reguła",
+		Name:        "Nowa reguła",
+		Description: "Przykładowy opis nowej reguły",
 		Internal:    &internal,
 		OnValid: rule.ValidRuleAction{
 			To:      uuid.New(),
@@ -147,6 +148,10 @@ func TestMarshalUnmarshal(t *testing.T) {
 
 	if uRule.ID != iRule.ID {
 		t.Errorf("Expected: %v; Got: %v", iRule.ID, uRule.ID)
+	}
+
+	if uRule.Name != iRule.Name {
+		t.Errorf("Expected: %v; Got: %v", iRule.Name, uRule.Name)
 	}
 
 	if uRule.Description != iRule.Description {

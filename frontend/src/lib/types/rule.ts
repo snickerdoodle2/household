@@ -53,6 +53,7 @@ type RuleInternalType =
 
 export const Rule = z.object({
     id: z.string().uuid(),
+    name: z.string().min(1).max(32),
     description: z.string().max(256),
     on_valid: z.object({
         to: z.string().uuid(),
