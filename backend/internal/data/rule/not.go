@@ -2,6 +2,7 @@ package rule
 
 import (
 	"encoding/json"
+	"inzynierka/internal/data/validator"
 
 	"github.com/google/uuid"
 )
@@ -29,4 +30,7 @@ func (r *RuleNot) Process(data RuleData) (bool, error) {
 
 func (r *RuleNot) Dependencies() []uuid.UUID {
 	return r.Wrapped.Dependencies()
+}
+
+func (r *RuleNot) Validate(v *validator.Validator) {
 }

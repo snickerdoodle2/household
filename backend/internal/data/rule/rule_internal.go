@@ -2,6 +2,7 @@ package rule
 
 import (
 	"errors"
+	"inzynierka/internal/data/validator"
 
 	"github.com/google/uuid"
 )
@@ -28,6 +29,7 @@ type RuleInternal interface {
 	// NOTE: map[uuid.UUID]struct{} (hashset) -> better perf
 	// should be called only once per rule lifetime
 	Dependencies() []uuid.UUID
+	Validate(v *validator.Validator)
 }
 
 func unmarshalChildren(data map[string]interface{}) ([]RuleInternal, error) {

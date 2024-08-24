@@ -2,6 +2,7 @@ package rule
 
 import (
 	"encoding/json"
+	"inzynierka/internal/data/validator"
 	"slices"
 
 	"github.com/google/uuid"
@@ -50,4 +51,11 @@ func (r *RuleAnd) Dependencies() []uuid.UUID {
 	}
 
 	return res
+}
+
+func (r *RuleAnd) Validate(v *validator.Validator) {
+	v.Check(len(r.Children) < 1, "and", "must have at least one child")
+	for _, child := range r.Children {
+		child.Validate(v)
+	}
 }

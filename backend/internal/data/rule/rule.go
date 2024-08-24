@@ -2,6 +2,8 @@ package rule
 
 import (
 	"encoding/json"
+	"inzynierka/internal/data/validator"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -43,4 +45,8 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 	r.Internal = internal
 
 	return nil
+}
+
+func ValidateRule(v *validator.Validator, r *Rule) {
+	v.Check(utf8.RuneCountInString(r.Description) <= 256, "description", "must not be longer than 256 characters")
 }

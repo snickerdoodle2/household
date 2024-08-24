@@ -2,6 +2,7 @@ package rule
 
 import (
 	"encoding/json"
+	"inzynierka/internal/data/validator"
 
 	"github.com/google/uuid"
 )
@@ -35,4 +36,7 @@ func (r *RuleLT) Process(data RuleData) (bool, error) {
 
 func (r *RuleLT) Dependencies() []uuid.UUID {
 	return []uuid.UUID{r.SensorID}
+}
+
+func (r *RuleLT) Validate(v *validator.Validator) {
 }
