@@ -67,7 +67,7 @@
     <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
             <!-- Close Button -->
-            <button type="button" class="absolute top-2 right-2 btn-exit" on:click={closeModal}>
+            <button type="button" class="absolute top-2 right-2 btn-exit" on:click={onClose}>
                 &times;
             </button>
 
@@ -127,13 +127,7 @@
 
                 <!-- Form Buttons -->
                 <div class="flex justify-end gap-4">
-                    <button
-                        type="button"
-                        class="btn-secondary"
-                        on:click={handleSubmit}
-                    >
-                        Cancel
-                    </button>
+                    <button type="button" class="btn-secondary" on:click={onClose}> Cancel </button>
                     <button type="submit" class="btn-submit">Save</button>
                 </div>
             </form>

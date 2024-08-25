@@ -1,8 +1,6 @@
 <!-- src/routes/SensorDetailsModal.svelte -->
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
     import { SensorType, type Sensor, type SensorData } from '@/types/Sensor.types';
-    import { validateName } from '@/utils/Misc.utils';
     import { closeModal, isModalData } from '@/utils/Modal.utils';
     import { ModalType } from '@/types/Modal.types';
     import { openedModalStore } from '@/stores/Stores';
@@ -69,6 +67,7 @@
                 <SensorInputModal
                     title={'Edit Sensor'}
                     sensorData={{ ...sensor }}
+                    onClose={() => (isEditing = false)}
                     onSubmit={handleEditSubmit}
                 />
             {:else}
