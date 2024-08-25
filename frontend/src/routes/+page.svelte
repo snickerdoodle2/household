@@ -1,38 +1,15 @@
 <script>
     import '../app.css';
-    import { ModeWatcher } from 'mode-watcher';
     import MainPage from '@/components/MainPage.svelte';
     import { openedModalStore } from '@/stores/Stores';
     import { svelteModalMap } from '@/types/Modal.types';
-    import AddSensorModal from '@/components/modals/sensor/AddSensorModal.svelte';
-    import SensorInputModal from '@/components/modals/sensor/SensorInputModal.svelte';
-    import { Modal } from 'flowbite-svelte';
-    import AddCategoryModal from '@/components/modals/categories/AddCategoryModal.svelte';
 </script>
 
 <main>
-    <div>
-        <MainPage />
-    </div>
-
+    <MainPage />
     {#if $openedModalStore}
-        <div class="container">
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <svelte:component this={svelteModalMap[$openedModalStore.type]} />
         </div>
     {/if}
 </main>
-
-<style>
-    .container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center; /* Vertically center the content */
-        justify-content: center; /* Horizontally center the content */
-        background-color: rgba(0, 0, 0, 0.7);
-        transition: 0.2;
-    }
-</style>

@@ -57,8 +57,8 @@
     });
 </script>
 
-<main class="bg-background text-foreground px-[2.5vw] py-[2.5vh]">
-    <div class="card-muted flex rounded-lg h-[10vh] md-[2.5vh] p-10">
+<main class="h-screen w-screen flex flex-col bg-background text-foreground px-10 py-10 ">
+    <div class="card-muted flex rounded-lg  md-10 p-6">
         <div class="flex items-center">
             <button
                 id="list-outline"
@@ -79,7 +79,7 @@
         </div>
     </div>
 
-    <div class="card-muted p-0 rounded-lg h-[80vh] my-[2.5vw]">
+    <div class="card-muted p-0 rounded-lg h-full my-[2.5vw]">
         {#if $currentPageStore === PageType.SENSOR}
             <SensorDisplay />
         {:else if $currentPageStore === PageType.RULE}

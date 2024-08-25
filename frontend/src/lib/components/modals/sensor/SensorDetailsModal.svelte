@@ -51,51 +51,49 @@
 </script>
 
 <main>
-    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
-            <button
-                type="button"
-                class="absolute top-2 right-2 btn-exit"
-                on:click={closeModal}
-                on:close={() => (isEditing = false)}
-            >
-                &times;
-            </button>
-            <h2 class="text-2xl font-bold mb-4">{isEditing ? 'Edit Sensor' : 'Sensor Details'}</h2>
+    <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+        <button
+            type="button"
+            class="absolute top-2 right-2 btn-exit"
+            on:click={closeModal}
+            on:close={() => (isEditing = false)}
+        >
+            &times;
+        </button>
+        <h2 class="text-2xl font-bold mb-4">{isEditing ? 'Edit Sensor' : 'Sensor Details'}</h2>
 
-            {#if isEditing}
-                <SensorInputModal
-                    title={'Edit Sensor'}
-                    sensorData={{ ...sensor }}
-                    onClose={() => (isEditing = false)}
-                    onSubmit={handleEditSubmit}
-                />
-            {:else}
-                <ul class="space-y-2">
-                    <li><strong>ID:</strong> {sensor.id}</li>
-                    <li><strong>Name:</strong> {sensor.name}</li>
-                    <li><strong>Type:</strong> {sensor.type}</li>
-                    <li><strong>URI:</strong> {sensor.uri}</li>
-                    <li><strong>Created At:</strong> {sensor.created_at}</li>
-                    <li><strong>Version:</strong> {sensor.version}</li>
-                    <li><strong>Refresh Rate:</strong> {sensor.refresh_rate}</li>
-                </ul>
+        {#if isEditing}
+            <SensorInputModal
+                title={'Edit Sensor'}
+                sensorData={{ ...sensor }}
+                onClose={() => (isEditing = false)}
+                onSubmit={handleEditSubmit}
+            />
+        {:else}
+            <ul class="space-y-2">
+                <li><strong>ID:</strong> {sensor.id}</li>
+                <li><strong>Name:</strong> {sensor.name}</li>
+                <li><strong>Type:</strong> {sensor.type}</li>
+                <li><strong>URI:</strong> {sensor.uri}</li>
+                <li><strong>Created At:</strong> {sensor.created_at}</li>
+                <li><strong>Version:</strong> {sensor.version}</li>
+                <li><strong>Refresh Rate:</strong> {sensor.refresh_rate}</li>
+            </ul>
 
-                <div class="mt-6 flex justify-end gap-4">
-                    <button
-                        class="btn-primary"
-                        on:click={() => {
-                            isEditing = true;
-                        }}
-                    >
-                        Edit
-                    </button>
-                    <button class="btn-danger" on:click={handleRemove}> Remove </button>
-                    <button class="btn-secondary" on:click={handleMonitor}> Monitor </button>
-                    <button class="btn-info" on:click={handleSeeRules}> See Rules </button>
-                </div>
-            {/if}
-        </div>
+            <div class="mt-6 flex justify-end gap-4">
+                <button
+                    class="btn-primary"
+                    on:click={() => {
+                        isEditing = true;
+                    }}
+                >
+                    Edit
+                </button>
+                <button class="btn-danger" on:click={handleRemove}> Remove </button>
+                <button class="btn-secondary" on:click={handleMonitor}> Monitor </button>
+                <button class="btn-info" on:click={handleSeeRules}> See Rules </button>
+            </div>
+        {/if}
     </div>
 </main>
 
