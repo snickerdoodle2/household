@@ -39,13 +39,19 @@
                 text: 'Modify Category',
                 callback: () => openModal(ModalType.MODIFY_CATEGORY, category),
             },
-            { text: 'Delete Category', callback: () => openModal(ModalType.CONFIRMATION_MODAL, {
-                message: 'Are you sure you want to proceed?',
-                acceptText: 'Accept',
-                declineText: 'Decline',
-                onAccept: () => {submitCategoryDeletion(category);},
-                onDecline: () => {},
-            }) },
+            {
+                text: 'Delete Category',
+                callback: () =>
+                    openModal(ModalType.CONFIRMATION_MODAL, {
+                        message: 'Are you sure you want to proceed?',
+                        acceptText: 'Accept',
+                        declineText: 'Decline',
+                        onAccept: () => {
+                            submitCategoryDeletion(category);
+                        },
+                        onDecline: () => {},
+                    }),
+            },
         ];
     }
 </script>
@@ -88,7 +94,12 @@
 
     {#each $sensorStore as sensor}
         <div class="flex flex-wrap overflow-y-auto p-8">
-            <button class="btn-secondary flex px-8 py-6 rounded-full">
+            <button
+                class="btn-secondary flex px-8 py-6 rounded-full"
+                on:click={() => {
+                    openModal(ModalType.SENSOR_DETAILS_MODAL, { sensor });
+                }}
+            >
                 <p class="text-5xl">🌐</p>
                 <div class="flex flex-col px-2">
                     <p class="text-2xl">{sensor.name}</p>
@@ -103,9 +114,9 @@
     {/each}
 
     <MovableDropdown
-            x={categoryDropdown.x}
-            y={categoryDropdown.y}
-            items={categoryDropdown.menuConfig}
-            bind:isOpen={categoryDropdown.isOpen}
-        />
+        x={categoryDropdown.x}
+        y={categoryDropdown.y}
+        items={categoryDropdown.menuConfig}
+        bind:isOpen={categoryDropdown.isOpen}
+    />
 </main>

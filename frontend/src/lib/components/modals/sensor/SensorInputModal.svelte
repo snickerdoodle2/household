@@ -100,19 +100,14 @@
                 <div class="flex gap-4">
                     <div class={`w-3/4 ${isInvalidType ? 'border-red-500' : ''}`}>
                         <label class="block text-sm font-medium mb-1">Sensor Type:</label>
-                        <Select.Root onSelectedChange={updateSelected}>
-                            <Select.Trigger class="input-field w-full">
-                                <Select.Value placeholder="Select sensor type..." />
-                            </Select.Trigger>
-                            <Select.Content>
-                                {#each Object.values(SensorType) as sensor}
-                                    <Select.Item value={sensor} label={sensor}>
-                                        {sensor}
-                                    </Select.Item>
-                                {/each}
-                            </Select.Content>
-                        </Select.Root>
+                        <select bind:value={sensorData.type} class="input-field w-full">
+                            <option value="" disabled>Select sensor type...</option>
+                            {#each Object.values(SensorType) as sensorType}
+                                <option value={sensorType}>{sensorType}</option>
+                            {/each}
+                        </select>
                     </div>
+
                     <div class="w-1/4">
                         <label for="refreshRate" class="block text-sm font-medium mb-1"
                             >Refresh Rate:</label
