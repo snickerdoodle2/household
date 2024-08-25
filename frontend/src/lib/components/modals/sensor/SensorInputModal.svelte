@@ -1,10 +1,8 @@
 <!-- src/routes/AddSensorForm.svelte -->
 <script lang="ts">
-    import * as Select from '$lib/components/ui/select';
     import { SensorType, type SensorData } from '@/types/Sensor.types';
     import { validateName } from '@/utils/Misc.utils';
     import { closeModal } from '@/utils/Modal.utils';
-    import type { Selected } from 'bits-ui';
 
     export let title = '';
     export let sensorData: SensorData = {
@@ -15,6 +13,7 @@
     };
 
     export let onSubmit: (data: SensorData) => Promise<void>;
+    export let onClose: () => void = closeModal;
 
     let isInvalidName: boolean = false;
     let isInvalidType: boolean = false;
@@ -25,7 +24,7 @@
         event.preventDefault();
         if (!validateForm()) return;
         await onSubmit(sensorData);
-        closeModal();
+        onClose();
     };
 
     function validateForm(): boolean {
@@ -62,23 +61,22 @@
         }
         return !isInvalid;
     }
-
-    const updateSelected = (item: Selected<string> | undefined) => {
-        if (!item || item.value.length === 0) {
-            return;
-        }
-        sensorData.type = item.value;
-    };
 </script>
 
 <main>
     <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+            <!-- Close Button -->
             <button type="button" class="absolute top-2 right-2 btn-exit" on:click={closeModal}>
                 &times;
             </button>
+
+            <!-- Modal Title -->
             <h2 class="text-2xl font-bold mb-4">{title}</h2>
+
+            <!-- Edit Form -->
             <form on:submit={handleSubmit} class="space-y-4">
+                <!-- Name Field -->
                 <div>
                     <label for="name" class="block text-sm font-medium mb-1">Name:</label>
                     <input
@@ -88,6 +86,8 @@
                         class={`input-field w-full ${isInvalidName ? 'border-red-500' : ''}`}
                     />
                 </div>
+
+                <!-- URI Field -->
                 <div>
                     <label for="uri" class="block text-sm font-medium mb-1">URI:</label>
                     <input
@@ -97,7 +97,10 @@
                         class={`input-field w-full ${isInvalidURI ? 'border-red-500' : ''}`}
                     />
                 </div>
+
+                <!-- Type and Refresh Rate Fields -->
                 <div class="flex gap-4">
+                    <!-- Sensor Type Field -->
                     <div class={`w-3/4 ${isInvalidType ? 'border-red-500' : ''}`}>
                         <label class="block text-sm font-medium mb-1">Sensor Type:</label>
                         <select bind:value={sensorData.type} class="input-field w-full">
@@ -108,6 +111,7 @@
                         </select>
                     </div>
 
+                    <!-- Refresh Rate Field -->
                     <div class="w-1/4">
                         <label for="refreshRate" class="block text-sm font-medium mb-1"
                             >Refresh Rate:</label
@@ -120,7 +124,18 @@
                         />
                     </div>
                 </div>
-                <button type="submit" class="btn-submit w-full">Submit</button>
+
+                <!-- Form Buttons -->
+                <div class="flex justify-end gap-4">
+                    <button
+                        type="button"
+                        class="btn-secondary"
+                        on:click={handleSubmit}
+                    >
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-submit">Save</button>
+                </div>
             </form>
         </div>
     </div>

@@ -1,12 +1,13 @@
 <!-- src/routes/SensorDetailsModal.svelte -->
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-    import { SensorType, type Sensor } from '@/types/Sensor.types';
+    import { SensorType, type Sensor, type SensorData } from '@/types/Sensor.types';
     import { validateName } from '@/utils/Misc.utils';
     import { closeModal, isModalData } from '@/utils/Modal.utils';
     import { ModalType } from '@/types/Modal.types';
     import { openedModalStore } from '@/stores/Stores';
     import { get } from 'svelte/store';
+    import SensorInputModal from './SensorInputModal.svelte';
     let storeData = get(openedModalStore);
     let sensor = getSensorData();
 
@@ -29,58 +30,13 @@
     }
 
     let isEditing = false;
-    let editedSensor: Sensor = { ...sensor };
 
-    let isInvalidName: boolean = false;
-    let isInvalidType: boolean = false;
-    let isInvalidURI: boolean = false;
-    let isInvalidRefreshRate: boolean = false;
-
-    const dispatcher = createEventDispatcher();
-
-    const handleEditSubmit = async (event: Event) => {
-        event.preventDefault();
-        if (!validateForm()) return;
-        Object.assign(sensor, editedSensor);
-        isEditing = false;
-        dispatcher('updated', sensor);
+    const handleEditSubmit = async (data: SensorData) => {
+        sensor.name = data.name;
+        sensor.refresh_rate = data.refresh_rate;
+        sensor.uri = data.uri;
+        sensor.type = data.type as SensorType;
     };
-
-    function validateForm(): boolean {
-        let isInvalid = false;
-        const uriRegex =
-            /^(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\.(25[0-5]|2[0-4]\d|1\d\d|\d\d?):([1-9]\d{0,4})$/;
-
-        if (validateName(editedSensor.name).isError) {
-            isInvalidName = true;
-            isInvalid = true;
-        } else {
-            isInvalidName = false;
-        }
-
-        if (Object.values(SensorType).indexOf(editedSensor.type) === -1) {
-            isInvalidType = true;
-            isInvalid = true;
-        } else {
-            isInvalidType = false;
-        }
-
-        if (!uriRegex.test(editedSensor.uri)) {
-            isInvalidURI = true;
-            isInvalid = true;
-        } else {
-            isInvalidURI = false;
-        }
-
-        if (editedSensor.refresh_rate <= 0) {
-            isInvalidRefreshRate = true;
-            isInvalid = true;
-        } else {
-            isInvalidRefreshRate = false;
-        }
-
-        return !isInvalid;
-    }
 
     // Handlers for other buttons
     const handleRemove = () => {
@@ -99,74 +55,22 @@
 <main>
     <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
-            <button type="button" class="absolute top-2 right-2 btn-exit" on:click={closeModal}>
+            <button
+                type="button"
+                class="absolute top-2 right-2 btn-exit"
+                on:click={closeModal}
+                on:close={() => (isEditing = false)}
+            >
                 &times;
             </button>
             <h2 class="text-2xl font-bold mb-4">{isEditing ? 'Edit Sensor' : 'Sensor Details'}</h2>
 
             {#if isEditing}
-                <form on:submit={handleEditSubmit} class="space-y-4">
-                    <div>
-                        <label for="name" class="block text-sm font-medium mb-1">Name:</label>
-                        <input
-                            type="text"
-                            id="name"
-                            bind:value={editedSensor.name}
-                            class={`input-field w-full ${isInvalidName ? 'border-red-500' : ''}`}
-                        />
-                    </div>
-
-                    <div>
-                        <label for="uri" class="block text-sm font-medium mb-1">URI:</label>
-                        <input
-                            type="text"
-                            id="uri"
-                            bind:value={editedSensor.uri}
-                            class={`input-field w-full ${isInvalidURI ? 'border-red-500' : ''}`}
-                        />
-                    </div>
-
-                    <!-- Type and Refresh Rate Fields -->
-                    <div class="flex gap-4">
-                        <!-- Sensor Type Field -->
-                        <div class={`w-3/4 ${isInvalidType ? 'border-red-500' : ''}`}>
-                            <label class="block text-sm font-medium mb-1">Sensor Type:</label>
-                            <select bind:value={editedSensor.type} class="input-field w-full">
-                                <option value="" disabled>Select sensor type...</option>
-                                {#each Object.values(SensorType) as sensorType}
-                                    <option value={sensorType}>{sensorType}</option>
-                                {/each}
-                            </select>
-                        </div>
-
-                        <!-- Refresh Rate Field -->
-                        <div class="w-1/4">
-                            <label for="refreshRate" class="block text-sm font-medium mb-1"
-                                >Refresh Rate:</label
-                            >
-                            <input
-                                type="number"
-                                id="refreshRate"
-                                bind:value={editedSensor.refresh_rate}
-                                class={`input-field w-full ${isInvalidRefreshRate ? 'border-red-500' : ''}`}
-                            />
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-4">
-                        <button
-                            type="button"
-                            class="btn-secondary"
-                            on:click={() => {
-                                isEditing = false;
-                                editedSensor = { ...sensor };
-                            }}
-                        >
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn-submit">Save</button>
-                    </div>
-                </form>
+                <SensorInputModal
+                    title={'Edit Sensor'}
+                    sensorData={{ ...sensor }}
+                    onSubmit={handleEditSubmit}
+                />
             {:else}
                 <ul class="space-y-2">
                     <li><strong>ID:</strong> {sensor.id}</li>
