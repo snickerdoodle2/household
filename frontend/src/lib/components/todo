@@ -1,7 +1,15 @@
-### SensorDetailsModal
+## SensorDisplay
 
-    * add functionality to buttons
-        * edit - add requests
-        * remove
-        * monitor
-        * see rules
+    - SensorDetailsModal
+        * add functionality to buttons
+            * edit - add requests
+            * remove
+            * monitor
+            * see rules
+
+## RulesDisplay
+
+    - add rules handling - fetching, validating
+    - add search bar functionality
+    - add rules display modal where you can do action on the rules
+    - add rules input modal

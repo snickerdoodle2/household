@@ -5,7 +5,6 @@
     import { categoryStore, sensorStore, sensorValueMap } from '@/stores/Stores';
     import MyDropdown from './generic/MyDropdown.svelte';
     import MovableDropdown from './generic/MovableDropdown.svelte';
-    import { onMount } from 'svelte';
     import { submitCategoryDeletion } from '@/utils/requests/Category.requests';
 
     const optionsDropDown = {

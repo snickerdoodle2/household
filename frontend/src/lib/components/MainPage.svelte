@@ -7,6 +7,8 @@
     import { initializeStores, syncSensorValues } from '@/utils/Sync.utils';
     import { SENSOR_VALUE_INTERVAL } from '@/config/const';
     import MyDropdown from './generic/MyDropdown.svelte';
+    import RulesDisplay from './RulesDisplay.svelte';
+    import { openPage } from '@/utils/Page.utils';
 
     let syncInterval: number;
     let dropDown = {
@@ -14,8 +16,7 @@
         trigger: null as HTMLButtonElement | null,
     };
 
-    const dropDownMenuConfig = [
-        { text: 'See Rules', callback: () => console.log('See Rules clicked') },
+    const staticDropDownMenuActions = [
         {
             text: 'Set Server URL',
             callback: () => console.log('Set Server URL clicked'),
@@ -29,6 +30,17 @@
             callback: () => console.log('Placeholder clicked'),
         },
     ];
+
+    $: dropDownMenuConfig =
+        $currentPageStore === PageType.SENSOR
+            ? [
+                  ...staticDropDownMenuActions,
+                  { text: 'See Rules', callback: () => openPage(PageType.RULE) },
+              ]
+            : [
+                  ...staticDropDownMenuActions,
+                  { text: 'See Sensors', callback: () => openPage(PageType.SENSOR) },
+              ];
 
     onMount(() => {
         // Initialization
@@ -70,6 +82,8 @@
     <div class="card-muted p-0 rounded-lg h-[80vh] my-[2.5vw]">
         {#if $currentPageStore === PageType.SENSOR}
             <SensorDisplay />
+        {:else if $currentPageStore === PageType.RULE}
+            <RulesDisplay />
         {/if}
     </div>
 </main>
