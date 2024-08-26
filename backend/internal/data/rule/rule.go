@@ -3,6 +3,7 @@ package rule
 import (
 	"encoding/json"
 	"inzynierka/internal/data/validator"
+	"time"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
@@ -19,6 +20,8 @@ type Rule struct {
 	Description string          `json:"description"`
 	Internal    RuleInternal    `json:"internal"`
 	OnValid     ValidRuleAction `json:"on_valid"`
+	CreatedAt   time.Time       `json:"created_at"`
+	Version     int             `json:"version"`
 }
 
 func (r *Rule) UnmarshalJSON(data []byte) error {
