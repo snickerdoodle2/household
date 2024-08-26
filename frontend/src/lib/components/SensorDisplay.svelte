@@ -91,8 +91,8 @@
         </div>
     </div>
 
-    {#each $sensorStore as sensor}
-        <div class="flex flex-wrap gap-8 overflow-y-auto p-8">
+    <div class="flex flex-wrap gap-8 overflow-y-auto p-8">
+        {#each $sensorStore as sensor}
             <button
                 class="btn-secondary flex px-8 py-6 rounded-full"
                 on:click={() => {
@@ -108,8 +108,8 @@
                     </p>
                 </div>
             </button>
-        </div>
-    {/each}
+        {/each}
+    </div>
 
     <MovableDropdown
         x={categoryDropdown.x}

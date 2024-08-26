@@ -82,7 +82,7 @@
                     type="text"
                     id="name"
                     bind:value={sensorData.name}
-                    class={`input-field w-full ${isInvalidName ? 'border-red-500' : ''}`}
+                    class={`input-field w-full ${isInvalidName ? 'invalid' : ''}`}
                 />
             </div>
 
@@ -93,16 +93,19 @@
                     type="text"
                     id="uri"
                     bind:value={sensorData.uri}
-                    class={`input-field w-full ${isInvalidURI ? 'border-red-500' : ''}`}
+                    class={`input-field w-full ${isInvalidURI ? 'invalid' : ''}`}
                 />
             </div>
 
             <!-- Type and Refresh Rate Fields -->
             <div class="flex gap-4">
                 <!-- Sensor Type Field -->
-                <div class={`w-3/4 ${isInvalidType ? 'border-red-500' : ''}`}>
+                <div class={`w-3/4`}>
                     <label class="block text-sm font-medium mb-1">Sensor Type:</label>
-                    <select bind:value={sensorData.type} class="input-field w-full">
+                    <select
+                        bind:value={sensorData.type}
+                        class={`input-field w-full ${isInvalidType ? 'invalid' : ''}`}
+                    >
                         <option value="" disabled>Select sensor type...</option>
                         {#each Object.values(SensorType) as sensorType}
                             <option value={sensorType}>{sensorType}</option>
@@ -119,7 +122,7 @@
                         type="number"
                         id="refreshRate"
                         bind:value={sensorData.refresh_rate}
-                        class={`input-field w-full ${isInvalidRefreshRate ? 'border-red-500' : ''}`}
+                        class={`input-field w-full ${isInvalidRefreshRate ? 'invalid' : ''}`}
                     />
                 </div>
             </div>
