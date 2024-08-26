@@ -66,7 +66,7 @@
 <main>
     <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
         <!-- Close Button -->
-        <button type="button" class="absolute top-2 right-2 btn-exit" on:click={onClose}>
+        <button type="button" class="btn-dismiss absolute top-2 right-2" on:click={onClose}>
             &times;
         </button>
 
@@ -126,8 +126,8 @@
 
             <!-- Form Buttons -->
             <div class="flex justify-end gap-4">
-                <button type="button" class="btn-secondary" on:click={onClose}> Cancel </button>
-                <button type="submit" class="btn-submit">Save</button>
+                <button type="button" class="btn-secondary" on:click={onClose}>Cancel</button>
+                <button type="submit" class="btn-a1">Save</button>
             </div>
         </form>
     </div>

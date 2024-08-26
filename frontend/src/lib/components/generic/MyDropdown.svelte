@@ -29,10 +29,13 @@
 </script>
 
 {#if isOpen}
-    <div bind:this={dropdownRef} class="flex flex-col bg-popover rounded-lg mt-2 shadow-lg w-64">
+    <div
+        bind:this={dropdownRef}
+        class="flex flex-col bg-popover rounded-lg mt-2 shadow-lg w-64"
+    >
         {#each optionsWithCallbacks as option}
             <button
-                class="p-2 hover:bg-primary-hover rounded-lg text-xl"
+                class="p-2 hover:bg-primary-hover rounded-lg"
                 on:click={() => {
                     option.callback();
                     isOpen = false;

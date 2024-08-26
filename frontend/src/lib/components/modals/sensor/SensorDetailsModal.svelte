@@ -1,4 +1,3 @@
-<!-- src/routes/SensorDetailsModal.svelte -->
 <script lang="ts">
     import { SensorType, type Sensor, type SensorData } from '@/types/Sensor.types';
     import { closeModal, isModalData } from '@/utils/Modal.utils';
@@ -54,7 +53,7 @@
     <div class="bg-background rounded-lg shadow-lg w-full max-w-lg p-6 relative">
         <button
             type="button"
-            class="absolute top-2 right-2 btn-exit"
+            class="absolute top-2 right-2 btn-dismiss"
             on:click={closeModal}
             on:close={() => (isEditing = false)}
         >
@@ -82,26 +81,17 @@
 
             <div class="mt-6 flex justify-end gap-4">
                 <button
-                    class="btn-primary"
+                    class="btn-a1"
                     on:click={() => {
                         isEditing = true;
                     }}
                 >
                     Edit
                 </button>
-                <button class="btn-danger" on:click={handleRemove}> Remove </button>
-                <button class="btn-secondary" on:click={handleMonitor}> Monitor </button>
-                <button class="btn-info" on:click={handleSeeRules}> See Rules </button>
+                <button class="btn-primary" on:click={handleMonitor}> Monitor </button>
+                <button class="btn-primary" on:click={handleSeeRules}> See Rules </button>
+                <button class="btn-a2" on:click={handleRemove}> Remove </button>
             </div>
         {/if}
     </div>
 </main>
-
-<style>
-    .invalid {
-        border-color: red;
-        border-style: solid;
-        border-width: 2px;
-        border-radius: var(--radius);
-    }
-</style>

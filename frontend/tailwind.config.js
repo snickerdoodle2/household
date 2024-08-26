@@ -11,17 +11,21 @@ const config = {
     plugins: [
         require('flowbite/plugin'),
         function ({ addComponents }) {
+            const baseButton = {
+                borderRadius: 'var(--radius)',
+                padding: '0.5rem 1rem',
+                textAlign: 'center',
+                display: 'inline-block',
+                fontWeight: '600',
+                transition: 'background-color 0.3s ease',
+            };
+
             addComponents({
                 // Primary Button
                 '.btn-primary': {
+                    ...baseButton,
                     backgroundColor: 'hsl(var(--primary))',
                     color: 'hsl(var(--primary-foreground))',
-                    borderRadius: 'var(--radius)',
-                    padding: '0.5rem 1rem',
-                    textAlign: 'center',
-                    display: 'inline-block',
-                    fontWeight: '600',
-                    transition: 'background-color 0.3s ease',
                     '&:hover': {
                         backgroundColor: 'hsl(var(--primary-hover))',
                     },
@@ -29,31 +33,56 @@ const config = {
 
                 // Secondary Button
                 '.btn-secondary': {
+                    ...baseButton,
                     backgroundColor: 'hsl(var(--secondary))',
                     color: 'hsl(var(--secondary-foreground))',
-                    borderRadius: 'var(--radius)',
-                    padding: '0.5rem 1rem',
-                    textAlign: 'center',
-                    display: 'inline-block',
-                    fontWeight: '600',
-                    transition: 'background-color 0.3s ease',
                     '&:hover': {
                         backgroundColor: 'hsl(var(--secondary-hover))',
                     },
                 },
 
-                // Submit Button
-                '.btn-submit': {
-                    backgroundColor: 'hsl(var(--primary))',
-                    color: 'hsl(var(--primary-foreground))',
-                    borderRadius: 'var(--radius)',
-                    padding: '0.5rem 1rem',
-                    textAlign: 'center',
-                    display: 'inline-block',
-                    fontWeight: '600',
-                    transition: 'background-color 0.3s ease',
+                '.btn-a1': {
+                    ...baseButton,
+                    backgroundColor: 'hsl(var(--a1))',
+                    color: 'hsl(var(--a1-foreground))',
                     '&:hover': {
-                        backgroundColor: 'hsl(var(--primary-hover))',
+                        backgroundColor: 'hsl(var(--a1-hover))',
+                    },
+                },
+
+                '.btn-a2': {
+                    ...baseButton,
+                    backgroundColor: 'hsl(var(--a2))',
+                    color: 'hsl(var(--a2-foreground))',
+                    '&:hover': {
+                        backgroundColor: 'hsl(var(--a2-hover))',
+                    },
+                },
+
+                '.btn-a3': {
+                    ...baseButton,
+                    backgroundColor: 'hsl(var(--a3))',
+                    color: 'hsl(var(--a3-foreground))',
+                    '&:hover': {
+                        backgroundColor: 'hsl(var(--a3-hover))',
+                    },
+                },
+
+                '.btn-dismiss': {
+                    ...baseButton,
+                    backgroundColor: 'hsl(var(--dismissive))',
+                    color: 'hsl(var(--dismissive-foreground))',
+                    '&:hover': {
+                        backgroundColor: 'hsl(var(--dismissive-hover))',
+                    },
+                },
+
+                '.btn-confirm': {
+                    ...baseButton,
+                    backgroundColor: 'hsl(var(--confirm))',
+                    color: 'hsl(var(--confirm-foreground))',
+                    '&:hover': {
+                        backgroundColor: 'hsl(var(--confirm-hover))',
                     },
                 },
 
@@ -84,20 +113,6 @@ const config = {
                     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                 },
 
-                // Destructive Button
-                '.btn-destructive': {
-                    backgroundColor: 'hsl(var(--destructive))',
-                    color: 'hsl(var(--destructive-foreground))',
-                    borderRadius: 'var(--radius)',
-                    padding: '0.5rem 1rem',
-                    textAlign: 'center',
-                    display: 'inline-block',
-                    fontWeight: '600',
-                    transition: 'background-color 0.3s ease',
-                    '&:hover': {
-                        backgroundColor: 'hsl(var(--destructive-hover))',
-                    },
-                },
                 // Input Field
                 '.input-field': {
                     backgroundColor: 'hsl(var(--input))',
@@ -124,35 +139,6 @@ const config = {
                     '&[disabled]': {
                         backgroundColor: 'hsl(var(--muted))',
                         color: 'hsl(var(--muted-foreground))',
-                        cursor: 'not-allowed',
-                    },
-                },
-                // Exit Button
-                '.btn-exit': {
-                    backgroundColor: 'hsl(var(--background))',
-                    color: 'hsl(var(--error))',
-                    border: '1px solid hsl(var(--error))',
-                    borderRadius: 'var(--radius)',
-                    padding: '0.5rem 1rem',
-                    textAlign: 'center',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: '600',
-                    transition:
-                        'color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease',
-                    '&:hover': {
-                        backgroundColor: 'hsl(var(--error) / 0.1)',
-                        color: 'hsl(var(--error) / 0.8)',
-                    },
-                    '&:focus': {
-                        outline: 'none',
-                        boxShadow: '0 0 0 2px hsl(var(--error) / 0.5)',
-                    },
-                    '&:disabled': {
-                        backgroundColor: 'hsl(var(--muted))',
-                        color: 'hsl(var(--muted-foreground))',
-                        borderColor: 'hsl(var(--muted))',
                         cursor: 'not-allowed',
                     },
                 },
@@ -204,6 +190,31 @@ const config = {
                 card: {
                     DEFAULT: 'hsl(var(--card) / <alpha-value>)',
                     foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+                },
+                dismissive: {
+                    DEFAULT: 'hsl(var(--dismissive) / <alpha-value>)',
+                    hover: 'hsl(var(--dismissive-hover))',
+                    foreground: 'hsl(var(--dismissive-foreground) / <alpha-value>)',
+                },
+                a1: {
+                    DEFAULT: 'hsl(var(--a1) / <alpha-value>)',
+                    hover: 'hsl(var(--a1-hover))',
+                    foreground: 'hsl(var(--a1-foreground) / <alpha-value>)',
+                },
+                a2: {
+                    DEFAULT: 'hsl(var(--a2) / <alpha-value>)',
+                    hover: 'hsl(var(--a2-hover))',
+                    foreground: 'hsl(var(--a2-foreground) / <alpha-value>)',
+                },
+                a3: {
+                    DEFAULT: 'hsl(var(--a3) / <alpha-value>)',
+                    hover: 'hsl(var(--a3-hover))',
+                    foreground: 'hsl(var(--a3-foreground) / <alpha-value>)',
+                },
+                confirm: {
+                    DEFAULT: 'hsl(var(--confirm) / <alpha-value>)',
+                    hover: 'hsl(var(--confirm-hover))',
+                    foreground: 'hsl(var(--confirm-foreground) / <alpha-value>)',
                 },
             },
             borderRadius: {

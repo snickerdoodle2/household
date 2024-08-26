@@ -22,14 +22,14 @@
         type="text"
         bind:value={searchQuery}
         placeholder="search bar"
-        class="p-2 rounded-lg bg-input text-text w-full max-w-md"
+        class="input-field p-2 rounded-lg text-text w-full max-w-md"
     />
 
     <!-- Buttons -->
     <div class="flex gap-4 ml-4">
         <button class="btn-primary" on:click={handleFilter}>filter</button>
         <button class="btn-primary" on:click={handleSort}>sort by</button>
-        <button class="btn-primary" on:click={handleAddRule}>add new rule</button>
+        <button class="btn-a1" on:click={handleAddRule}>add new rule</button>
     </div>
 </div>
 

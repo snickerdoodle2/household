@@ -40,8 +40,7 @@
 </script>
 
 <div class="card bg-background p-6 max-w-sm w-full relative">
-    <!-- Close button -->
-    <button type="button" class="btn-exit absolute top-2 right-2" on:click={closeModal}>
+    <button type="button" class="btn-dismiss absolute top-2 right-2" on:click={closeModal}>
         &times;
     </button>
 
@@ -58,7 +57,7 @@
             <p class="text-error mt-2">{errorMessage}</p>
         {/if}
         <div class="flex justify-end gap-2">
-            <button class="btn-primary" on:click={onSubmit}>Submit</button>
+            <button class="btn-a1" on:click={onSubmit}>Submit</button>
         </div>
     </div>
 </div>

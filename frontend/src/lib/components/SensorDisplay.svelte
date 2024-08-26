@@ -60,7 +60,7 @@
         <div class="flex flex-nowrap flex-row space-x-4 overflow-x-auto">
             {#each $categoryStore as category}
                 <button
-                    class="btn-primary text-2xl"
+                    class="btn-primary text-xl"
                     on:contextmenu={(event) => {
                         openDropdown(event, category);
                         // event.preventDefault(); // Prevent default context menu
@@ -81,7 +81,7 @@
                 <DotsHorizontal class="w-6 h-6 mr-2 text-white dark:text-white" />
             </button>
 
-            <div class="absolute right-0">
+            <div class="absolute right-0 z-50">
                 <MyDropdown
                     bind:isOpen={optionsDropDown.isOpen}
                     optionsWithCallbacks={optionsDropDown.menuConfig}
@@ -92,7 +92,7 @@
     </div>
 
     {#each $sensorStore as sensor}
-        <div class="flex flex-wrap overflow-y-auto p-8">
+        <div class="flex flex-wrap gap-8 overflow-y-auto p-8">
             <button
                 class="btn-secondary flex px-8 py-6 rounded-full"
                 on:click={() => {
@@ -108,7 +108,6 @@
                     </p>
                 </div>
             </button>
-            <!-- <h1 class="text-4xl font-bold text-white">Sensor Page</h1> -->
         </div>
     {/each}
 

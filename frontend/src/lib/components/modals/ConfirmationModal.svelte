@@ -37,7 +37,7 @@
 <main class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="card bg-background p-6 max-w-sm w-full relative">
         <!-- Close button -->
-        <button type="button" class="btn-exit absolute top-2 right-2" on:click={handleDecline}>
+        <button type="button" class="btn-dismiss absolute top-2 right-2" on:click={handleDecline}>
             &times;
         </button>
 

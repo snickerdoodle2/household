@@ -70,7 +70,7 @@
             <span class="font-semibold text-3xl">Nazwa Naszego Systemu</span>
         </div>
 
-        <div class="absolute mt-8">
+        <div class="absolute mt-8 z-50">
             <MyDropdown
                 optionsWithCallbacks={dropDownMenuConfig}
                 triggerButtonRef={dropDown.trigger}
