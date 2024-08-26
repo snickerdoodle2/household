@@ -201,3 +201,36 @@ func (m *RuleModel) GetAll() ([]*Rule, error) {
 
 	return rules, nil
 }
+
+func (m RuleModel) Update(rule *Rule) error {
+	query := `
+       UPDATE rules
+       SET name = $1, description = $2, internal = $3, valid_sensor_id = $4, valid_payload = $5, version = version + 1
+       WHERE id = $6
+       RETURNING version 
+    `
+
+	args := []any{
+		rule.Name,
+		rule.Description,
+		rule.Internal,
+		rule.OnValid.To,
+		rule.OnValid.Payload,
+		rule.ID,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, args...).Scan(&rule.Version)
+
+	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"rules\" violates foreign key constraint \"rules_valid_sensor_id_fkey\""):
+			return ErrNonExistingTo
+		default:
+			return err
+		}
+	}
+	return nil
+}

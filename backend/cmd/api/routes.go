@@ -34,6 +34,7 @@ func (app *App) routes() http.Handler {
 		r.Get("/rule", app.listRulesHandler)
 		r.Get("/rule/{id}", app.getRuleHandler)
 		r.Post("/rule", app.createRuleHandler)
+		r.Put("/rule/{id}", app.updateRuleHanlder)
 
 		r.NotFound(app.notFoundResponse)
 		r.MethodNotAllowed(app.methodNotAllowed)
