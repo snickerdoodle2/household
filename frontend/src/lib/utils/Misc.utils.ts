@@ -63,7 +63,7 @@ export const flyAndScale = (
 
 export function validateName(name: string): Result<string, string> {
     // Validate the new category
-    const isValidCategory = /^[A-Za-z]+$/.test(name);
+    const isValidCategory = /^[A-Za-z0-9_-]+$/.test(name);
     const isValidLength = name.length >= 3 && name.length <= 15;
     const hasNoWhitespaces = !/\s/.test(name);
 
@@ -77,14 +77,14 @@ export function validateName(name: string): Result<string, string> {
     if (!isValidCategory) {
         return {
             isError: true,
-            error: 'Category name must be a single word containing only letters.',
+            error: 'Category name must be a single word containing only letters, numbers, underscores, and hyphens.',
         };
     }
 
     if (!isValidLength) {
         return {
             isError: true,
-            error: 'Category name must be between 3 and 15 letters long.',
+            error: 'Category name must be between 3 and 15 characters long.',
         };
     }
 
