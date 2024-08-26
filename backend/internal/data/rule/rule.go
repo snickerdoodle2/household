@@ -10,11 +10,13 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
-	ErrNonExistingTo = errors.New("on_valid.id is not pointing to any existing device")
+	ErrNonExistingTo  = errors.New("on_valid.id is not pointing to any existing device")
+	ErrRecordNotFound = errors.New("not found")
 )
 
 type ValidRuleAction struct {
@@ -101,4 +103,47 @@ func (m *RuleModel) Insert(rule *Rule) error {
 		}
 	}
 	return nil
+}
+
+func (m *RuleModel) Get(id uuid.UUID) (*Rule, error) {
+	query := `
+    SELECT id, name, description, internal, valid_sensor_id, valid_payload, created_at, version
+    FROM rules
+    WHERE id = $1
+    `
+
+	var ruleS Rule
+	var internalMap map[string]interface{}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, id).Scan(
+		&ruleS.ID,
+		&ruleS.Name,
+		&ruleS.Description,
+		&internalMap,
+		&ruleS.OnValid.To,
+		&ruleS.OnValid.Payload,
+		&ruleS.CreatedAt,
+		&ruleS.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	internal, err := UnmarshalInternalRuleJSON(internalMap)
+	if err != nil {
+		return nil, err
+	}
+
+	ruleS.Internal = internal
+
+	return &ruleS, nil
 }
