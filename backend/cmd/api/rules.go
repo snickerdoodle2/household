@@ -71,3 +71,16 @@ func (app *App) getRuleHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *App) listRulesHandler(w http.ResponseWriter, r *http.Request) {
+	rules, err := app.models.Rules.GetAll()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"data": rules}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

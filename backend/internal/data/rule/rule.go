@@ -147,3 +147,57 @@ func (m *RuleModel) Get(id uuid.UUID) (*Rule, error) {
 
 	return &ruleS, nil
 }
+
+func (m *RuleModel) GetAll() ([]*Rule, error) {
+	query := `
+    SELECT id, name, description, internal, valid_sensor_id, valid_payload, created_at, version
+    FROM rules
+    ORDER BY id
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	rules := []*Rule{}
+
+	for rows.Next() {
+		var ruleS Rule
+		var internalMap map[string]interface{}
+
+		err = rows.Scan(
+			&ruleS.ID,
+			&ruleS.Name,
+			&ruleS.Description,
+			&internalMap,
+			&ruleS.OnValid.To,
+			&ruleS.OnValid.Payload,
+			&ruleS.CreatedAt,
+			&ruleS.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		internal, err := UnmarshalInternalRuleJSON(internalMap)
+		if err != nil {
+			return nil, err
+		}
+
+		ruleS.Internal = internal
+
+		rules = append(rules, &ruleS)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return rules, nil
+}
