@@ -166,3 +166,29 @@ func (app *App) updateRuleHanlder(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *App) deleteRuleHandler(w http.ResponseWriter, r *http.Request) {
+	ruleIdStr := chi.URLParam(r, "id")
+	ruleId, err := uuid.Parse(ruleIdStr)
+
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	err = app.models.Rules.Delete(ruleId)
+	if err != nil {
+		switch {
+		case errors.Is(err, rule.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "rule successfully deleted"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
