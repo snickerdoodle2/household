@@ -5,7 +5,7 @@
     import { openedModalStore } from '@/stores/Stores';
     import { get } from 'svelte/store';
     import SensorInputModal from './SensorInputModal.svelte';
-    import { removeSensor } from '@/utils/requests/Sensor.requests';
+    import { modifySensor, removeSensor } from '@/utils/requests/Sensor.requests';
     import { syncSensorConfig } from '@/utils/Sync.utils';
     let storeData = get(openedModalStore);
     let sensor = getSensorData();
@@ -30,11 +30,15 @@
 
     let isEditing = false;
 
-    const handleEditSubmit = async (data: SensorData) => {
-        sensor.name = data.name;
-        sensor.refresh_rate = data.refresh_rate;
-        sensor.uri = data.uri;
-        sensor.type = data.type as SensorType;
+    const handleEditSubmit = async (id: Sensor['id'], data: SensorData) => {
+        const result = await modifySensor(id, data);
+        if (result.isError) {
+            console.log(`Failed to edit sensor: ${result.error}`);
+        } else {
+            console.log('Sensor edited successfully', result.data);
+        }
+        await syncSensorConfig();
+        closeModal();
     };
 
     // Handlers for other buttons
@@ -75,7 +79,9 @@
                 title={'Edit Sensor'}
                 sensorData={{ ...sensor }}
                 onClose={() => (isEditing = false)}
-                onSubmit={handleEditSubmit}
+                onSubmit={(data) => {
+                    return handleEditSubmit(sensor.id, data);
+                }}
             />
         {:else}
             <ul class="space-y-2">

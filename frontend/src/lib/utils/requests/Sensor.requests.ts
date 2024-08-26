@@ -101,3 +101,39 @@ export async function addSensor({
         };
     }
 }
+
+export async function modifySensor(
+    id: Sensor['id'],
+    { name, uri, type, refresh_rate }: SensorData
+): Promise<Result<SensorData, string>> {
+    try {
+        const response = await fetch(`${SERVER_URL}/api/v1/sensor/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, uri, type, refresh_rate }),
+        });
+
+        if (!response.ok) {
+            // TODO: error json handling
+            const errorData = await response.json();
+            return {
+                isError: true,
+                error: `Error: ${errorData.error}`,
+            };
+        } else {
+            // TODO: nice pop-up window instead of alert
+            const responseData = await response.json();
+            return {
+                isError: false,
+                data: responseData,
+            };
+        }
+    } catch (error) {
+        return {
+            isError: true,
+            error: `Network error. Please try again later. ${error}`,
+        };
+    }
+}
