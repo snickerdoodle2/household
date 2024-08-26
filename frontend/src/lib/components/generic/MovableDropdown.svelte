@@ -1,16 +1,19 @@
 <!-- src/components/DropdownMenu.svelte -->
 <script lang="ts">
+    import { Duration } from '@/utils/Duration';
+
     export let x: number;
     export let y: number;
     export let items: { text: string; callback: () => void }[] = [];
     export let isOpen: boolean;
+
+    const MINIMAL_LIFESPAN = Duration.ofSeconds(1);
 
     let isMouseOverDropdown = false;
     let destroyTimeout = 0;
 
     function handleMouseEnter() {
         isMouseOverDropdown = true;
-        clearTimeout(destroyTimeout);
     }
 
     function handleMouseLeave() {
@@ -36,7 +39,7 @@
             if (!isMouseOverDropdown) {
                 isOpen = false;
             }
-        }, 1000);
+        }, MINIMAL_LIFESPAN.toMilliseconds());
 
         // Clear timeout if dropdown is closed
         if (!isOpen) {
