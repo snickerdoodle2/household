@@ -5,6 +5,8 @@
     import { openedModalStore } from '@/stores/Stores';
     import { get } from 'svelte/store';
     import SensorInputModal from './SensorInputModal.svelte';
+    import { removeSensor } from '@/utils/requests/Sensor.requests';
+    import { syncSensorConfig } from '@/utils/Sync.utils';
     let storeData = get(openedModalStore);
     let sensor = getSensorData();
 
@@ -36,8 +38,15 @@
     };
 
     // Handlers for other buttons
-    const handleRemove = () => {
-        console.log(`Remove sensor with ID: ${sensor.id}`);
+    const handleRemove = async () => {
+        const result = await removeSensor(sensor.id);
+        if (result.isError) {
+            console.log(`Failed to remove sensor: ${result.error}`);
+        } else {
+            console.log('Sensor removed successfully', result.data);
+            await syncSensorConfig();
+            closeModal();
+        }
     };
 
     const handleMonitor = () => {

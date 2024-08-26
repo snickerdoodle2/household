@@ -2,46 +2,22 @@
 <script lang="ts">
     import type { SensorData } from '@/types/Sensor.types';
     import SensorInputModal from './SensorInputModal.svelte';
-    import { SERVER_URL } from '@/config/const';
+    import { addSensor } from '@/utils/requests/Sensor.requests';
+    import { syncSensorConfig } from '@/utils/Sync.utils';
 
-    export let onClose: () => Promise<void> = async () => {};
-
-    async function addSensor({ name, uri, type, refresh_rate }: SensorData) {
-        try {
-            const response = await fetch(`${SERVER_URL}/api/v1/sensor`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name,
-                    uri,
-                    type,
-                    refresh_rate,
-                }),
-            });
-
-            if (!response.ok) {
-                // TODO: error json handling
-                const errorData = await response.json();
-                console.error('Error:', errorData);
-                alert(`Error: ${errorData.error}`);
-            } else {
-                // TODO: nice pop-up window instead of alert
-                const responseData = await response.json();
-                console.log('Success:', responseData);
-                alert('Sensor added successfully!');
-            }
-        } catch (error) {
-            console.error('Network Error:', error);
-            alert('Network error. Please try again later.');
+    async function handleSensorAddition(data: SensorData) {
+        const result = await addSensor(data);
+        if (result.isError) {
+            console.log(`Failed to add a sensor: ${result.error}`);
+        } else {
+            console.log('Sensor added successfully', result.data);
+            syncSensorConfig();
         }
-        onClose();
     }
 </script>
 
 <main>
-    <SensorInputModal title={'Add New Device'} onSubmit={addSensor} />
+    <SensorInputModal title={'Add New Device'} onSubmit={handleSensorAddition} />
 </main>
 
 <style>
