@@ -40,7 +40,7 @@ func (r *RuleAnd) Process(data RuleData) (bool, error) {
 }
 
 func (r *RuleAnd) Dependencies() []uuid.UUID {
-	res := make([]uuid.UUID, len(r.Children))
+	res := make([]uuid.UUID, 0)
 
 	for _, child := range r.Children {
 		for _, dep := range child.Dependencies() {
@@ -188,7 +188,7 @@ func (r *RuleOr) Process(data RuleData) (bool, error) {
 }
 
 func (r *RuleOr) Dependencies() []uuid.UUID {
-	res := make([]uuid.UUID, len(r.Children))
+	res := make([]uuid.UUID, 0)
 
 	for _, child := range r.Children {
 		for _, dep := range child.Dependencies() {
