@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type envelope map[string]any
@@ -125,13 +126,7 @@ func (app *App) readInt(qs url.Values, key string, defaulValue int, v *validator
 }
 
 func (app *App) startSensorListener(sensor *data.Sensor) {
-	var l listener.ListenerT
-	switch {
-	case sensor.Type == "binary_switch" || sensor.Type == "binary_sensor" || sensor.Type == "button":
-		l = listener.New[bool](sensor)
-	case sensor.Type == "decimal_switch" || sensor.Type == "decimal_sensor":
-		l = listener.New[float64](sensor)
-	}
+	l := listener.New[float64](sensor)
 	go l.Start()
 	app.listeners[sensor.ID] = l
 }
@@ -142,4 +137,25 @@ func (app *App) stopSensorListener(sensorId uuid.UUID) {
 	}
 
 	delete(app.listeners, sensorId)
+}
+
+type SocketMsg struct {
+	Values []float64 `json:"values"`
+	Status string    `json:"status"`
+}
+
+func (app *App) sendSocketMessage(conn *websocket.Conn, data []float64) error {
+	var msg SocketMsg
+	if data == nil {
+		msg = SocketMsg{
+			Status: "OFFLINE",
+			Values: make([]float64, 0),
+		}
+	} else {
+		msg = SocketMsg{
+			Status: "ONLINE",
+			Values: data,
+		}
+	}
+	return conn.WriteJSON(msg)
 }

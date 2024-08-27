@@ -10,19 +10,12 @@ import (
 	"time"
 )
 
-type ListenerT interface {
-	Start() error
-	GetBroker() *broker.Broker[[]byte]
-	GetStopCh() chan struct{}
-	GetCurrentValue() ([]byte, error)
-}
-
 func New[T any](sensor *data.Sensor) *Listener[T] {
 	return &Listener[T]{
 		sensor: sensor,
 		values: make([]T, 0),
 		StopCh: make(chan struct{}, 2),
-		Broker: broker.NewBroker[[]byte](),
+		Broker: broker.NewBroker[[]T](),
 	}
 }
 
@@ -36,7 +29,7 @@ type Listener[T any] struct {
 	sensor *data.Sensor
 	values []T
 	StopCh chan struct{}
-	Broker *broker.Broker[[]byte]
+	Broker *broker.Broker[[]T]
 }
 
 func (l *Listener[T]) Start() error {
@@ -60,16 +53,8 @@ func (l *Listener[T]) Start() error {
 		res, err := http.Get(fmt.Sprintf("http://%v/value", l.sensor.URI))
 		if err != nil {
 			fmt.Printf(err.Error())
-			msg := Response[T]{
-				Status: "OFFLINE",
-				Values: make([]T, 0),
-			}
 
-			json, err := json.Marshal(msg)
-			if err != nil {
-				return err
-			}
-			l.Broker.Publish(json)
+			l.Broker.Publish(nil)
 
 			delayMultiplier += 1
 			continue
@@ -90,21 +75,13 @@ func (l *Listener[T]) Start() error {
 			l.values = l.values[1:]
 		}
 
-		msg := Response[T]{
-			Status: "ONLINE",
-			Values: l.values,
-		}
-		json, err := json.Marshal(msg)
-		if err != nil {
-			return err
-		}
-		l.Broker.Publish(json)
+		l.Broker.Publish(l.values)
 
 		delayMultiplier = 1
 	}
 }
 
-func (l *Listener[T]) GetBroker() *broker.Broker[[]byte] {
+func (l *Listener[T]) GetBroker() *broker.Broker[[]T] {
 	return l.Broker
 }
 
@@ -112,23 +89,6 @@ func (l *Listener[T]) GetStopCh() chan struct{} {
 	return l.StopCh
 }
 
-func (l *Listener[T]) GetCurrentValue() ([]byte, error) {
-	var msg Response[T]
-	if l.values == nil {
-		msg = Response[T]{
-			Status: "OFFLINE",
-			Values: make([]T, 0),
-		}
-	} else {
-		msg = Response[T]{
-			Status: "ONLINE",
-			Values: l.values,
-		}
-	}
-
-	json, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-	return json, nil
+func (l *Listener[T]) GetCurrentValue() []T {
+	return l.values
 }

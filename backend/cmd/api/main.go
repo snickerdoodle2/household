@@ -32,7 +32,7 @@ type App struct {
 	logger    *log.Logger
 	models    data.Models
 	upgrader  websocket.Upgrader
-	listeners map[uuid.UUID]listener.ListenerT
+	listeners map[uuid.UUID]*listener.Listener[float64]
 }
 
 func main() {
@@ -66,7 +66,7 @@ func main() {
 		logger:    logger,
 		config:    cfg,
 		models:    data.NewModels(db),
-		listeners: make(map[uuid.UUID]listener.ListenerT),
+		listeners: make(map[uuid.UUID]*listener.Listener[float64]),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
