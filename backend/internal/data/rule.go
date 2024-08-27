@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"inzynierka/internal/data/validator"
+	"reflect"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -15,7 +16,8 @@ import (
 )
 
 var (
-	ErrNonExistingTo = errors.New("on_valid.id is not pointing to any existing device")
+	ErrNonExistingTo         = errors.New("on_valid.id is not pointing to any existing device")
+	ErrMissingDependencyChan = errors.New("Provided listeners map is missing required dependency")
 )
 
 type ValidRuleAction struct {
@@ -31,9 +33,63 @@ type Rule struct {
 	OnValid     ValidRuleAction `json:"on_valid"`
 	CreatedAt   time.Time       `json:"created_at"`
 	Version     int             `json:"version"`
+	prev        bool
 }
 
 type SensorListeners map[uuid.UUID]*Listener[float64]
+
+// TOOD: Handle stopping on channel close
+// REF: https://pkg.go.dev/reflect#Select
+func (r *Rule) Run(listeners SensorListeners) error {
+	deps := r.Internal.Dependencies()
+	channels := make([]reflect.SelectCase, len(deps))
+	values := make(RuleData)
+	for i, dep := range deps {
+		listener, ok := listeners[dep]
+		if !ok {
+			return ErrMissingDependencyChan
+		}
+		cur := listener.GetCurrentValue()
+		if len(cur) > 0 {
+			values[dep] = cur[len(cur)-1]
+		}
+
+		msgCh := listener.GetBroker().Subscribe()
+		defer listener.GetBroker().Unsubscribe(msgCh)
+
+		channels[i] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(msgCh)}
+	}
+
+	r.update(values)
+
+	for true {
+		i, sliceV, ok := reflect.Select(channels)
+		if !ok {
+			break
+		}
+		slice := sliceV.Interface().([]float64)
+		values[deps[i]] = slice[len(slice)-1]
+		r.update(values)
+	}
+	return nil
+}
+
+func (r *Rule) update(data RuleData) {
+	cur, err := r.Internal.Process(data)
+	if err != nil {
+		return
+	}
+
+	// If something changed from previous
+	if cur != r.prev {
+		if cur {
+		} else {
+		}
+
+		r.prev = cur
+	}
+}
+
 func (r *Rule) UnmarshalJSON(data []byte) error {
 	tmp := struct {
 		ID          uuid.UUID              `json:"id"`
