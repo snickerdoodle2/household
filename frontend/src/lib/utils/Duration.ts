@@ -43,7 +43,10 @@ export class Duration {
      * @returns {Duration} - A new Duration representing the sum.
      */
     public static sum(...durations: Duration[]): Duration {
-        const sum: number = durations.reduce((acc: number, duration: Duration) => acc + duration.toMilliseconds(), 0);
+        const sum: number = durations.reduce(
+            (acc: number, duration: Duration) => acc + duration.toMilliseconds(),
+            0
+        );
         return new Duration(sum);
     }
 

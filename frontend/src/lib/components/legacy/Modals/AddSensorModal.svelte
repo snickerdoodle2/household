@@ -16,21 +16,18 @@
 
     async function addSensor({ name, uri, type, refresh_rate }: SensorData) {
         try {
-            const response = await fetch(
-                `${SERVER_URL}/api/v1/sensor`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name,
-                        uri,
-                        type,
-                        refresh_rate,
-                    }),
-                }
-            );
+            const response = await fetch(`${SERVER_URL}/api/v1/sensor`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name,
+                    uri,
+                    type,
+                    refresh_rate,
+                }),
+            });
 
             if (!response.ok) {
                 // TODO: error json handling

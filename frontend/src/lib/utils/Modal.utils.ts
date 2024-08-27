@@ -1,10 +1,7 @@
 import { openedModalStore } from '@/stores/Stores';
 import type { ModalDataPayload, ModalType, OpenedModalData } from '@/types/Modal.types';
 
-export function openModal<T extends ModalType>(
-    type: T,
-    data: ModalDataPayload[T]
-) {
+export function openModal<T extends ModalType>(type: T, data: ModalDataPayload[T]) {
     console.log('Opening the modal', { type, data });
     openedModalStore.set({ type, data });
 }

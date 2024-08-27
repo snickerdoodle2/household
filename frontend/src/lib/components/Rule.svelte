@@ -4,7 +4,7 @@
         name: 'Podlewanie grządek',
         type: 'Static rule',
         lastActivation: '18:04 10-12-2024',
-        description: '--- no description privded ----'
+        description: '--- no description privded ----',
     };
 
     function handleSeeMore() {
@@ -18,7 +18,7 @@
         <p class="font-bold text-lg">{rule.name}</p>
         <p class="text-xs">last activation: {rule.lastActivation}</p>
     </div>
-    
+
     <div class="flex-1">
         <p class="text-sm">{rule.type}</p>
     </div>

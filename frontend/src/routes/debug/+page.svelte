@@ -41,9 +41,7 @@
         </Select.Trigger>
         <Select.Content>
             {#each data.sensors as sensor}
-                <Select.Item value={sensor.value} label={sensor.label}
-                    >{sensor.label}</Select.Item
-                >
+                <Select.Item value={sensor.value} label={sensor.label}>{sensor.label}</Select.Item>
             {/each}
         </Select.Content>
     </Select.Root>

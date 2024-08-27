@@ -57,8 +57,8 @@
     });
 </script>
 
-<main class="h-screen w-screen flex flex-col bg-background text-foreground px-10 py-10 ">
-    <div class="card-muted flex rounded-lg  md-10 p-6">
+<main class="h-screen w-screen flex flex-col bg-background text-foreground px-10 py-10">
+    <div class="card-muted flex rounded-lg md-10 p-6">
         <div class="flex items-center">
             <button
                 id="list-outline"

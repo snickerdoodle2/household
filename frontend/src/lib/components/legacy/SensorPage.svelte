@@ -64,7 +64,6 @@
         <MonitorSensorModal />
 
         <div class="p-2 place-content-end">
-            
             <Button
                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded"
                 on:click={() => {
@@ -72,20 +71,14 @@
                 }}>Add device</Button
             >
 
-            <Button
-                class="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded"
+            <Button class="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded"
                 >Filter</Button
             >
 
             <Dropdown placement={'right'} class="w-48 p-3 space-y-1 text-sm">
                 {#each Object.values(SensorType) as type}
-                    <li
-                        class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
-                    >
-                        <Checkbox
-                            id={type}
-                            bind:checked={sensorVisibility[type]}
-                        >
+                    <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <Checkbox id={type} bind:checked={sensorVisibility[type]}>
                             {type}
                         </Checkbox>
                     </li>
@@ -113,20 +106,12 @@
                                 <TableBodyCell>{sensor.name}</TableBodyCell>
                                 <TableBodyCell>{sensor.uri}</TableBodyCell>
                                 <TableBodyCell>{sensor.type}</TableBodyCell>
-                                <TableBodyCell
-                                    >{sensor.refresh_rate}</TableBodyCell
-                                >
-                                <TableBodyCell
-                                    >{sensor.created_at}</TableBodyCell
-                                >
+                                <TableBodyCell>{sensor.refresh_rate}</TableBodyCell>
+                                <TableBodyCell>{sensor.created_at}</TableBodyCell>
                                 <TableBodyCell>{sensor.version}</TableBodyCell>
                                 <TableBodyCell>
                                     <Button
-                                        on:click={() =>
-                                            openModal(
-                                                ModalType.MODIFY_SENSOR,
-                                                sensor
-                                            )}
+                                        on:click={() => openModal(ModalType.MODIFY_SENSOR, sensor)}
                                         color="blue"
                                         class="mr-2">Edit</Button
                                     >
@@ -137,11 +122,7 @@
                                         class="mr-2">Remove</Button
                                     >
                                     <Button
-                                        on:click={() =>
-                                            openModal(
-                                                ModalType.MONITOR_SENSOR,
-                                                sensor
-                                            )}
+                                        on:click={() => openModal(ModalType.MONITOR_SENSOR, sensor)}
                                         color="green">Monitor</Button
                                     >
                                 </TableBodyCell>

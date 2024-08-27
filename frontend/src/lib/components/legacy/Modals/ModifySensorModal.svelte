@@ -27,12 +27,7 @@
         refresh_rate: 0,
     };
 
-    async function modifySensor({
-        name,
-        uri,
-        type,
-        refresh_rate,
-    }: SensorData) {
+    async function modifySensor({ name, uri, type, refresh_rate }: SensorData) {
         try {
             const response = await fetch(`${SERVER_URL}/api/v1/sensor/${id}`, {
                 method: 'PUT',

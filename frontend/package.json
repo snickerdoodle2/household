@@ -1,45 +1,45 @@
 {
-  "name": "frontend",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "prebuild": "sed -i 's/export const SERVER_URL = \"http:\\/\\/localhost:8080\";/export const SERVER_URL = \"\";/' ./src/lib/const.ts",
-    "postbuild": "sed -i 's/export const SERVER_URL = \"\";/export const SERVER_URL = \"http:\\/\\/localhost:8080\";/' ./src/lib/const.ts",
-    "preview": "vite preview",
-    "format": "prettier --write .",
-    "lint": "prettier --check .",  
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
-  },
-  "devDependencies": {
-    "@sveltejs/adapter-auto": "^3.0.0",
-    "@sveltejs/adapter-static": "^3.0.1",
-    "@sveltejs/kit": "^2.0.0",
-    "@sveltejs/vite-plugin-svelte": "^3.0.0",
-    "autoprefixer": "^10.4.19",
-    "flowbite-svelte": "^0.46.1",
-    "flowbite-svelte-icons": "^1.6.1",
-    "postcss": "^8.4.38",
-    "prettier": "^3.3.3",
-    "prettier-plugin-svelte": "^3.2.6",
-    "svelte": "^4.2.7",
-    "svelte-check": "^3.6.0",
-    "tailwindcss": "^3.4.3",
-    "tslib": "^2.4.1",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.3"
-  },
-  "type": "module",
-  "dependencies": {
-    "bits-ui": "^0.21.8",
-    "clsx": "^2.1.1",
-    "mode-watcher": "^0.3.0",
-    "radix-icons-svelte": "^1.2.1",
-    "svelte-radix": "^1.1.0",
-    "tailwind-merge": "^2.3.0",
-    "tailwind-variants": "^0.2.1",
-    "zod": "^3.23.8"
-  }
+    "name": "frontend",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "dev": "vite dev",
+        "build": "vite build",
+        "prebuild": "sed -i 's/export const SERVER_URL = \"http:\\/\\/localhost:8080\";/export const SERVER_URL = \"\";/' ./src/lib/const.ts",
+        "postbuild": "sed -i 's/export const SERVER_URL = \"\";/export const SERVER_URL = \"http:\\/\\/localhost:8080\";/' ./src/lib/const.ts",
+        "preview": "vite preview",
+        "pretty": "prettier --write .",
+        "lint": "prettier --check .",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+    },
+    "devDependencies": {
+        "@sveltejs/adapter-auto": "^3.0.0",
+        "@sveltejs/adapter-static": "^3.0.1",
+        "@sveltejs/kit": "^2.0.0",
+        "@sveltejs/vite-plugin-svelte": "^3.0.0",
+        "autoprefixer": "^10.4.19",
+        "flowbite-svelte": "^0.46.1",
+        "flowbite-svelte-icons": "^1.6.1",
+        "postcss": "^8.4.38",
+        "prettier": "^3.3.3",
+        "prettier-plugin-svelte": "^3.2.6",
+        "svelte": "^4.2.7",
+        "svelte-check": "^3.6.0",
+        "tailwindcss": "^3.4.3",
+        "tslib": "^2.4.1",
+        "typescript": "^5.0.0",
+        "vite": "^5.0.3"
+    },
+    "type": "module",
+    "dependencies": {
+        "bits-ui": "^0.21.8",
+        "clsx": "^2.1.1",
+        "mode-watcher": "^0.3.0",
+        "radix-icons-svelte": "^1.2.1",
+        "svelte-radix": "^1.1.0",
+        "tailwind-merge": "^2.3.0",
+        "tailwind-variants": "^0.2.1",
+        "zod": "^3.23.8"
+    }
 }
