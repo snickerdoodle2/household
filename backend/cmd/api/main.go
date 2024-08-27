@@ -3,15 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 	"inzynierka/internal/data"
-	"inzynierka/internal/listener"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/charmbracelet/log"
+	"github.com/gorilla/websocket"
 )
 
 type Config struct {
@@ -32,7 +31,7 @@ type App struct {
 	logger    *log.Logger
 	models    data.Models
 	upgrader  websocket.Upgrader
-	listeners map[uuid.UUID]*listener.Listener[float64]
+	listeners data.SensorListeners
 }
 
 func main() {
@@ -66,7 +65,7 @@ func main() {
 		logger:    logger,
 		config:    cfg,
 		models:    data.NewModels(db),
-		listeners: make(map[uuid.UUID]*listener.Listener[float64]),
+		listeners: make(data.SensorListeners),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,

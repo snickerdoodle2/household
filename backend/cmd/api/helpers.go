@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
-	"inzynierka/internal/listener"
 	"io"
 	"net/http"
 	"net/url"
@@ -126,7 +125,7 @@ func (app *App) readInt(qs url.Values, key string, defaulValue int, v *validator
 }
 
 func (app *App) startSensorListener(sensor *data.Sensor) {
-	l := listener.New[float64](sensor)
+	l := data.NewListener[float64](sensor)
 	go l.Start()
 	app.listeners[sensor.ID] = l
 }

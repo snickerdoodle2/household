@@ -1,16 +1,15 @@
-package listener
+package data
 
 import (
 	"encoding/json"
 	"fmt"
 	"inzynierka/internal/broker"
-	"inzynierka/internal/data"
 	"io"
 	"net/http"
 	"time"
 )
 
-func New[T any](sensor *data.Sensor) *Listener[T] {
+func NewListener[T any](sensor *Sensor) *Listener[T] {
 	return &Listener[T]{
 		sensor: sensor,
 		values: make([]T, 0),
@@ -26,7 +25,7 @@ type Response[T any] struct {
 }
 
 type Listener[T any] struct {
-	sensor *data.Sensor
+	sensor *Sensor
 	values []T
 	StopCh chan struct{}
 	Broker *broker.Broker[[]T]

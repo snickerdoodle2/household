@@ -1,4 +1,4 @@
-package rule
+package data
 
 import (
 	"context"
@@ -15,8 +15,7 @@ import (
 )
 
 var (
-	ErrNonExistingTo  = errors.New("on_valid.id is not pointing to any existing device")
-	ErrRecordNotFound = errors.New("not found")
+	ErrNonExistingTo = errors.New("on_valid.id is not pointing to any existing device")
 )
 
 type ValidRuleAction struct {
@@ -34,6 +33,7 @@ type Rule struct {
 	Version     int             `json:"version"`
 }
 
+type SensorListeners map[uuid.UUID]*Listener[float64]
 func (r *Rule) UnmarshalJSON(data []byte) error {
 	tmp := struct {
 		ID          uuid.UUID              `json:"id"`

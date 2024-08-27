@@ -1,8 +1,8 @@
-package rule_test
+package data_test
 
 import (
 	"errors"
-	"inzynierka/internal/data/rule"
+	"inzynierka/internal/data"
 	"slices"
 	"testing"
 
@@ -12,7 +12,7 @@ import (
 func TestRuleGTDependency(t *testing.T) {
 	sensorId := uuid.New()
 
-	rule := rule.RuleGT{
+	rule := data.RuleGT{
 		SensorID: sensorId,
 		Value:    10,
 	}
@@ -40,7 +40,7 @@ var GTtests = []struct {
 func TestRuleGTProcess(t *testing.T) {
 	sensorId := uuid.New()
 
-	rule := rule.RuleGT{
+	rule := data.RuleGT{
 		SensorID: sensorId,
 		Value:    10,
 	}
@@ -66,14 +66,14 @@ func TestRuleGTProcess(t *testing.T) {
 func TestRuleGTProcessError(t *testing.T) {
 	sensorId := uuid.New()
 
-	rulegt := rule.RuleGT{
+	rulegt := data.RuleGT{
 		SensorID: sensorId,
 		Value:    10,
 	}
 
-	data := make(map[uuid.UUID]float64)
+	json := make(map[uuid.UUID]float64)
 
-	if _, err := rulegt.Process(data); !errors.Is(err, rule.ErrMissingVal) {
+	if _, err := rulegt.Process(json); !errors.Is(err, data.ErrMissingVal) {
 		t.Errorf("wanted error, got %s", err.Error())
 	}
 
@@ -82,7 +82,7 @@ func TestRuleGTProcessError(t *testing.T) {
 func TestRuleLTDependency(t *testing.T) {
 	sensorId := uuid.New()
 
-	rule := rule.RuleLT{
+	rule := data.RuleLT{
 		SensorID: sensorId,
 		Value:    10,
 	}
@@ -110,7 +110,7 @@ var LTtests = []struct {
 func TestRuleLTProcess(t *testing.T) {
 	sensorId := uuid.New()
 
-	rule := rule.RuleLT{
+	rule := data.RuleLT{
 		SensorID: sensorId,
 		Value:    10,
 	}
@@ -136,14 +136,14 @@ func TestRuleLTProcess(t *testing.T) {
 func TestRuleLTProcessError(t *testing.T) {
 	sensorId := uuid.New()
 
-	rulegt := rule.RuleGT{
+	rulegt := data.RuleGT{
 		SensorID: sensorId,
 		Value:    10,
 	}
 
-	data := make(map[uuid.UUID]float64)
+	json := make(map[uuid.UUID]float64)
 
-	if _, err := rulegt.Process(data); !errors.Is(err, rule.ErrMissingVal) {
+	if _, err := rulegt.Process(json); !errors.Is(err, data.ErrMissingVal) {
 		t.Errorf("wanted error, got %s", err.Error())
 	}
 
@@ -151,19 +151,19 @@ func TestRuleLTProcessError(t *testing.T) {
 
 func TestRuleAndDependency(t *testing.T) {
 	sensorId1 := uuid.New()
-	rulegt1 := rule.RuleGT{
+	rulegt1 := data.RuleGT{
 		SensorID: sensorId1,
 	}
 
 	sensorId2 := uuid.New()
-	rulegt2 := rule.RuleGT{
+	rulegt2 := data.RuleGT{
 		SensorID: sensorId2,
 	}
 
 	ids := []uuid.UUID{sensorId1, sensorId2}
 
-	ruleAnd := rule.RuleAnd{
-		Children: []rule.RuleInternal{&rulegt1, &rulegt2},
+	ruleAnd := data.RuleAnd{
+		Children: []data.RuleInternal{&rulegt1, &rulegt2},
 	}
 
 	deps := ruleAnd.Dependencies()
@@ -187,19 +187,19 @@ var AndTests = []struct {
 func TestRuleAndProcess(t *testing.T) {
 	sensorId1 := uuid.New()
 
-	rulegt1 := rule.RuleGT{
+	rulegt1 := data.RuleGT{
 		SensorID: sensorId1,
 		Value:    5,
 	}
 
 	sensorId2 := uuid.New()
-	rulegt2 := rule.RuleGT{
+	rulegt2 := data.RuleGT{
 		SensorID: sensorId2,
 		Value:    9,
 	}
 
-	ruleAnd := rule.RuleAnd{
-		Children: []rule.RuleInternal{&rulegt1, &rulegt2},
+	ruleAnd := data.RuleAnd{
+		Children: []data.RuleInternal{&rulegt1, &rulegt2},
 	}
 
 	for _, test := range AndTests {
@@ -225,19 +225,19 @@ func TestRuleAndProcess(t *testing.T) {
 
 func TestRuleOrDependency(t *testing.T) {
 	sensorId1 := uuid.New()
-	rulegt1 := rule.RuleGT{
+	rulegt1 := data.RuleGT{
 		SensorID: sensorId1,
 	}
 
 	sensorId2 := uuid.New()
-	rulegt2 := rule.RuleGT{
+	rulegt2 := data.RuleGT{
 		SensorID: sensorId2,
 	}
 
 	ids := []uuid.UUID{sensorId1, sensorId2}
 
-	ruleOr := rule.RuleOr{
-		Children: []rule.RuleInternal{&rulegt1, &rulegt2},
+	ruleOr := data.RuleOr{
+		Children: []data.RuleInternal{&rulegt1, &rulegt2},
 	}
 
 	deps := ruleOr.Dependencies()
@@ -261,19 +261,19 @@ var OrTests = []struct {
 func TestRuleOrProcess(t *testing.T) {
 	sensorId1 := uuid.New()
 
-	rulegt1 := rule.RuleGT{
+	rulegt1 := data.RuleGT{
 		SensorID: sensorId1,
 		Value:    5,
 	}
 
 	sensorId2 := uuid.New()
-	rulegt2 := rule.RuleGT{
+	rulegt2 := data.RuleGT{
 		SensorID: sensorId2,
 		Value:    9,
 	}
 
-	ruleAnd := rule.RuleOr{
-		Children: []rule.RuleInternal{&rulegt1, &rulegt2},
+	ruleAnd := data.RuleOr{
+		Children: []data.RuleInternal{&rulegt1, &rulegt2},
 	}
 
 	for _, test := range OrTests {

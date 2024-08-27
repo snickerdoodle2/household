@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"inzynierka/internal/data/rule"
+	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
 
@@ -11,26 +11,26 @@ import (
 )
 
 func (app *App) createRuleHandler(w http.ResponseWriter, r *http.Request) {
-	var ruleIn rule.Rule
-	err := app.readJSON(w, r, &ruleIn)
+	var rule data.Rule
+	err := app.readJSON(w, r, &rule)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
-	app.logger.Info("rule from request", ruleIn)
+	app.logger.Info("rule from request", rule)
 
 	v := validator.New()
 
-	if rule.ValidateRule(v, &ruleIn); !v.Valid() {
+	if data.ValidateRule(v, &rule); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	err = app.models.Rules.Insert(&ruleIn)
+	err = app.models.Rules.Insert(&rule)
 	if err != nil {
 		switch {
-		case errors.Is(err, rule.ErrNonExistingTo):
+		case errors.Is(err, data.ErrNonExistingTo):
 			v.AddError("on_valid.id", "referencing non existing device")
 			app.failedValidationResponse(w, r, v.Errors)
 		default:
@@ -39,7 +39,7 @@ func (app *App) createRuleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"data": ruleIn}, nil)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"data": rule}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -54,11 +54,11 @@ func (app *App) getRuleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ruleS, err := app.models.Rules.Get(ruleId)
+	rule, err := app.models.Rules.Get(ruleId)
 
 	if err != nil {
 		switch {
-		case errors.Is(err, rule.ErrRecordNotFound):
+		case errors.Is(err, data.ErrRecordNotFound):
 			app.notFoundResponse(w, r)
 		default:
 			app.serverErrorResponse(w, r, err)
@@ -66,20 +66,20 @@ func (app *App) getRuleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"rule": ruleS}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"rule": rule}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
 
 func (app *App) listRulesHandler(w http.ResponseWriter, r *http.Request) {
-	rules, err := app.models.Rules.GetAll()
+	rule, err := app.models.Rules.GetAll()
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"data": rules}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"data": rule}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -94,12 +94,11 @@ func (app *App) updateRuleHanlder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ruleS, err := app.models.Rules.Get(ruleId)
-	_ = ruleS
+	rule, err := app.models.Rules.Get(ruleId)
 
 	if err != nil {
 		switch {
-		case errors.Is(err, rule.ErrRecordNotFound):
+		case errors.Is(err, data.ErrRecordNotFound):
 			app.notFoundResponse(w, r)
 		default:
 			app.serverErrorResponse(w, r, err)
@@ -111,7 +110,7 @@ func (app *App) updateRuleHanlder(w http.ResponseWriter, r *http.Request) {
 		Name        *string                 `json:"name"`
 		Description *string                 `json:"description"`
 		Internal    *map[string]interface{} `json:"internal"`
-		OnValid     *rule.ValidRuleAction   `json:"on_valid"`
+		OnValid     *data.ValidRuleAction   `json:"on_valid"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -121,38 +120,38 @@ func (app *App) updateRuleHanlder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.Name != nil {
-		ruleS.Name = *input.Name
+		rule.Name = *input.Name
 	}
 
 	if input.Description != nil {
-		ruleS.Description = *input.Description
+		rule.Description = *input.Description
 	}
 
 	if input.Internal != nil {
-		internal, err := rule.UnmarshalInternalRuleJSON(*input.Internal)
+		internal, err := data.UnmarshalInternalRuleJSON(*input.Internal)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 
-		ruleS.Internal = internal
+		rule.Internal = internal
 	}
 
 	if input.OnValid != nil {
-		ruleS.OnValid = *input.OnValid
+		rule.OnValid = *input.OnValid
 	}
 
 	v := validator.New()
-	if rule.ValidateRule(v, ruleS); !v.Valid() {
+	if data.ValidateRule(v, rule); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	err = app.models.Rules.Update(ruleS)
+	err = app.models.Rules.Update(rule)
 
 	if err != nil {
 		switch {
-		case errors.Is(err, rule.ErrNonExistingTo):
+		case errors.Is(err, data.ErrNonExistingTo):
 			v.AddError("on_valid.id", "referencing non existing device")
 			app.failedValidationResponse(w, r, v.Errors)
 		default:
@@ -161,7 +160,7 @@ func (app *App) updateRuleHanlder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"data": ruleS}, nil)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"data": rule}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -179,7 +178,7 @@ func (app *App) deleteRuleHandler(w http.ResponseWriter, r *http.Request) {
 	err = app.models.Rules.Delete(ruleId)
 	if err != nil {
 		switch {
-		case errors.Is(err, rule.ErrRecordNotFound):
+		case errors.Is(err, data.ErrRecordNotFound):
 			app.notFoundResponse(w, r)
 		default:
 			app.serverErrorResponse(w, r, err)

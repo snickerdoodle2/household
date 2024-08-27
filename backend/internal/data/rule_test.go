@@ -1,8 +1,8 @@
-package rule_test
+package data_test
 
 import (
 	"encoding/json"
-	"inzynierka/internal/data/rule"
+	"inzynierka/internal/data"
 	"slices"
 	"testing"
 
@@ -10,23 +10,23 @@ import (
 )
 
 func TestRuleMarshallingNoError(t *testing.T) {
-	internalOR := rule.RuleOr{
-		Children: []rule.RuleInternal{
-			&rule.RuleLT{
+	internalOR := data.RuleOr{
+		Children: []data.RuleInternal{
+			&data.RuleLT{
 				SensorID: uuid.New(),
 				Value:    5,
 			},
-			&rule.RuleGT{
+			&data.RuleGT{
 				SensorID: uuid.New(),
 				Value:    8,
 			},
 		},
 	}
-	rule := rule.Rule{
+	rule := data.Rule{
 		ID:          uuid.New(),
 		Description: "Nowa reguła",
 		Internal:    &internalOR,
-		OnValid: rule.ValidRuleAction{
+		OnValid: data.ValidRuleAction{
 			To:      uuid.New(),
 			Payload: map[string]string{"data": "loool"},
 		},
@@ -42,7 +42,7 @@ func TestRuleMarshallingNoError(t *testing.T) {
 }
 
 func TestRuleUnmarshalling(t *testing.T) {
-	data := `{
+	jsonData := `{
     "id": "78c6e961-b410-4130-8254-50257b3d88f5",
     "description": "Nowa reguła",
     "internal": {
@@ -82,8 +82,8 @@ func TestRuleUnmarshalling(t *testing.T) {
     }
 }`
 
-	a := rule.Rule{}
-	err := json.Unmarshal([]byte(data), &a)
+	a := data.Rule{}
+	err := json.Unmarshal([]byte(jsonData), &a)
 	if err != nil {
 		t.Fatalf("Expected success, found %v", err)
 	}
@@ -102,34 +102,34 @@ func TestRuleUnmarshalling(t *testing.T) {
 
 func TestMarshalUnmarshal(t *testing.T) {
 	tmp := uuid.New()
-	internal := rule.RuleOr{
-		Children: []rule.RuleInternal{
-			&rule.RuleAnd{
-				Children: []rule.RuleInternal{
-					&rule.RuleLT{
+	internal := data.RuleOr{
+		Children: []data.RuleInternal{
+			&data.RuleAnd{
+				Children: []data.RuleInternal{
+					&data.RuleLT{
 						SensorID: tmp,
 						Value:    5,
 					},
-					&rule.RuleGT{
+					&data.RuleGT{
 						SensorID: tmp,
 						Value:    8,
 					},
 				},
 			},
-			&rule.RuleNot{
-				Wrapped: &rule.RuleGT{
+			&data.RuleNot{
+				Wrapped: &data.RuleGT{
 					SensorID: uuid.New(),
 					Value:    8,
 				},
 			},
 		},
 	}
-	iRule := rule.Rule{
+	iRule := data.Rule{
 		ID:          uuid.New(),
 		Name:        "Nowa reguła",
 		Description: "Przykładowy opis nowej reguły",
 		Internal:    &internal,
-		OnValid: rule.ValidRuleAction{
+		OnValid: data.ValidRuleAction{
 			To:      uuid.New(),
 			Payload: map[string]string{"data": "loool"},
 		},
@@ -140,7 +140,7 @@ func TestMarshalUnmarshal(t *testing.T) {
 		t.Fatalf("Error: %v", err)
 	}
 
-	uRule := rule.Rule{}
+	uRule := data.Rule{}
 	err = json.Unmarshal(marshalled, &uRule)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
