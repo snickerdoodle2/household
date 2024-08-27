@@ -84,6 +84,8 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	msgCh := listener.GetBroker().Subscribe()
+	defer listener.GetBroker().Unsubscribe(msgCh)
+
 	initValue := listener.GetCurrentValue()
 	err = app.sendSocketMessage(conn, initValue)
 	if err != nil {
