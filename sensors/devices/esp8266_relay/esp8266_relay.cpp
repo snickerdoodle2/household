@@ -42,37 +42,27 @@ void handleGetValue()
 
 void handlePostValue()
 {
-    Serial.println("handlePostValue called");
-    Serial.println(server.arg("value"));
-
     if (!server.hasArg("value"))
     {
-        Serial.println("no 'value' argument");
         server.send(400, "text/plain", "400: Invalid Request, no 'value' argument found");
         return;
     }
 
-    Serial.println(server.arg("value"));
-
     if (server.arg("value") == "1")
     {
-        Serial.println("post value 1");
         digitalWrite(RELAY_PIN, HIGH);
     }
     else if (server.arg("value") == "0")
     {
-        Serial.println("post value 0");
         digitalWrite(RELAY_PIN, LOW);
     }
     else
     {
-        Serial.println("post value incorrect");
         server.send(400, "text/plain", "400: Invalid Request, 'value' argument incorrect [0/1]");
         return;
     }
 
     int current_state = digitalRead(RELAY_PIN);
-    Serial.println("pin set to " + String(current_state));
     server.send(200, "text/json", "{\"value\":" + String(current_state) + "}");
 }
 
