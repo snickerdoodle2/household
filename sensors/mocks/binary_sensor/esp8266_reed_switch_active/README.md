@@ -1,6 +1,6 @@
 # SENSOR AKTYWNY
 Sensor aktywny, to taki, który nie czeka na request z serwera, tylko jest w stanie samodzielnie wysyłać dane. Ma on również tę samą funkcjonalność co zwykły sensor pasywny - odpowiada na zapytania serwera.
-## binary_sensor_active
+## reed_switch_active
 Ten przykładowy sensor powstał na bazie ESP8266 i czujnika kontaktoronowego. Czujnik podpięty jest do zasilania 3,3V i pinu D7. Gdy elementy czujnika zbliżą się do siebie, na pinie pojawia się napięcie.
 ### Endpointy
 1. `GET /status` - zwraca status urządzenia
