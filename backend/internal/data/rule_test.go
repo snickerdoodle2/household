@@ -28,7 +28,7 @@ func TestRuleMarshallingNoError(t *testing.T) {
 		Internal:    &internalOR,
 		OnValid: data.ValidRuleAction{
 			To:      uuid.New(),
-			Payload: map[string]string{"data": "loool"},
+			Payload: map[string]interface{}{"data": "loool"},
 		},
 	}
 
@@ -131,7 +131,7 @@ func TestMarshalUnmarshal(t *testing.T) {
 		Internal:    &internal,
 		OnValid: data.ValidRuleAction{
 			To:      uuid.New(),
-			Payload: map[string]string{"data": "loool"},
+			Payload: map[string]interface{}{"data": "loool"},
 		},
 	}
 
