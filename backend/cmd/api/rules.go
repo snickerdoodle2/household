@@ -39,6 +39,8 @@ func (app *App) createRuleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.startRule(&rule)
+
 	err = app.writeJSON(w, http.StatusCreated, envelope{"data": rule}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -174,6 +176,8 @@ func (app *App) deleteRuleHandler(w http.ResponseWriter, r *http.Request) {
 		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
 		return
 	}
+
+	app.stopRule(ruleId)
 
 	err = app.models.Rules.Delete(ruleId)
 	if err != nil {

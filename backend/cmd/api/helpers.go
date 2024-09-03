@@ -138,6 +138,20 @@ func (app *App) stopSensorListener(sensorId uuid.UUID) {
 	delete(app.listeners, sensorId)
 }
 
+func (app *App) startRule(rule *data.Rule) {
+	ch := make(chan struct{}, 2)
+	app.rules.stopChannels[rule.ID] = ch
+	go rule.Run(app.listeners, app.rules.channel, ch)
+}
+
+func (app *App) stopRule(ruleId uuid.UUID) {
+	if stopCh, ok := app.rules.stopChannels[ruleId]; ok {
+		stopCh <- struct{}{}
+	}
+
+	delete(app.rules.stopChannels, ruleId)
+}
+
 type SocketMsg struct {
 	Values []float64 `json:"values"`
 	Status string    `json:"status"`

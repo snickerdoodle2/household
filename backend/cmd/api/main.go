@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -32,6 +33,10 @@ type App struct {
 	models    data.Models
 	upgrader  websocket.Upgrader
 	listeners data.SensorListeners
+	rules     struct {
+		channel      chan data.ValidRuleAction
+		stopChannels map[uuid.UUID]chan struct{}
+	}
 }
 
 func main() {
@@ -81,6 +86,13 @@ func main() {
 				}
 				return false
 			},
+		},
+		rules: struct {
+			channel      chan data.ValidRuleAction
+			stopChannels map[uuid.UUID]chan struct{}
+		}{
+			channel:      make(chan data.ValidRuleAction, 0),
+			stopChannels: make(map[uuid.UUID]chan struct{}),
 		},
 	}
 
