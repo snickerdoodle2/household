@@ -88,15 +88,16 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 
 	initValue := listener.GetCurrentValue()
 	err = app.sendSocketMessage(conn, initValue)
+
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.logError(r, err)
 		return
 	}
 
 	for msg := range msgCh {
 		err = app.sendSocketMessage(conn, msg)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			app.logError(r, err)
 			return
 		}
 	}
