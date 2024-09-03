@@ -36,6 +36,8 @@ func (app *App) serve() error {
 		app.startRule(rule)
 	}
 
+	go app.handleRuleRequests()
+
 	app.logger.Info("starting server", "addr", srv.Addr)
 
 	return srv.ListenAndServe()
@@ -50,6 +52,7 @@ func (app *App) handleRuleRequests() {
 			app.logger.Error("handleRuleRequests query", "error", err.Error(), "uuid", message.To)
 			continue
 		}
+		url := fmt.Sprintf("http://%s/value", uri)
 
 		body := new(bytes.Buffer)
 		err = json.NewEncoder(body).Encode(message.Payload)
@@ -58,7 +61,7 @@ func (app *App) handleRuleRequests() {
 			continue
 		}
 
-		req, err := http.NewRequest(http.MethodPut, uri, body)
+		req, err := http.NewRequest(http.MethodPut, url, body)
 		if err != nil {
 			app.logger.Error("handleRuleRequests request creation", "error", err.Error())
 			continue

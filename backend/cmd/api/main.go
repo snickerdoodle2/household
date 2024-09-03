@@ -91,7 +91,7 @@ func main() {
 			channel      chan data.ValidRuleAction
 			stopChannels map[uuid.UUID]chan struct{}
 		}{
-			channel:      make(chan data.ValidRuleAction, 0),
+			channel:      make(chan data.ValidRuleAction, 1),
 			stopChannels: make(map[uuid.UUID]chan struct{}),
 		},
 	}

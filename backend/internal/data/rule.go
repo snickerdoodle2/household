@@ -22,8 +22,8 @@ var (
 )
 
 type ValidRuleAction struct {
-	To      uuid.UUID         `json:"to"`
-	Payload map[string]string `json:"payload"`
+	To      uuid.UUID              `json:"to"`
+	Payload map[string]interface{} `json:"payload"`
 }
 
 type Rule struct {
