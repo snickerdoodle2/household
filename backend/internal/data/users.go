@@ -167,6 +167,6 @@ func (m UserModel) Update(user *User) error {
 	return m.DB.QueryRow(ctx, query, user.Name, user.Password.hash, user.ID).Scan(&user.Version)
 }
 
-func (m UserModel) DeleteByEmail(email string) error {
+func (m UserModel) DeleteByUsername(username string) error {
 	return errors.New("unimplemented")
 }

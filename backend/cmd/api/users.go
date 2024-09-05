@@ -105,3 +105,22 @@ func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (app *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	username := chi.URLParam(r, "username")
+	err := app.models.Users.DeleteByUsername(username)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "user successfully deleted"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

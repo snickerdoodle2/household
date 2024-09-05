@@ -39,6 +39,7 @@ func (app *App) routes() http.Handler {
 
 		r.Post("/user", app.createUserHandler)
 		r.Put("/user/{username}", app.updateUserHandler)
+		r.Delete("/user/{username}", app.deleteUserHandler)
 
 		r.Post("/login", app.loginHandler)
 
