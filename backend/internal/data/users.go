@@ -154,7 +154,17 @@ func (m UserModel) GetByUsername(username string) (*User, error) {
 }
 
 func (m UserModel) Update(user *User) error {
-	return errors.New("unimplemented")
+	query := `
+    UPDATE users
+    SET display_name = $1, password_hash = $2, version = version + 1
+    WHERE id = $3
+    RETURNING version
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return m.DB.QueryRow(ctx, query, user.Name, user.Password.hash, user.ID).Scan(&user.Version)
 }
 
 func (m UserModel) DeleteByEmail(email string) error {
