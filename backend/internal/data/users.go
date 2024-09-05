@@ -168,5 +168,22 @@ func (m UserModel) Update(user *User) error {
 }
 
 func (m UserModel) DeleteByUsername(username string) error {
-	return errors.New("unimplemented")
+	query := `
+    DELETE FROM users
+    WHERE username = $1
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := m.DB.Exec(ctx, query, username)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
 }
