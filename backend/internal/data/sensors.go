@@ -179,6 +179,30 @@ func (m SensorModel) GetAll() ([]*Sensor, error) {
 	return sensors, nil
 }
 
+func (m SensorModel) GetUri(id uuid.UUID) (string, error) {
+	query := `
+    SELECT uri FROM sensors
+    WHERE id = $1
+    LIMIT 1
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var uri string
+
+	err := m.DB.QueryRow(ctx, query, id).Scan(&uri)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return "", ErrRecordNotFound
+		default:
+			return "", err
+		}
+	}
+	return uri, nil
+}
+
 func (m SensorModel) Update(sensor *Sensor) error {
 	query := `
     UPDATE sensors

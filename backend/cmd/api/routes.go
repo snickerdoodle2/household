@@ -31,6 +31,12 @@ func (app *App) routes() http.Handler {
 		r.Put("/sensor/{id}", app.updateSensorHandler)
 		r.Delete("/sensor/{id}", app.deleteSensorHandler)
 
+		r.Get("/rule", app.listRulesHandler)
+		r.Get("/rule/{id}", app.getRuleHandler)
+		r.Post("/rule", app.createRuleHandler)
+		r.Put("/rule/{id}", app.updateRuleHanlder)
+		r.Delete("/rule/{id}", app.deleteRuleHandler)
+
 		r.NotFound(app.notFoundResponse)
 		r.MethodNotAllowed(app.methodNotAllowed)
 	})

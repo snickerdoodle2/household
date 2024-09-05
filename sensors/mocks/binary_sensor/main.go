@@ -28,6 +28,12 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 func valueHandler(w http.ResponseWriter, r *http.Request) {
 	utime := time.Now().Unix()
 	value := math.Sin(2*float64(utime)) + math.Sin(math.Pi*float64(utime))
+	var res float64
+	if value > 0 {
+		res = 1
+	} else {
+		res = 0
+	}
 
-	fmt.Fprintf(w, "{ \"value\": %t }", value > 0)
+	fmt.Fprintf(w, "{ \"value\": %f }", res)
 }

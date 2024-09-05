@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 )
 
 func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,11 +84,22 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	msgCh := listener.GetBroker().Subscribe()
-	initMsg, _ := listener.GetCurrentValue()
-	_ = conn.WriteMessage(websocket.TextMessage, initMsg) // TODO: Handle error
+	defer listener.GetBroker().Unsubscribe(msgCh)
+
+	initValue := listener.GetCurrentValue()
+	err = app.sendSocketMessage(conn, initValue)
+
+	if err != nil {
+		app.logError(r, err)
+		return
+	}
 
 	for msg := range msgCh {
-		conn.WriteMessage(websocket.TextMessage, msg)
+		err = app.sendSocketMessage(conn, msg)
+		if err != nil {
+			app.logError(r, err)
+			return
+		}
 	}
 }
 

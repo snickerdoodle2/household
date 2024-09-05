@@ -33,4 +33,10 @@ GET    /api/v1/sensor/{id} - szczegóły sensora
 POST   /api/v1/sensor      - tworzy nowy sensor
 PUT    /api/v1/sensor/{id} - update sensora
 DELETE /api/v1/sensor/{id} - usuwa sensor
+
+GET    /api/v1/rule      - zwraca wszystkie reguły
+GET    /api/v1/rule/{id} - szczegóły reguły
+POST   /api/v1/rule      - tworzy nową regułę
+PUT    /api/v1/rule/{id} - update reguły
+DELETE /api/v1/rule/{id} - usuwa regułę
 ```

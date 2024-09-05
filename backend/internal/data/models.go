@@ -2,7 +2,6 @@ package data
 
 import (
 	"errors"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -13,10 +12,12 @@ var (
 
 type Models struct {
 	Sensors SensorModel
+	Rules   RuleModel
 }
 
 func NewModels(db *pgxpool.Pool) Models {
 	return Models{
 		Sensors: SensorModel{DB: db},
+		Rules:   RuleModel{DB: db},
 	}
 }
