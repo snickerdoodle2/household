@@ -37,7 +37,9 @@ func (app *App) routes() http.Handler {
 		r.Put("/rule/{id}", app.updateRuleHanlder)
 		r.Delete("/rule/{id}", app.deleteRuleHandler)
 
-		r.Post("/register", app.createUserHandler)
+		r.Post("/user", app.createUserHandler)
+		r.Put("/user/{username}", app.updateUserHandler)
+
 		r.Post("/login", app.loginHandler)
 
 		r.NotFound(app.notFoundResponse)

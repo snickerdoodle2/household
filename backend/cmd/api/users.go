@@ -5,6 +5,8 @@ import (
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,6 +52,54 @@ func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+// NOTE: for now you can update only Name
+func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name *string `json:"name"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	username := chi.URLParam(r, "username")
+
+	user, err := app.models.Users.GetByUsername(username)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	if input.Name != nil {
+		user.Name = *input.Name
+	}
+
+	v := validator.New()
+	if data.ValidateUser(v, user); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	if err = app.models.Users.Update(user); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
