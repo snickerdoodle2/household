@@ -61,7 +61,8 @@ func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 // NOTE: for now you can update only Name
 func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name *string `json:"name"`
+		Name     *string `json:"name"`
+		Password *string `json:"password"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -86,6 +87,14 @@ func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	if input.Name != nil {
 		user.Name = *input.Name
+	}
+
+	if input.Password != nil {
+		err = user.Password.Set(*input.Password)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
 	}
 
 	v := validator.New()
