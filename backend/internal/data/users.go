@@ -1,8 +1,10 @@
 package data
 
 import (
+	"context"
 	"errors"
 	"inzynierka/internal/data/validator"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -87,7 +89,34 @@ type UserModel struct {
 }
 
 func (m UserModel) Insert(user *User) error {
-	return errors.New("unimplemented")
+	query := `
+    INSERT INTO users (id, username, display_name, password_hash)
+    VALUES ($1, $2, $3, $4)
+    RETURNING created_at, version
+    `
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+
+	user.ID = id
+
+	args := []any{id, user.Username, user.Name, user.Password.hash}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = m.DB.QueryRow(ctx, query, args...).Scan(&user.CreatedAt, &user.Version)
+	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: duplicate key value violates unique constraint \"users_username_key\""):
+			return ErrDuplicateUsername
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
