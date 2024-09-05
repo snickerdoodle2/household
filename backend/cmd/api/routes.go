@@ -37,6 +37,8 @@ func (app *App) routes() http.Handler {
 		r.Put("/rule/{id}", app.updateRuleHanlder)
 		r.Delete("/rule/{id}", app.deleteRuleHandler)
 
+		r.Post("/register", app.createUserHandler)
+
 		r.NotFound(app.notFoundResponse)
 		r.MethodNotAllowed(app.methodNotAllowed)
 	})

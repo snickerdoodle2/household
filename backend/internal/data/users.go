@@ -11,6 +11,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	ErrDuplicateUsername = errors.New("duplicate username")
+)
+
 type password struct {
 	plaintext *string
 	hash      []byte
