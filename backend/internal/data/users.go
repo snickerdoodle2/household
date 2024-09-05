@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -119,8 +120,37 @@ func (m UserModel) Insert(user *User) error {
 	return nil
 }
 
-func (m UserModel) GetByEmail(email string) (*User, error) {
-	return nil, errors.New("unimplemented")
+func (m UserModel) GetByUsername(username string) (*User, error) {
+	query := `
+    SELECT id, username, display_name, password_hash, created_at, version
+    FROM users
+    WHERE username = $1
+    `
+
+	var user User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, username).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Name,
+		&user.Password.hash,
+		&user.CreatedAt,
+		&user.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }
 
 func (m UserModel) Update(user *User) error {
