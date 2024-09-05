@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -75,4 +76,24 @@ func ValidateUser(v *validator.Validator, user *User) {
 	if user.Password.hash == nil {
 		panic("missing password hash")
 	}
+}
+
+type UserModel struct {
+	DB *pgxpool.Pool
+}
+
+func (m UserModel) Insert(user *User) error {
+	return errors.New("unimplemented")
+}
+
+func (m UserModel) GetByEmail(email string) (*User, error) {
+	return nil, errors.New("unimplemented")
+}
+
+func (m UserModel) Update(user *User) error {
+	return errors.New("unimplemented")
+}
+
+func (m UserModel) DeleteByEmail(email string) error {
+	return errors.New("unimplemented")
 }
