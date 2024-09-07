@@ -37,6 +37,7 @@ func (app *App) routes() http.Handler {
 		r.Put("/rule/{id}", app.updateRuleHanlder)
 		r.Delete("/rule/{id}", app.deleteRuleHandler)
 
+		// TODO: make sure only person who can change user data is THE user (or admin)
 		r.Post("/user", app.createUserHandler)
 		r.Put("/user/{username}", app.updateUserHandler)
 		r.Delete("/user/{username}", app.deleteUserHandler)
