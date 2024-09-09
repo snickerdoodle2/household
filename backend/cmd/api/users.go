@@ -133,3 +133,6 @@ func (app *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
+}
