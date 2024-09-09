@@ -11,6 +11,10 @@ export function createZodStore<T extends z.ZodTypeAny>(
     return {
         subscribe,
         set: (v: any) => {
+            if (v === undefined) {
+                set(undefined);
+                return undefined;
+            }
             const { data, success, error } = schema.safeParse(v);
             if (!success) {
                 set(undefined);

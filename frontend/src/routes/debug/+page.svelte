@@ -5,6 +5,7 @@ import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
 import { authToken } from "@/auth/token";
+import Button from "@/components/ui/button/button.svelte";
 
 const WS_URL = getWSUrl();
 
@@ -12,7 +13,7 @@ let message = {};
 
 export let data: PageData;
 
-const { user } = data;
+$: user = data.user;
 
 let socket: WebSocket | undefined = undefined;
 
@@ -61,6 +62,9 @@ onDestroy(() => {
     {/if}
     {#if user}
     <code><pre>{JSON.stringify(user, null, 4)}</pre></code>
+    <Button on:click={() => {
+        authToken.unset()
+    }}>Logout</Button>
     {/if}
     </div>
 </div>
