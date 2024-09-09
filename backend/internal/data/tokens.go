@@ -60,6 +60,29 @@ func (m TokenModel) New(userID uuid.UUID, ttl time.Duration) (*Token, error) {
 	return token, err
 }
 
+func (m TokenModel) Delete(tokenPlaintext string) error {
+	query := `
+    DELETE FROM tokens
+    WHERE hash = $1
+    `
+
+	hash := sha256.Sum256([]byte(tokenPlaintext))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res, err := m.DB.Exec(ctx, query, hash[:])
+	if err != nil {
+		return err
+	}
+
+	if res.RowsAffected() == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
+}
+
 func (m TokenModel) Insert(token *Token) error {
 	query := `
     INSERT INTO tokens (hash, user_id, expiry)

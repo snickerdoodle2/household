@@ -5,6 +5,7 @@ import (
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -59,6 +60,44 @@ func (app *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"auth_token": token}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Authorization")
+
+	authHeader := r.Header.Get("Authorization")
+
+	if authHeader == "" {
+		return
+	}
+
+	authHeaderParts := strings.Split(authHeader, " ")
+	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
+		app.invalidAuthenticationTokenResponse(w, r)
+		return
+	}
+
+	token := authHeaderParts[1]
+
+	v := validator.New()
+	if data.ValidateTokenPlaintext(v, token); !v.Valid() {
+		app.invalidAuthenticationTokenResponse(w, r)
+		return
+	}
+
+	err := app.models.Tokens.Delete(token)
+	if err != nil {
+		if !errors.Is(err, data.ErrRecordNotFound) {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "token successfuly revoked"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

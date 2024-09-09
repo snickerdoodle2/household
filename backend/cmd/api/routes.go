@@ -48,6 +48,7 @@ func (app *App) routes() http.Handler {
 
 		})
 		r.Post("/login", app.loginHandler)
+		r.Post("/logout", app.logoutHandler)
 
 		r.NotFound(app.notFoundResponse)
 		r.MethodNotAllowed(app.methodNotAllowed)
