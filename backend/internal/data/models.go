@@ -14,6 +14,7 @@ type Models struct {
 	Sensors SensorModel
 	Rules   RuleModel
 	Users   UserModel
+	Tokens  TokenModel
 }
 
 func NewModels(db *pgxpool.Pool) Models {
@@ -21,5 +22,6 @@ func NewModels(db *pgxpool.Pool) Models {
 		Sensors: SensorModel{DB: db},
 		Rules:   RuleModel{DB: db},
 		Users:   UserModel{DB: db},
+		Tokens:  TokenModel{DB: db},
 	}
 }

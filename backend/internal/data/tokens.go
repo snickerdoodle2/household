@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base32"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Token struct {
@@ -41,4 +43,34 @@ func generateToken(userID uuid.UUID, ttl time.Duration) (*Token, error) {
 func ValidateTokenPlaintext(v *validator.Validator, tokenPlaintext string) {
 	v.Check(tokenPlaintext != "", "token", "must be provided")
 	v.Check(len(tokenPlaintext) == 26, "token", "must be 26 bytes long")
+}
+
+type TokenModel struct {
+	DB *pgxpool.Pool
+}
+
+func (m TokenModel) New(userID uuid.UUID, ttl time.Duration) (*Token, error) {
+	token, err := generateToken(userID, ttl)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.Insert(token)
+
+	return token, err
+}
+
+func (m TokenModel) Insert(token *Token) error {
+	query := `
+    INSERT INTO tokens (hash, user_id, expiry)
+    VALUES ($1, $2, $3)
+    `
+
+	args := []any{token.Hash, token.UserID, token.Expiry}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := m.DB.Exec(ctx, query, args...)
+	return err
 }
