@@ -16,6 +16,7 @@ import (
 
 var (
 	ErrDuplicateUsername = errors.New("duplicate username")
+	AnonymousUser        = &User{}
 )
 
 type password struct {
@@ -56,6 +57,10 @@ type User struct {
 	Password  password  `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 	Version   int       `json:"-"`
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
 
 func ValidatePasswordPlain(v *validator.Validator, password string) {
