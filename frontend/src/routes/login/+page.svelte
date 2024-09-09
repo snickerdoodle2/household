@@ -3,7 +3,7 @@ import { Input } from "$lib/components/ui/input";
 import { Button } from "$lib/components/ui/button";
 import { loginSchema } from "@/types/login";
 import { SERVER_URL } from "@/const";
-import { authToken } from "@/auth";
+import { authToken } from "@/auth/token";
 
 const debounce = (callback: Function) => {
     clearTimeout(timeout);

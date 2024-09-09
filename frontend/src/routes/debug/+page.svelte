@@ -4,7 +4,7 @@ import { getWSUrl } from "@/const";
 import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
-import { user, authToken } from "$lib/auth";
+import { authToken } from "@/auth/token";
 
 const WS_URL = getWSUrl();
 
@@ -23,6 +23,7 @@ const updateSocket = (item: Selected<string> | undefined) => {
     message = {};
     selected = item.label;
 
+    // TODO: auth not working with web socket
     socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
 
     socket.addEventListener("message", (data) => {
@@ -53,9 +54,6 @@ onDestroy(() => {
         <p>Listening for sensor: <code>{selected}</code></p>
     {/if}
     <code><pre>{JSON.stringify(message, null, 4)}</pre></code>
-    {#if $user}
-    <code><pre>{JSON.stringify($user, null, 4)}</pre></code>
-    {/if}
     {#if $authToken}
     <code><pre>{JSON.stringify($authToken, null, 4)}</pre></code>
     {/if}
