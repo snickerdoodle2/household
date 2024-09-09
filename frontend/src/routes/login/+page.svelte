@@ -3,6 +3,7 @@ import { Input } from "$lib/components/ui/input";
 import { Button } from "$lib/components/ui/button";
 import { loginSchema } from "@/types/login";
 import { SERVER_URL } from "@/const";
+import { authToken } from "@/auth";
 
 const debounce = (callback: Function) => {
     clearTimeout(timeout);
@@ -33,6 +34,9 @@ $: {
 
 const handleLogin = async () => {
     const { data, success } = loginSchema.safeParse({ username, password });
+
+    username = "";
+    password = "";
     if (!success) return;
     const res = await fetch(`${SERVER_URL}/api/v1/login`, {
         method: "POST",
@@ -42,10 +46,19 @@ const handleLogin = async () => {
         body: JSON.stringify(data),
     });
 
-    console.log(await res.json());
+    if (!res.ok) {
+        console.log(await res.json());
+    }
+
+    const token = (await res.json())["auth_token"];
+
+    const err = authToken.set(token);
+    if (err) {
+        console.error(err);
+    }
 };
 </script>
-<form class="flex flex-col gap-3" on:submit={handleLogin}>
+<form class="flex flex-col gap-3" on:submit|preventDefault={handleLogin}>
 <Input placeholder="Username" name="username" bind:value={username}/>
 <Input placeholder="Password" name="password" type="password" bind:value={password}/>
 <Button type="submit">Login</Button>

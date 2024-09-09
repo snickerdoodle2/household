@@ -1,20 +1,18 @@
-import { writable } from "svelte/store";
 import { z } from "zod";
+import { createZodStore } from "./helpers/stores";
 
-export const AuthTokenSchema = z.object({
+const authTokenSchema = z.object({
     token: z.string(),
     expiry: z.string().transform((d) => new Date(d)),
 });
-export type AuthToken = z.infer<typeof AuthTokenSchema>;
 
-export const authToken = writable<AuthToken | undefined>(undefined);
+export const authToken = createZodStore(authTokenSchema);
 
-export const UserSchema = z.object({
+const userSchema = z.object({
     id: z.string().uuid(),
     username: z.string(),
     name: z.string(),
     createdAt: z.string().transform((d) => new Date(d)),
 });
-export type User = z.infer<typeof UserSchema>;
 
-export const user = writable<AuthToken | undefined>(undefined);
+export const user = createZodStore(userSchema);
