@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"inzynierka/internal/data/validator"
 	"strings"
@@ -191,4 +192,43 @@ func (m UserModel) DeleteByUsername(username string) error {
 	}
 
 	return nil
+}
+
+func (m UserModel) GetForToken(tokenPlaintext string) (*User, error) {
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+	query := `
+    SELECT users.id, users.username, users.display_name, users.password_hash, users.created_at, users.version
+    FROM users
+    INNER JOIN tokens
+    ON users.id = tokens.user_id
+    WHERE tokens.hash = $1
+    AND tokens.expiry > $2
+    `
+
+	args := []any{tokenHash[:], time.Now()}
+
+	var user User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, args...).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Name,
+		&user.Password.hash,
+		&user.CreatedAt,
+		&user.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }
