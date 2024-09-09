@@ -19,7 +19,7 @@ func (app *App) routes() http.Handler {
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
-	}))
+	}), app.authenticate)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/healthcheck", app.healthcheckHandler)
