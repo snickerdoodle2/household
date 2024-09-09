@@ -4,6 +4,7 @@ import { getWSUrl } from "@/const";
 import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
+import { user, authToken } from "$lib/auth";
 
 const WS_URL = getWSUrl();
 
@@ -35,6 +36,7 @@ onDestroy(() => {
 </script>
 
 <div class="flex flex-col">
+    <div>
     <Select.Root items={data.sensors} onSelectedChange={updateSocket}>
         <Select.Trigger class="max-w-96">
             <Select.Value placeholder="Select a sensor..." />
@@ -51,4 +53,11 @@ onDestroy(() => {
         <p>Listening for sensor: <code>{selected}</code></p>
     {/if}
     <code><pre>{JSON.stringify(message, null, 4)}</pre></code>
+    {#if $user}
+    <code><pre>{JSON.stringify($user, null, 4)}</pre></code>
+    {/if}
+    {#if $authToken}
+    <code><pre>{JSON.stringify($authToken, null, 4)}</pre></code>
+    {/if}
+    </div>
 </div>
