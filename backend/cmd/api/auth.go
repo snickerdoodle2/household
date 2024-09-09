@@ -5,6 +5,7 @@ import (
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
+	"time"
 )
 
 // NOTE: only returns account details for now
@@ -51,7 +52,13 @@ func (app *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
+	token, err := app.models.Tokens.New(user.ID, 24*time.Hour)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"auth_token": token}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
