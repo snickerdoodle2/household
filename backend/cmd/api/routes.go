@@ -23,12 +23,13 @@ func (app *App) routes() http.Handler {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/healthcheck", app.healthcheckHandler)
+		r.Get("/sensor/{id}/value", app.getSensorValueHandler)
 
 		r.Route("/", func(r chi.Router) {
 			r.Use(app.requireAuthenticated)
+
 			r.Get("/sensor", app.listSensorsHandler)
 			r.Get("/sensor/{id}", app.getSensorHandler)
-			r.Get("/sensor/{id}/value", app.getSensorValueHandler)
 			r.Post("/sensor", app.createSensorHandler)
 			r.Put("/sensor/{id}", app.updateSensorHandler)
 			r.Delete("/sensor/{id}", app.deleteSensorHandler)

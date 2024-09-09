@@ -42,7 +42,6 @@ func (app *App) authenticate(next http.Handler) http.Handler {
 		}
 
 		token := authHeaderParts[1]
-		app.logger.Info("middleware", "token", token)
 
 		v := validator.New()
 		if data.ValidateTokenPlaintext(v, token); !v.Valid() {

@@ -12,6 +12,8 @@ let message = {};
 
 export let data: PageData;
 
+const { user } = data;
+
 let socket: WebSocket | undefined = undefined;
 
 let selected: string | undefined;
@@ -56,6 +58,9 @@ onDestroy(() => {
     <code><pre>{JSON.stringify(message, null, 4)}</pre></code>
     {#if $authToken}
     <code><pre>{JSON.stringify($authToken, null, 4)}</pre></code>
+    {/if}
+    {#if user}
+    <code><pre>{JSON.stringify(user, null, 4)}</pre></code>
     {/if}
     </div>
 </div>
