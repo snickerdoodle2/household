@@ -23,6 +23,7 @@ func (app *App) routes() http.Handler {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/healthcheck", app.healthcheckHandler)
+
 		r.Get("/sensor/{id}/value", app.getSensorValueHandler)
 
 		r.Route("/", func(r chi.Router) {

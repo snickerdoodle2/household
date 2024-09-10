@@ -6,6 +6,7 @@ import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
 import { authToken } from "@/auth/token";
 import Button from "@/components/ui/button/button.svelte";
+import { get } from "svelte/store";
 
 const WS_URL = getWSUrl();
 
@@ -20,14 +21,19 @@ let socket: WebSocket | undefined = undefined;
 let selected: string | undefined;
 
 const updateSocket = (item: Selected<string> | undefined) => {
+    const token = get(authToken);
+    if (!token) return;
     if (!item || item.value.length === 0) return;
     if (socket) socket.close();
 
     message = {};
     selected = item.label;
 
+    const url = new URL(`${WS_URL}/api/v1/sensor/${item.value}/value`);
+    url.searchParams.set("token", token.token);
+
     // TODO: auth not working with web socket
-    socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
+    socket = new WebSocket(url.toString());
 
     socket.addEventListener("message", (data) => {
         message = JSON.parse(data.data);
