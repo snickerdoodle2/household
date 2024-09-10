@@ -57,6 +57,25 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token := r.URL.Query().Get("token")
+
+	v := validator.New()
+	if data.ValidateTokenPlaintext(v, token); !v.Valid() {
+		app.invalidAuthenticationTokenResponse(w, r)
+		return
+	}
+
+	_, err = app.models.Users.GetForToken(token)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.invalidAuthenticationTokenResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
 	listener, ok := app.listeners[id]
 	if !ok {
 		app.notFoundResponse(w, r)

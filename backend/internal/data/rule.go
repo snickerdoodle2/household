@@ -64,8 +64,6 @@ func (r *Rule) Run(listeners SensorListeners, validCh chan ValidRuleAction, stop
 
 	r.update(values, validCh)
 
-	fmt.Println("Starting listening for changes")
-
 	for true {
 		i, sliceV, ok := reflect.Select(channels)
 		if !ok {

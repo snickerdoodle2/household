@@ -10,6 +10,10 @@ const LINKS = [
         name: "Debug",
         url: "/debug",
     },
+    {
+        name: "Login",
+        url: "/login",
+    },
 ];
 </script>
 

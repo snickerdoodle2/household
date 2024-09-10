@@ -4,6 +4,9 @@ import { getWSUrl } from "@/const";
 import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
+import { authToken } from "@/auth/token";
+import Button from "@/components/ui/button/button.svelte";
+import { get } from "svelte/store";
 
 const WS_URL = getWSUrl();
 
@@ -11,18 +14,26 @@ let message = {};
 
 export let data: PageData;
 
+$: user = data.user;
+
 let socket: WebSocket | undefined = undefined;
 
 let selected: string | undefined;
 
 const updateSocket = (item: Selected<string> | undefined) => {
+    const token = get(authToken);
+    if (!token) return;
     if (!item || item.value.length === 0) return;
     if (socket) socket.close();
 
     message = {};
     selected = item.label;
 
-    socket = new WebSocket(`${WS_URL}/api/v1/sensor/${item.value}/value`);
+    const url = new URL(`${WS_URL}/api/v1/sensor/${item.value}/value`);
+    url.searchParams.set("token", token.token);
+
+    // TODO: auth not working with web socket
+    socket = new WebSocket(url.toString());
 
     socket.addEventListener("message", (data) => {
         message = JSON.parse(data.data);
@@ -35,6 +46,7 @@ onDestroy(() => {
 </script>
 
 <div class="flex flex-col">
+    <div>
     <Select.Root items={data.sensors} onSelectedChange={updateSocket}>
         <Select.Trigger class="max-w-96">
             <Select.Value placeholder="Select a sensor..." />
@@ -51,4 +63,14 @@ onDestroy(() => {
         <p>Listening for sensor: <code>{selected}</code></p>
     {/if}
     <code><pre>{JSON.stringify(message, null, 4)}</pre></code>
+    {#if $authToken}
+    <code><pre>{JSON.stringify($authToken, null, 4)}</pre></code>
+    {/if}
+    {#if user}
+    <code><pre>{JSON.stringify(user, null, 4)}</pre></code>
+    <Button on:click={() => {
+        authToken.unset()
+    }}>Logout</Button>
+    {/if}
+    </div>
 </div>

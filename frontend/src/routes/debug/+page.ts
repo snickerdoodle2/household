@@ -1,9 +1,10 @@
 import { getAllSensors } from "@/helpers/sensor";
 import { error } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
+import { authFetch } from "@/helpers/fetch";
 
-export const load: PageLoad = async ({ fetch }) => {
-    const sensors = await getAllSensors(fetch);
+export const load: PageLoad = async () => {
+    const sensors = await getAllSensors(authFetch);
 
     if (sensors.isError) {
         error(500, sensors.error);
