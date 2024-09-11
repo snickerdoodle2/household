@@ -8,14 +8,11 @@ export default tseslint.config(
     ...tseslint.configs.strict,
     ...tseslint.configs.stylistic,
     {
-        ignores: [".svelte-kit/*"],
+        ignores: ['.svelte-kit/*'],
     },
     {
         rules: {
-            "@typescript-eslint/consistent-type-definitions": [
-                "error",
-                "type"
-            ],
-        }
+            '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+        },
     }
 );

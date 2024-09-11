@@ -6,14 +6,14 @@
 // uri : "127.0.0.1:10001"
 // version : 3
 
-import { z } from "zod";
+import { z } from 'zod';
 
 const SensorType = z.enum([
-    "binary_switch",
-    "binary_sensor",
-    "decimal_switch",
-    "decimal_sensor",
-    "button",
+    'binary_switch',
+    'binary_sensor',
+    'decimal_switch',
+    'decimal_sensor',
+    'button',
 ]);
 
 export const Sensor = z.object({

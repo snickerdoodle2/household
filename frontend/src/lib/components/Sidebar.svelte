@@ -1,25 +1,25 @@
 <script lang="ts">
-import LightSwitch from "./LightSwitch.svelte";
+    import LightSwitch from './LightSwitch.svelte';
 
-const LINKS = [
-    {
-        name: "Home",
-        url: "/",
-    },
-    {
-        name: "Debug",
-        url: "/debug",
-    },
-    {
-        name: "Login",
-        url: "/login",
-    },
-];
+    const LINKS = [
+        {
+            name: 'Home',
+            url: '/',
+        },
+        {
+            name: 'Debug',
+            url: '/debug',
+        },
+        {
+            name: 'Login',
+            url: '/login',
+        },
+    ];
 </script>
 
 <nav
-    class="h-svh fixed top-0 left-0 rounded-r-xl shadow-xl border-2
-    bg-background py-6 px-4 flex flex-col gap-4"
+    class="fixed left-0 top-0 flex h-svh flex-col gap-4
+    rounded-r-xl border-2 bg-background px-4 py-6 shadow-xl"
 >
     <span>LOGO</span>
     <ul>

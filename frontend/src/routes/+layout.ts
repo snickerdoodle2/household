@@ -1,6 +1,6 @@
-import { authFetch } from "@/helpers/fetch";
-import type { LayoutLoad } from "./$types";
-import type { User } from "@/types/user";
+import { authFetch } from '@/helpers/fetch';
+import type { LayoutLoad } from './$types';
+import type { User } from '@/types/user';
 
 export const ssr = false;
 

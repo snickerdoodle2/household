@@ -1,44 +1,44 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const RuleGT = z.object({
-    type: z.literal("gt"),
+    type: z.literal('gt'),
     sensor_id: z.string().uuid(),
     value: z.number(),
 });
 
 const RuleLT = z.object({
-    type: z.literal("lt"),
+    type: z.literal('lt'),
     sensor_id: z.string().uuid(),
     value: z.number(),
 });
 
 type RuleNotType = {
-    type: "not";
+    type: 'not';
     wrapped: RuleInternalType;
 };
 
 const RuleNot: z.ZodType<RuleNotType> = z.object({
-    type: z.literal("not"),
+    type: z.literal('not'),
     wrapped: z.lazy(() => RuleInternal),
 });
 
 type RuleAndType = {
-    type: "and";
+    type: 'and';
     children: RuleInternalType[];
 };
 
 const RuleAnd: z.ZodType<RuleAndType> = z.object({
-    type: z.literal("and"),
+    type: z.literal('and'),
     children: z.lazy(() => RuleInternal.array()),
 });
 
 type RuleOrType = {
-    type: "or";
+    type: 'or';
     children: RuleInternalType[];
 };
 
 const RuleOr: z.ZodType<RuleOrType> = z.object({
-    type: z.literal("or"),
+    type: z.literal('or'),
     children: z.lazy(() => RuleInternal.array()),
 });
 

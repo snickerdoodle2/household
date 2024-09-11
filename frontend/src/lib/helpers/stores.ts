@@ -1,9 +1,9 @@
-import { writable } from "svelte/store";
-import type { z } from "zod";
+import { writable } from 'svelte/store';
+import type { z } from 'zod';
 
 export function createZodStore<T extends z.ZodTypeAny>(
     schema: T,
-    defaultValue: z.infer<T> | undefined = undefined,
+    defaultValue: z.infer<T> | undefined = undefined
 ) {
     type Type = z.infer<T>;
     const { subscribe, set } = writable<Type | undefined>(defaultValue);
