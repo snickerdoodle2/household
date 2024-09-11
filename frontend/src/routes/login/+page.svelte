@@ -2,7 +2,6 @@
 import { Input } from "$lib/components/ui/input";
 import { Button } from "$lib/components/ui/button";
 import { loginSchema } from "@/types/login";
-import { SERVER_URL } from "@/const";
 import { authToken } from "@/auth/token";
 
 const debounce = (callback: Function) => {
@@ -38,7 +37,7 @@ const handleLogin = async () => {
     username = "";
     password = "";
     if (!success) return;
-    const res = await fetch(`${SERVER_URL}/api/v1/login`, {
+    const res = await fetch("/api/v1/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

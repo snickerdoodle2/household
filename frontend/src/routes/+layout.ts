@@ -1,12 +1,11 @@
 import { authFetch } from "@/helpers/fetch";
 import type { LayoutLoad } from "./$types";
-import { SERVER_URL } from "@/const";
 import type { User } from "@/types/user";
 
 export const ssr = false;
 
 const getUserData = async (fetchFN: typeof fetch) => {
-    const res = await authFetch(`${SERVER_URL}/api/v1/user`, {}, fetchFN);
+    const res = await authFetch(`/api/v1/user`, {}, fetchFN);
     if (!res.ok) {
         return undefined;
     }

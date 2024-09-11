@@ -1,14 +1,11 @@
 <script lang="ts">
 import * as Select from "$lib/components/ui/select";
-import { getWSUrl } from "@/const";
 import type { Selected } from "bits-ui";
 import { onDestroy } from "svelte";
 import type { PageData } from "./$types";
 import { authToken } from "@/auth/token";
 import Button from "@/components/ui/button/button.svelte";
 import { get } from "svelte/store";
-
-const WS_URL = getWSUrl();
 
 let message = {};
 
@@ -29,7 +26,11 @@ const updateSocket = (item: Selected<string> | undefined) => {
     message = {};
     selected = item.label;
 
-    const url = new URL(`${WS_URL}/api/v1/sensor/${item.value}/value`);
+    const url = new URL(
+        `/api/v1/sensor/${item.value}/value`,
+        window.location.href,
+    );
+    url.protocol = url.protocol.replace("http", "ws");
     url.searchParams.set("token", token.token);
 
     // TODO: auth not working with web socket

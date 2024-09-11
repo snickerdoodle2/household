@@ -2,7 +2,6 @@ import { z } from "zod";
 import { createZodStore } from "$lib/helpers/stores";
 import { browser } from "$app/environment";
 import { authFetch } from "@/helpers/fetch";
-import { SERVER_URL } from "@/const";
 import { invalidateAll } from "$app/navigation";
 
 const authTokenSchema = z.object({
@@ -31,7 +30,7 @@ export const authToken = {
     unset: async () => {
         set(undefined);
         localStorage.removeItem("authToken");
-        await authFetch(`${SERVER_URL}/api/v1/logout`, {
+        await authFetch(`/api/v1/logout`, {
             method: "POST",
         });
         invalidateAll();

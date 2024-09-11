@@ -1,7 +1,7 @@
-import { SERVER_URL } from "@/const";
 import type { Result } from "@/types/result";
 import { Sensor, type SensorType } from "@/types/sensor";
 import { z } from "zod";
+import { authFetch } from "./fetch";
 
 export const getAllSensors = async (
     fetch: (
@@ -9,7 +9,7 @@ export const getAllSensors = async (
         init?: RequestInit | undefined,
     ) => Promise<Response>,
 ): Promise<Result<SensorType[], string>> => {
-    const res = await fetch(`${SERVER_URL}/api/v1/sensor`);
+    const res = await authFetch(`/api/v1/sensor`, {}, fetch);
     const data = await res.json();
     if (!res.ok) {
         return {
