@@ -1,7 +1,6 @@
 import { getAllSensors } from '@/helpers/sensor';
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { authFetch } from '@/helpers/fetch';
 
 export const load: PageLoad = async ({ fetch }) => {
     const sensors = await getAllSensors(fetch);

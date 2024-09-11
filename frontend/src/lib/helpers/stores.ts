@@ -10,7 +10,7 @@ export function createZodStore<T extends z.ZodTypeAny>(
 
     return {
         subscribe,
-        set: (v: any) => {
+        set: (v: unknown) => {
             if (v === undefined) {
                 set(undefined);
                 return undefined;

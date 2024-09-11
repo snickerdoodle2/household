@@ -4,9 +4,10 @@
     import { loginSchema } from '@/types/login';
     import { authToken } from '@/auth/token';
 
-    const debounce = (callback: Function) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    const debounce = (callback: Function, ...args: unknown[]) => {
         clearTimeout(timeout);
-        timeout = setTimeout(callback, 300);
+        timeout = window.setTimeout(() => callback(args), 300);
     };
 
     const validate = () => {
@@ -18,17 +19,16 @@
         errors = Object.fromEntries(
             error.issues.map((e) => [e.path[0], e.message])
         );
+        console.log(errors);
     };
 
-    let timeout: ReturnType<typeof setTimeout>;
+    let timeout: number;
     let username = '';
     let password = '';
-    let errors: { [key: string]: string } = {};
+    let errors: Record<string, string> = {};
 
     $: {
-        username;
-        password;
-        debounce(validate);
+        debounce(validate, username, password);
     }
 
     const handleLogin = async () => {

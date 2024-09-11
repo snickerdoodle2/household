@@ -21,7 +21,7 @@ const { set, subscribe } = createZodStore(authTokenSchema, token);
 
 export const authToken = {
     subscribe,
-    set: (v: any) => {
+    set: (v: unknown) => {
         const err = set(v);
         if (err) return err;
         localStorage.setItem('authToken', JSON.stringify(v));
