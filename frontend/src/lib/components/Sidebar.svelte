@@ -54,7 +54,7 @@
                 size="icon"
                 class="hidden h-11 w-11 group-hover:inline-flex"
                 on:click={() => {
-                    authToken.unset();
+                    authToken.logout();
                 }}
             >
                 <Exit />

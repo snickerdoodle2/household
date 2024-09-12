@@ -3,10 +3,9 @@ import type { LayoutLoad } from './$types';
 import type { User } from '@/types/user';
 import { authToken } from '@/auth/token';
 import { get } from 'svelte/store';
+import { redirect } from '@sveltejs/kit';
 
 const getUserData = async (fetchFN: typeof fetch) => {
-    const token = get(authToken);
-    if (!token) return undefined;
     const res = await authFetch(`/api/v1/user`, {}, fetchFN);
     if (!res.ok) {
         return undefined;
@@ -17,6 +16,7 @@ const getUserData = async (fetchFN: typeof fetch) => {
 };
 
 export const load: LayoutLoad = async ({ fetch }) => {
+    if (!get(authToken)) redirect(304, '/login');
     return {
         user: await getUserData(fetch),
     };
