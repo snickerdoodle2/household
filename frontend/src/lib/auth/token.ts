@@ -1,29 +1,38 @@
-import { z } from 'zod';
-import { createZodStore } from '$lib/helpers/stores';
 import { authFetch } from '@/helpers/fetch';
-import { invalidateAll } from '$app/navigation';
+import { persisted } from 'svelte-persisted-store';
+import { z } from 'zod';
 
 const authTokenSchema = z.object({
     token: z.string(),
     expiry: z.string().transform((d) => new Date(d)),
 });
 
-const { set, subscribe } = createZodStore(authTokenSchema);
+type AuthToken = z.infer<typeof authTokenSchema>;
 
-export const authToken = {
-    subscribe,
-    set: (v: unknown) => {
-        const err = set(v);
-        if (err) return err;
-        localStorage.setItem('authToken', JSON.stringify(v));
-        invalidateAll();
-    },
-    unset: async () => {
-        set(undefined);
-        localStorage.removeItem('authToken');
-        await authFetch(`/api/v1/logout`, {
-            method: 'POST',
-        });
-        invalidateAll();
-    },
-};
+export const authToken = (() => {
+    const { set, subscribe, reset } = persisted<AuthToken | null>(
+        'authToken',
+        null
+    );
+
+    return {
+        subscribe,
+        set: (value: unknown) => {
+            const { data, success, error } = authTokenSchema.safeParse(value);
+            if (!success) {
+                reset();
+                return error.issues;
+            }
+            set(data);
+        },
+        logout: async () => {
+            try {
+                await authFetch('/api/v1/logout', {
+                    method: 'POST',
+                });
+            } finally {
+                reset();
+            }
+        },
+    };
+})();
