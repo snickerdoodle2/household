@@ -3,6 +3,14 @@
     import { ModeWatcher } from 'mode-watcher';
 
     import Sidebar from '@/components/Sidebar.svelte';
+    import { onMount } from 'svelte';
+    import { authToken } from '@/auth/token';
+    onMount(() => {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            authToken.set(JSON.parse(token));
+        }
+    });
 </script>
 
 <ModeWatcher />

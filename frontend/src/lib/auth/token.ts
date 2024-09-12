@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { createZodStore } from '$lib/helpers/stores';
-import { browser } from '$app/environment';
 import { authFetch } from '@/helpers/fetch';
 import { invalidateAll } from '$app/navigation';
 
@@ -9,15 +8,7 @@ const authTokenSchema = z.object({
     expiry: z.string().transform((d) => new Date(d)),
 });
 
-let token = undefined;
-if (browser) {
-    const tokenText = localStorage.getItem('authToken');
-    if (tokenText) {
-        token = JSON.parse(tokenText) as z.infer<typeof authTokenSchema>;
-    }
-}
-
-const { set, subscribe } = createZodStore(authTokenSchema, token);
+const { set, subscribe } = createZodStore(authTokenSchema);
 
 export const authToken = {
     subscribe,
