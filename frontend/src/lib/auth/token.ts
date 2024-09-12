@@ -1,4 +1,6 @@
+import { invalidateAll } from '$app/navigation';
 import { authFetch } from '@/helpers/fetch';
+import type { Login } from '@/types/login';
 import { persisted } from 'svelte-persisted-store';
 import { z } from 'zod';
 
@@ -10,20 +12,28 @@ const authTokenSchema = z.object({
 type AuthToken = z.infer<typeof authTokenSchema>;
 
 export const authToken = (() => {
-    const { set, subscribe, reset } = persisted<AuthToken | null>(
-        'authToken',
-        null
-    );
+    const { set, subscribe } = persisted<AuthToken | null>('authToken', null);
 
     return {
         subscribe,
-        set: (value: unknown) => {
-            const { data, success, error } = authTokenSchema.safeParse(value);
-            if (!success) {
-                reset();
-                return error.issues;
+        login: async (data: Login) => {
+            const res = await fetch('/api/v1/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!res.ok) {
+                return await res.json();
             }
-            set(data);
+
+            const token_ = (await res.json())['auth_token'];
+
+            const { data: token, success } = authTokenSchema.safeParse(token_);
+            if (!success) return {};
+            set(token);
         },
         logout: async () => {
             try {
@@ -31,7 +41,8 @@ export const authToken = (() => {
                     method: 'POST',
                 });
             } finally {
-                reset();
+                set(null);
+                invalidateAll();
             }
         },
     };

@@ -3,6 +3,7 @@
     import { Button } from '$lib/components/ui/button';
     import { loginSchema } from '@/types/login';
     import { authToken } from '@/auth/token';
+    import { goto } from '$app/navigation';
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const debounce = (callback: Function, ...args: unknown[]) => {
@@ -33,27 +34,12 @@
 
     const handleLogin = async () => {
         const { data, success } = loginSchema.safeParse({ username, password });
-
-        username = '';
-        password = '';
         if (!success) return;
-        const res = await fetch('/api/v1/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (!res.ok) {
-            console.log(await res.json());
-        }
-
-        const token = (await res.json())['auth_token'];
-
-        const err = authToken.set(token);
-        if (err) {
-            console.error(err);
+        const res = await authToken.login(data);
+        if (!res) {
+            username = '';
+            password = '';
+            goto('/');
         }
     };
 </script>
