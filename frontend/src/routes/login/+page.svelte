@@ -12,7 +12,7 @@
 
     const validate = () => {
         const { error, success } = loginSchema.safeParse({
-            username: +username,
+            username,
             password,
         });
         if (success) return;
@@ -58,13 +58,15 @@
     };
 </script>
 
-<form class="flex flex-col gap-3" on:submit|preventDefault={handleLogin}>
-    <Input placeholder="Username" name="username" bind:value={username} />
-    <Input
-        placeholder="Password"
-        name="password"
-        type="password"
-        bind:value={password}
-    />
-    <Button type="submit">Login</Button>
-</form>
+<main class="flex h-svh items-center justify-center">
+    <form class="flex flex-col gap-3" on:submit|preventDefault={handleLogin}>
+        <Input placeholder="Username" name="username" bind:value={username} />
+        <Input
+            placeholder="Password"
+            name="password"
+            type="password"
+            bind:value={password}
+        />
+        <Button type="submit">Login</Button>
+    </form>
+</main>
