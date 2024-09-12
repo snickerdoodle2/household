@@ -16,7 +16,7 @@ const SensorType = z.enum([
     'button',
 ]);
 
-export const Sensor = z.object({
+export const sensorSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
     type: SensorType,
@@ -25,4 +25,4 @@ export const Sensor = z.object({
     version: z.number(),
 });
 
-export type SensorType = z.infer<typeof Sensor>;
+export type Sensor = z.infer<typeof sensorSchema>;
