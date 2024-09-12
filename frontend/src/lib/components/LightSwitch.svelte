@@ -9,7 +9,7 @@
     on:click={toggleMode}
     variant="outline"
     size="icon"
-    class="mt-auto h-11 w-11"
+    class="mt-auto hidden h-11 w-11 group-hover:inline-flex"
 >
     <Sun
         class="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
