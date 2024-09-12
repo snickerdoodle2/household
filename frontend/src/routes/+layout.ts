@@ -1,10 +1,14 @@
 import { authFetch } from '@/helpers/fetch';
 import type { LayoutLoad } from './$types';
 import type { User } from '@/types/user';
+import { authToken } from '@/auth/token';
+import { get } from 'svelte/store';
 
 export const ssr = false;
 
 const getUserData = async (fetchFN: typeof fetch) => {
+    const token = get(authToken);
+    if (!token) return undefined;
     const res = await authFetch(`/api/v1/user`, {}, fetchFN);
     if (!res.ok) {
         return undefined;
