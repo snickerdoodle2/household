@@ -3,6 +3,7 @@
     import { DotsVertical } from 'svelte-radix';
     import { socketStore } from '$lib/helpers/socket';
     import { onDestroy } from 'svelte';
+    import Chart from './Chart.svelte';
     export let sensor: Sensor;
 
     let socket = socketStore(sensor.id);
@@ -12,7 +13,7 @@
     });
 </script>
 
-<div class="rounded-lg bg-accent px-4 py-2">
+<div class="flex flex-col gap-2 rounded-lg bg-accent px-4 py-2">
     {#if $socket}
         <div class="flex items-center justify-between">
             <span class="text-xl">{sensor.name} </span>
@@ -25,7 +26,7 @@
                 >
             </div>
         </div>
-        <span>{JSON.stringify($socket.values)}</span>
+        <Chart {socket} />
     {:else}
         <p>Error opening socket</p>
     {/if}

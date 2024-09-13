@@ -32,3 +32,5 @@ export const socketStore = (id: string) => {
         },
     };
 };
+
+export type SocketStore = ReturnType<typeof socketStore>;
