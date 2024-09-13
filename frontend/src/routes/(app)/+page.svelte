@@ -1,6 +1,6 @@
 <script lang="ts">
     // TODO: calculate grid size
-    import Sensor from '@/components/Sensor.svelte';
+    import Sensor from '@/components/sensor/Sensor.svelte';
     import type { LayoutData } from './$types';
 
     export let data: LayoutData;

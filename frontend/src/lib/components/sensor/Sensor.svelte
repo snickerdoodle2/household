@@ -1,0 +1,32 @@
+<script lang="ts">
+    import { type Sensor } from '@/types/sensor';
+    import { DotsVertical } from 'svelte-radix';
+    import { socketStore } from '$lib/helpers/socket';
+    import { onDestroy } from 'svelte';
+    export let sensor: Sensor;
+
+    let socket = socketStore(sensor.id);
+
+    onDestroy(() => {
+        socket.close();
+    });
+</script>
+
+<div class="rounded-lg bg-accent px-4 py-2">
+    {#if $socket}
+        <div class="flex items-center justify-between">
+            <span class="text-xl">{sensor.name} </span>
+            <div class="flex items-center gap-2">
+                <div
+                    class={`aspect-square w-2 rounded-full ${$socket.status === 'ONLINE' ? 'bg-green-400' : 'bg-red-400'}`}
+                />
+                <a href={`/details/${sensor.id}`}
+                    ><DotsVertical class="h-5 w-5" /></a
+                >
+            </div>
+        </div>
+        <span>{JSON.stringify($socket.values)}</span>
+    {:else}
+        <p>Error opening socket</p>
+    {/if}
+</div>
