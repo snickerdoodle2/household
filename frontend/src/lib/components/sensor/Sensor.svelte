@@ -21,7 +21,7 @@
                 <div
                     class={`aspect-square w-2 rounded-full ${$socket.status === 'ONLINE' ? 'bg-green-400' : 'bg-red-400'}`}
                 />
-                <a href={`/details/${sensor.id}`}
+                <a href={`/details/${sensor.id}`} on:click|preventDefault
                     ><DotsVertical class="h-5 w-5" /></a
                 >
             </div>

@@ -74,6 +74,7 @@
 
     onMount(async () => {
         orgSensor = await data.sensor;
+        console.log(orgSensor);
         selectedType =
             sensorTypes.find((e) => e.value === orgSensor.type) ??
             sensorTypes[0];
