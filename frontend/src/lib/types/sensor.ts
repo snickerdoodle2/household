@@ -30,7 +30,10 @@ export const sensorDetailsSchema = z.object({
     refresh_rate: z.number().gt(0),
     type: sensorTypeSchema,
     uri: z.string(),
-    created_at: z.string().transform((d) => new Date(d)),
+    created_at: z
+        .string()
+        .or(z.date())
+        .transform((d) => new Date(d)),
 });
 
 export type SensorDetails = z.infer<typeof sensorDetailsSchema>;

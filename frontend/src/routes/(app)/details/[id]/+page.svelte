@@ -7,7 +7,7 @@
     import type { SensorDetails } from '@/types/sensor';
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
-    import { sensorTypeSchema } from '$lib/types/sensor';
+    import { sensorDetailsSchema, sensorTypeSchema } from '$lib/types/sensor';
     import { z } from 'zod';
     import { authFetch } from '@/helpers/fetch';
 
@@ -49,6 +49,23 @@
         const res = await authFetch(`/api/v1/sensor/${orgSensor.id}`, {
             method: 'DELETE',
         });
+        console.log(await res.json());
+    };
+
+    const handleSubmit = async () => {
+        const { data, success, error } = sensorDetailsSchema.safeParse(sensor);
+        if (!success) {
+            console.log(error.issues);
+            return;
+        }
+
+        const { id, created_at, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+        const res = await authFetch(`/api/v1/sensor/${orgSensor.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(rest),
+        });
+
         console.log(await res.json());
     };
 
@@ -115,7 +132,7 @@
                 <Button variant="outline" size="bold" on:click={handleCancel}
                     >Cancel</Button
                 >
-                <Button size="bold">Submit</Button>
+                <Button size="bold" on:click={handleSubmit}>Submit</Button>
             {:else}
                 <Button
                     on:click={() => {
