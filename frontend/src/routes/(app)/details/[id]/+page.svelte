@@ -9,6 +9,7 @@
     import { Button } from '@/components/ui/button';
     import { sensorTypeSchema } from '$lib/types/sensor';
     import { z } from 'zod';
+    import { authFetch } from '@/helpers/fetch';
 
     export let data: PageData;
 
@@ -41,6 +42,14 @@
             sensorTypes.find((e) => e.value === orgSensor.type) ??
             sensorTypes[0];
         editing = false;
+    };
+
+    const handleDelete = async () => {
+        // TODO: ask for confirmation!!!
+        const res = await authFetch(`/api/v1/sensor/${orgSensor.id}`, {
+            method: 'DELETE',
+        });
+        console.log(await res.json());
     };
 
     onMount(async () => {
@@ -98,7 +107,11 @@
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             {#if editing}
-                <Button variant="destructive" size="bold">Delete</Button>
+                <Button
+                    variant="destructive"
+                    size="bold"
+                    on:click={handleDelete}>Delete</Button
+                >
                 <Button variant="outline" size="bold" on:click={handleCancel}
                     >Cancel</Button
                 >
