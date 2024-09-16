@@ -53,7 +53,10 @@
     };
 
     const handleSubmit = async () => {
-        const { data, success, error } = sensorDetailsSchema.safeParse(sensor);
+        const { data, success, error } = sensorDetailsSchema.safeParse({
+            ...sensor,
+            refresh_rate: +sensor.refresh_rate,
+        });
         if (!success) {
             console.log(error.issues);
             return;
