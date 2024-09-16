@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 
-const sensorTypeSchema = z.enum([
+export const sensorTypeSchema = z.enum([
     'binary_switch',
     'binary_sensor',
     'decimal_switch',

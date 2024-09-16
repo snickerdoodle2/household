@@ -8,6 +8,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
             if (res.isError) {
                 throw res.error;
             }
+            console.log(res.data);
             return res.data;
         })(),
     };
