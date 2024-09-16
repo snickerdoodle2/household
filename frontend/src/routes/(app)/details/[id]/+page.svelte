@@ -33,12 +33,22 @@
         }
     }
 
+    const labelClass = 'font-semibold text-base';
+
+    const handleCancel = () => {
+        sensor = structuredClone(orgSensor);
+        selectedType =
+            sensorTypes.find((e) => e.value === orgSensor.type) ??
+            sensorTypes[0];
+        editing = false;
+    };
+
     onMount(async () => {
         orgSensor = await data.sensor;
         selectedType =
             sensorTypes.find((e) => e.value === orgSensor.type) ??
             sensorTypes[0];
-        sensor = orgSensor;
+        sensor = structuredClone(orgSensor);
         loading = false;
     });
 </script>
@@ -50,31 +60,29 @@
         <Card.Header class="text-3xl">
             <Card.Title>Sensor Details</Card.Title>
         </Card.Header>
-        <Card.Content
-            class="grid grid-cols-2 items-center gap-3 text-xl font-semibold"
-        >
-            <Label for="name">Name</Label>
+        <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
+            <Label for="name" class={labelClass}>Name</Label>
             <Input
                 type="text"
                 name="name"
                 disabled={!editing}
                 bind:value={sensor.name}
             />
-            <Label for="refresh_rate">Refresh Rate</Label>
+            <Label for="refresh_rate" class={labelClass}>Refresh Rate</Label>
             <Input
                 type="number"
                 name="refresh_rate"
                 disabled={!editing}
                 bind:value={sensor.refresh_rate}
             />
-            <Label for="uri">URI</Label>
+            <Label for="uri" class={labelClass}>URI</Label>
             <Input
                 type="text"
                 name="uri"
                 disabled={!editing}
                 bind:value={sensor.uri}
             />
-            <Label for="sensor_type">Type</Label>
+            <Label for="sensor_type" class={labelClass}>Type</Label>
             <Select.Root disabled={!editing} bind:selected={selectedType}>
                 <Select.Trigger>
                     <Select.Value />
@@ -88,16 +96,19 @@
                 </Select.Content>
             </Select.Root>
         </Card.Content>
-        <Card.Footer class="flex justify-end">
+        <Card.Footer class="flex justify-end gap-3">
             {#if editing}
-                <Button variant="destructive">Delete</Button>
-                <Button variant="outline">Cancel</Button>
-                <Button>Submit</Button>
+                <Button variant="destructive" size="bold">Delete</Button>
+                <Button variant="outline" size="bold" on:click={handleCancel}
+                    >Cancel</Button
+                >
+                <Button size="bold">Submit</Button>
             {:else}
                 <Button
                     on:click={() => {
                         editing = true;
-                    }}>Edit</Button
+                    }}
+                    size="bold">Edit</Button
                 >
             {/if}
         </Card.Footer>
