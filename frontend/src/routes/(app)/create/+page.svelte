@@ -1,11 +1,10 @@
 <script lang="ts">
     import * as Card from '$lib/components/ui/card';
-    import { Label } from '$lib/components/ui/label';
-    import { Input } from '$lib/components/ui/input';
     import { Button } from '$lib/components/ui/button';
+    import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import { newSensorSchema, sensorTypeSchema } from '$lib/types/sensor';
-    const labelClass = 'font-semibold text-base';
+    import NewSensorInput from '$lib/components/NewSensorInput.svelte';
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -14,7 +13,7 @@
     }));
 
     let name: string;
-    let refresh_rate: number;
+    let refresh_rate: string;
     let uri: string;
     let type: { value: string; label: string } | undefined;
     let timeout: number;
@@ -45,30 +44,53 @@
 
     $: debounce(validate, name, refresh_rate, uri, type);
 
-    const handleSubmit = async () => {};
+    const handleSubmit = async () => {
+        console.log(':)');
+    };
 </script>
 
-<pre>{JSON.stringify(errors, null, '    ')}</pre>
-<Card.Root class="w-[512px] border-none shadow-none">
+<Card.Root class="w-[600px] border-none shadow-none">
     <Card.Header class="text-3xl">
         <Card.Title>Create Sensor</Card.Title>
     </Card.Header>
     <form on:submit|preventDefault={handleSubmit}>
-        <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
-            <Label for="name" class={labelClass}>Name</Label>
-            <Input type="text" name="name" bind:value={name} required />
-            <Label for="refresh_rate" class={labelClass}>Refresh Rate</Label>
-            <Input
-                type="number"
-                name="refresh_rate"
-                bind:value={refresh_rate}
-                required
+        <Card.Content class="grid grid-cols-[3fr_4fr] items-center gap-3">
+            <NewSensorInput
+                name="name"
+                label="Name"
+                bind:value={name}
+                type="text"
+                {errors}
             />
-            <Label for="uri" class={labelClass}>URI</Label>
-            <Input type="text" name="uri" bind:value={uri} required />
-            <Label for="sensor_type" class={labelClass}>Type</Label>
-            <Select.Root bind:selected={type} required>
-                <Select.Trigger>
+            <NewSensorInput
+                name="refresh_rate"
+                label="Refresh rate"
+                bind:value={refresh_rate}
+                type="number"
+                {errors}
+            />
+            <NewSensorInput
+                name="uri"
+                label="URI"
+                bind:value={uri}
+                type="string"
+                {errors}
+            />
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Type
+                {#if errors['type']}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{errors['type']}</span
+                    >
+                {/if}
+            </Label>
+            <Select.Root bind:selected={type} required name="type">
+                <Select.Trigger
+                    class={errors['type'] ? 'border-2 border-red-600' : ''}
+                >
                     <Select.Value />
                 </Select.Trigger>
                 <Select.Content>
