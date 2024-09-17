@@ -6,6 +6,7 @@
     import * as Dialog from '$lib/components/ui/dialog';
     import { page } from '$app/stores';
     import DetailsPage from './details/[id]/+page.svelte';
+    import CreatePage from './create/+page.svelte';
     import { Plus } from 'svelte-radix';
     import { Button } from '@/components/ui/button';
 
@@ -25,6 +26,14 @@
         }
     };
 
+    const handleCreate = () => {
+        const href = window.location.href + 'create';
+        modalOpen = true;
+        pushState(href, {
+            new: true,
+        });
+    };
+
     export let data: LayoutData;
 </script>
 
@@ -38,7 +47,7 @@
             {/each}
         </div>
     {/await}
-    <Button variant="outline" size="icon" href="/create">
+    <Button variant="outline" size="icon" on:click={handleCreate}>
         <Plus />
     </Button>
 </div>
@@ -58,6 +67,8 @@
         >
             {#if $page.state.selected}
                 <DetailsPage data={{ sensor: $page.state.selected }} />
+            {:else if $page.state.new}
+                <CreatePage />
             {/if}
         </Dialog.Content>
     </Dialog.Portal>
