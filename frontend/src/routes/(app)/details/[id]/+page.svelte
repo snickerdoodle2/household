@@ -83,7 +83,7 @@
     });
 </script>
 
-<Card.Root class="w-[512px] border-none">
+<Card.Root class="w-[512px] border-none shadow-none">
     {#if loading}
         <p>Loading...</p>
     {:else}

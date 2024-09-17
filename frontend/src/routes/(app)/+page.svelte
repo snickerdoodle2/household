@@ -6,6 +6,8 @@
     import * as Dialog from '$lib/components/ui/dialog';
     import { page } from '$app/stores';
     import DetailsPage from './details/[id]/+page.svelte';
+    import { Plus } from 'svelte-radix';
+    import { Button } from '@/components/ui/button';
 
     let modalOpen = false;
 
@@ -26,15 +28,20 @@
     export let data: LayoutData;
 </script>
 
-{#await data.sensors then sensors}
-    <div
-        class="grid h-full grid-cols-1 grid-rows-6 gap-8 sm:grid-cols-2 md:py-20 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-    >
-        {#each sensors as sensor}
-            <Sensor {sensor} on:click={handleDetails} />
-        {/each}
-    </div>
-{/await}
+<div class="flex h-full items-start gap-4 md:py-20">
+    {#await data.sensors then sensors}
+        <div
+            class="grid flex-1 grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+        >
+            {#each sensors as sensor}
+                <Sensor {sensor} on:click={handleDetails} />
+            {/each}
+        </div>
+    {/await}
+    <Button variant="outline" size="icon" href="/create">
+        <Plus />
+    </Button>
+</div>
 
 <Dialog.Root
     bind:open={modalOpen}
