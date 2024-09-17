@@ -5,6 +5,7 @@
     import * as Select from '$lib/components/ui/select';
     import { newSensorSchema, sensorTypeSchema } from '$lib/types/sensor';
     import NewSensorInput from '$lib/components/NewSensorInput.svelte';
+    import { authFetch } from '@/helpers/fetch';
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -45,7 +46,22 @@
     $: debounce(validate, name, refresh_rate, uri, type);
 
     const handleSubmit = async () => {
-        console.log(':)');
+        const { success, data } = newSensorSchema.safeParse({
+            name,
+            refresh_rate: refresh_rate ? +refresh_rate : undefined,
+            uri,
+            type: type?.value,
+        });
+
+        if (!success) return;
+
+        const res = await authFetch(
+            '/api/v1/sensor',
+            { method: 'POST', body: JSON.stringify(data) },
+            fetch
+        );
+
+        console.log(await res.json());
     };
 </script>
 
