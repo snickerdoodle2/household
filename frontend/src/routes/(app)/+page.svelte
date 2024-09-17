@@ -63,7 +63,7 @@
     <Dialog.Portal>
         <Dialog.Overlay />
         <Dialog.Content
-            class="flex max-w-[600px] items-center justify-center px-8 py-4"
+            class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
         >
             {#if $page.state.selected}
                 <DetailsPage data={{ sensor: $page.state.selected }} />
