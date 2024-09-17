@@ -27,7 +27,9 @@
 </script>
 
 {#await data.sensors then sensors}
-    <div class="grid h-full w-full grid-cols-5 grid-rows-6 gap-8 px-32 py-20">
+    <div
+        class="grid h-full grid-cols-1 grid-rows-6 gap-8 sm:grid-cols-2 md:py-20 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+    >
         {#each sensors as sensor}
             <Sensor {sensor} on:click={handleDetails} />
         {/each}
