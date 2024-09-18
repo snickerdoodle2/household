@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Home, MagicWand, Gear, Exit, Enter } from 'svelte-radix';
+    import { Home, MagicWand, Gear, Exit, Enter, Checkbox } from 'svelte-radix';
     import LightSwitch from './LightSwitch.svelte';
     import { Button } from './ui/button';
     import { authToken } from '@/auth/token';
@@ -9,6 +9,11 @@
             icon: Home,
             name: 'Home',
             url: '/',
+        },
+        {
+            icon: Checkbox,
+            name: 'Rules',
+            url: '/rules',
         },
         {
             icon: MagicWand,
