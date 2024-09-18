@@ -75,7 +75,7 @@ func (app *App) getRuleHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) listRulesHandler(w http.ResponseWriter, r *http.Request) {
-	rule, err := app.models.Rules.GetAll()
+	rule, err := app.models.Rules.GetAllInfo()
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
