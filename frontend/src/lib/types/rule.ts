@@ -51,15 +51,22 @@ type RuleInternalType =
     | z.infer<typeof RuleGT>
     | z.infer<typeof RuleLT>;
 
-export const Rule = z.object({
+export const ruleSchema = z.object({
     id: z.string().uuid(),
     name: z.string().min(1).max(32),
     description: z.string().max(256),
-    on_valid: z.object({
-        to: z.string().uuid(),
-        payload: z.object({}).passthrough(),
-    }),
-    internal: RuleInternal,
 });
 
-export type RuleType = z.infer<typeof Rule>;
+export type Rule = z.infer<typeof ruleSchema>;
+
+export const ruleDescriptionSchema = ruleSchema.merge(
+    z.object({
+        on_valid: z.object({
+            to: z.string().uuid(),
+            payload: z.object({}).passthrough(),
+        }),
+        internal: RuleInternal,
+    })
+);
+
+export type RuleDescription = z.infer<typeof ruleDescriptionSchema>;

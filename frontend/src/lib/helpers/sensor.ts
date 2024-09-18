@@ -7,11 +7,7 @@ import {
 } from '@/types/sensor';
 import { z } from 'zod';
 import { authFetch } from './fetch';
-
-type FetchFn = (
-    input: RequestInfo | URL,
-    init?: RequestInit | undefined
-) => Promise<Response>;
+import type { FetchFn } from '@/types/misc';
 
 export const getAllSensors = async (
     fetch: FetchFn
