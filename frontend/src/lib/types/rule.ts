@@ -59,7 +59,7 @@ export const ruleSchema = z.object({
 
 export type Rule = z.infer<typeof ruleSchema>;
 
-export const ruleDescriptionSchema = ruleSchema.merge(
+export const ruleDetailsSchema = ruleSchema.merge(
     z.object({
         on_valid: z.object({
             to: z.string().uuid(),
@@ -69,4 +69,4 @@ export const ruleDescriptionSchema = ruleSchema.merge(
     })
 );
 
-export type RuleDescription = z.infer<typeof ruleDescriptionSchema>;
+export type RuleDetails = z.infer<typeof ruleDetailsSchema>;

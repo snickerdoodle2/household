@@ -1,6 +1,11 @@
 import type { FetchFn } from '@/types/misc';
 import type { Result } from '@/types/result';
-import { ruleSchema, type Rule } from '@/types/rule';
+import {
+    ruleDetailsSchema,
+    ruleSchema,
+    type Rule,
+    type RuleDetails,
+} from '@/types/rule';
 import { authFetch } from './fetch';
 import { z } from 'zod';
 
@@ -27,5 +32,32 @@ export const getAllRules = async (
     return {
         isError: false,
         data: parsed.data.data,
+    };
+};
+
+export const getRuleDetails = async (
+    id: string,
+    fetch: FetchFn
+): Promise<Result<RuleDetails, string>> => {
+    const res = await authFetch(`/api/v1/rule/${id}`, {}, fetch);
+    const data = await res.json();
+    if (!res.ok) {
+        return {
+            isError: true,
+            error: data.error,
+        };
+    }
+
+    const parsed = z.object({ rule: ruleDetailsSchema }).safeParse(data);
+    if (!parsed.success) {
+        return {
+            isError: true,
+            error: 'Error while parsing the data! (getRuleDetails)',
+        };
+    }
+
+    return {
+        isError: false,
+        data: parsed.data.rule,
     };
 };
