@@ -42,7 +42,13 @@ const RuleOr: z.ZodType<RuleOrType> = z.object({
     children: z.lazy(() => ruleInternalSchema.array()),
 });
 
-const ruleInternalSchema = z.union([RuleAnd, RuleOr, RuleNot, RuleGT, RuleLT]);
+export const ruleInternalSchema = z.union([
+    RuleAnd,
+    RuleOr,
+    RuleNot,
+    RuleGT,
+    RuleLT,
+]);
 
 type RuleInternal =
     | RuleAndType

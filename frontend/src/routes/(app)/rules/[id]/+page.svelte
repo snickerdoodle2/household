@@ -3,7 +3,11 @@
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import FormInput from '@/components/FormInput.svelte';
-    import { type RuleDetails, ruleDetailsSchema } from '@/types/rule';
+    import {
+        type RuleDetails,
+        ruleDetailsSchema,
+        ruleInternalSchema,
+    } from '@/types/rule';
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
@@ -18,8 +22,22 @@
     let internal = '';
     let payload = '';
 
+    // TODO: make single validation function
     $: if (!loading) {
         rule.on_valid.to = selectedSensor.value;
+    }
+
+    $: if (!loading) {
+        try {
+            const { data, success } = ruleInternalSchema.safeParse(
+                JSON.parse(internal)
+            );
+            if (success) {
+                rule.internal = data;
+            }
+        } catch {
+            errors['internal'] = 'Invalid JSON';
+        }
     }
 
     $: if (!loading) {
