@@ -3,7 +3,7 @@
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import FormInput from '@/components/FormInput.svelte';
-    import type { RuleDetails } from '@/types/rule';
+    import { type RuleDetails, ruleDetailsSchema } from '@/types/rule';
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
@@ -21,6 +21,17 @@
     $: if (!loading) {
         rule.on_valid.to = selectedSensor.value;
     }
+
+    $: if (!loading) {
+        try {
+            rule.on_valid.payload = JSON.parse(payload);
+            delete errors['payload'];
+            errors = errors;
+        } catch {
+            errors['payload'] = 'Not a valid JSON';
+        }
+    }
+
     const resetRule = async () => {
         rule = { ...(await data.rule) };
         const tmp = sensors.find((e) => e.value === rule.on_valid.to);
@@ -41,6 +52,26 @@
         const res = await authFetch(`/api/v1/rule/${rule.id}`, {
             method: 'DELETE',
         });
+        console.log(await res.json());
+    };
+
+    const handleSubmit = async () => {
+        const { data, success, error } = ruleDetailsSchema.safeParse({
+            ...rule,
+        });
+        if (!success) {
+            console.log(error.issues);
+            return;
+        }
+
+        const { id, created_at, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
+        console.log(rest);
+
+        const res = await authFetch(`/api/v1/rule/${rule.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(rest),
+        });
+
         console.log(await res.json());
     };
 
@@ -135,7 +166,7 @@
                 <Button variant="outline" size="bold" on:click={handleCancel}
                     >Cancel</Button
                 >
-                <Button size="bold">Submit</Button>
+                <Button size="bold" on:click={handleSubmit}>Submit</Button>
             {:else}
                 <Button
                     on:click={() => {

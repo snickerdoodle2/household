@@ -72,7 +72,14 @@ const internalRuleSchema = z.object({
     internal: ruleInternalSchema,
 });
 
-export const ruleDetailsSchema = ruleSchema.merge(internalRuleSchema);
+export const ruleDetailsSchema = ruleSchema.merge(internalRuleSchema).merge(
+    z.object({
+        created_at: z
+            .string()
+            .or(z.date())
+            .transform((d) => new Date(d)),
+    })
+);
 
 export type RuleDetails = z.infer<typeof ruleDetailsSchema>;
 
