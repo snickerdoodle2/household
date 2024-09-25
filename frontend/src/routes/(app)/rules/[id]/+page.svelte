@@ -57,7 +57,7 @@
             selectedSensor = tmp;
         }
         payload = JSON.stringify(rule.on_valid.payload);
-        internal = JSON.stringify(rule);
+        internal = JSON.stringify(rule.internal);
     };
 
     const handleCancel = async () => {
