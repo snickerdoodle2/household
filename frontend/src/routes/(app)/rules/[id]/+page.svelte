@@ -7,6 +7,7 @@
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
+    import { authFetch } from '@/helpers/fetch';
     export let data: PageData;
     let rule: RuleDetails;
     let loading = true;
@@ -33,6 +34,14 @@
     const handleCancel = async () => {
         await resetRule();
         editing = false;
+    };
+
+    const handleDelete = async () => {
+        // TODO: ask for confirmation!!!
+        const res = await authFetch(`/api/v1/rule/${rule.id}`, {
+            method: 'DELETE',
+        });
+        console.log(await res.json());
     };
 
     onMount(async () => {
@@ -118,7 +127,11 @@
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             {#if editing}
-                <Button variant="destructive" size="bold">Delete</Button>
+                <Button
+                    variant="destructive"
+                    size="bold"
+                    on:click={handleDelete}>Delete</Button
+                >
                 <Button variant="outline" size="bold" on:click={handleCancel}
                     >Cancel</Button
                 >
