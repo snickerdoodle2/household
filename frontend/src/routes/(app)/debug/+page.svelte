@@ -68,6 +68,7 @@
                 <code><pre>{JSON.stringify(message, null, 4)}</pre></code>
             {/if}
         {/await}
+        <code><pre>{JSON.stringify($authToken, null, 4)}</pre></code>
         {#await data.user then user}
             <code><pre>{JSON.stringify(user, null, 4)}</pre></code>
         {/await}
