@@ -1,5 +1,7 @@
 <script lang="ts">
     import * as Card from '$lib/components/ui/card';
+    import { Label } from '$lib/components/ui/label';
+    import * as Select from '$lib/components/ui/select';
     import FormInput from '@/components/FormInput.svelte';
     import type { RuleDetails } from '@/types/rule';
     import type { PageData } from './$types';
@@ -10,7 +12,13 @@
     let loading = true;
     let errors: Record<string, string> = {};
     let editing = false;
+    let sensors: { label: string; value: string }[] = [];
+    let selectedSensor: { label: string; value: string };
     let internal = '';
+
+    $: if (!loading) {
+        rule.on_valid.to = selectedSensor.value;
+    }
 
     const handleCancel = async () => {
         rule = { ...(await data.rule) };
@@ -20,6 +28,14 @@
 
     onMount(async () => {
         rule = { ...(await data.rule) };
+        sensors = (await data.sensors).map((e) => ({
+            value: e.id,
+            label: e.name,
+        }));
+        const tmp = sensors.find((e) => e.value === rule.on_valid.to);
+        if (tmp) {
+            selectedSensor = tmp;
+        }
         internal = JSON.stringify(rule);
         loading = false;
     });
@@ -49,6 +65,36 @@
                 bind:value={rule.description}
                 disabled={!editing}
             />
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                To
+                {#if errors['type']}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{errors['type']}</span
+                    >
+                {/if}
+            </Label>
+            <Select.Root
+                bind:selected={selectedSensor}
+                required
+                name="type"
+                disabled={!editing}
+            >
+                <Select.Trigger
+                    class={errors['type'] ? 'border-2 border-red-600' : ''}
+                >
+                    <Select.Value />
+                </Select.Trigger>
+                <Select.Content>
+                    {#each sensors as type}
+                        <Select.Item value={type.value}
+                            >{type.label}</Select.Item
+                        >
+                    {/each}
+                </Select.Content>
+            </Select.Root>
             <FormInput
                 name="internal"
                 type="text"
