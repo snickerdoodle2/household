@@ -8,6 +8,7 @@
     export let type: HTMLInputTypeAttribute;
     export let value: string;
     export let errors: Record<string, string>;
+    export let disabled = false;
 </script>
 
 <Label
@@ -25,5 +26,6 @@
     {name}
     bind:value
     required
+    {disabled}
     class={errors[name] ? 'border-2 border-red-600' : ''}
 />

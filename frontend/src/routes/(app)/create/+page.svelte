@@ -4,7 +4,7 @@
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import { newSensorSchema, sensorTypeSchema } from '$lib/types/sensor';
-    import NewSensorInput from '$lib/components/NewSensorInput.svelte';
+    import NewSensorInput from '$lib/components/FormInput.svelte';
     import { authFetch } from '@/helpers/fetch';
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
