@@ -15,28 +15,32 @@
     let sensors: { label: string; value: string }[] = [];
     let selectedSensor: { label: string; value: string };
     let internal = '';
+    let payload = '';
 
     $: if (!loading) {
         rule.on_valid.to = selectedSensor.value;
     }
-
-    const handleCancel = async () => {
+    const resetRule = async () => {
         rule = { ...(await data.rule) };
-        internal = JSON.stringify(rule);
-        editing = false;
-    };
-
-    onMount(async () => {
-        rule = { ...(await data.rule) };
-        sensors = (await data.sensors).map((e) => ({
-            value: e.id,
-            label: e.name,
-        }));
         const tmp = sensors.find((e) => e.value === rule.on_valid.to);
         if (tmp) {
             selectedSensor = tmp;
         }
+        payload = JSON.stringify(rule.on_valid.payload);
         internal = JSON.stringify(rule);
+    };
+
+    const handleCancel = async () => {
+        await resetRule();
+        editing = false;
+    };
+
+    onMount(async () => {
+        sensors = (await data.sensors).map((e) => ({
+            value: e.id,
+            label: e.name,
+        }));
+        await resetRule();
         loading = false;
     });
 </script>
@@ -95,6 +99,14 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
+            <FormInput
+                name="payload"
+                type="text"
+                label="Payload"
+                {errors}
+                bind:value={payload}
+                disabled={!editing}
+            />
             <FormInput
                 name="internal"
                 type="text"
