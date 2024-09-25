@@ -40,3 +40,6 @@ POST   /api/v1/rule      - tworzy nową regułę
 PUT    /api/v1/rule/{id} - update reguły
 DELETE /api/v1/rule/{id} - usuwa regułę
 ```
+
+## TODO
+1. Nazwy reguł powinny być unikalne

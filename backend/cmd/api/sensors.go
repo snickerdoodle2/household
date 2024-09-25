@@ -11,7 +11,7 @@ import (
 )
 
 func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
-	sensors, err := app.models.Sensors.GetAll()
+	sensors, err := app.models.Sensors.GetAllInfo()
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

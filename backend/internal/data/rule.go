@@ -266,6 +266,52 @@ func (m *RuleModel) GetAll() ([]*Rule, error) {
 	return rules, nil
 }
 
+type RuleSimple struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+}
+
+func (m RuleModel) GetAllInfo() ([]*RuleSimple, error) {
+	query := `
+    SELECT id, name, description
+    FROM rules
+    ORDER BY id
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	rules := []*RuleSimple{}
+
+	for rows.Next() {
+		var ruleS RuleSimple
+
+		err = rows.Scan(
+			&ruleS.ID,
+			&ruleS.Name,
+			&ruleS.Description,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+		rules = append(rules, &ruleS)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return rules, nil
+}
+
 func (m RuleModel) Update(rule *Rule) error {
 	query := `
        UPDATE rules

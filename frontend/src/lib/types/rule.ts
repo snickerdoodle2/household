@@ -1,65 +1,93 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const RuleGT = z.object({
-    type: z.literal("gt"),
+    type: z.literal('gt'),
     sensor_id: z.string().uuid(),
     value: z.number(),
 });
 
 const RuleLT = z.object({
-    type: z.literal("lt"),
+    type: z.literal('lt'),
     sensor_id: z.string().uuid(),
     value: z.number(),
 });
 
 type RuleNotType = {
-    type: "not";
-    wrapped: RuleInternalType;
+    type: 'not';
+    wrapped: RuleInternal;
 };
 
 const RuleNot: z.ZodType<RuleNotType> = z.object({
-    type: z.literal("not"),
-    wrapped: z.lazy(() => RuleInternal),
+    type: z.literal('not'),
+    wrapped: z.lazy(() => ruleInternalSchema),
 });
 
 type RuleAndType = {
-    type: "and";
-    children: RuleInternalType[];
+    type: 'and';
+    children: RuleInternal[];
 };
 
 const RuleAnd: z.ZodType<RuleAndType> = z.object({
-    type: z.literal("and"),
-    children: z.lazy(() => RuleInternal.array()),
+    type: z.literal('and'),
+    children: z.lazy(() => ruleInternalSchema.array()),
 });
 
 type RuleOrType = {
-    type: "or";
-    children: RuleInternalType[];
+    type: 'or';
+    children: RuleInternal[];
 };
 
 const RuleOr: z.ZodType<RuleOrType> = z.object({
-    type: z.literal("or"),
-    children: z.lazy(() => RuleInternal.array()),
+    type: z.literal('or'),
+    children: z.lazy(() => ruleInternalSchema.array()),
 });
 
-const RuleInternal = z.union([RuleAnd, RuleOr, RuleNot, RuleGT, RuleLT]);
+export const ruleInternalSchema = z.union([
+    RuleAnd,
+    RuleOr,
+    RuleNot,
+    RuleGT,
+    RuleLT,
+]);
 
-type RuleInternalType =
+type RuleInternal =
     | RuleAndType
     | RuleOrType
     | RuleNotType
     | z.infer<typeof RuleGT>
     | z.infer<typeof RuleLT>;
 
-export const Rule = z.object({
-    id: z.string().uuid(),
+const ruleNameDescSchema = z.object({
     name: z.string().min(1).max(32),
     description: z.string().max(256),
+});
+
+export const ruleSchema = ruleNameDescSchema.merge(
+    z.object({
+        id: z.string().uuid(),
+    })
+);
+
+export type Rule = z.infer<typeof ruleSchema>;
+
+const internalRuleSchema = z.object({
     on_valid: z.object({
         to: z.string().uuid(),
         payload: z.object({}).passthrough(),
     }),
-    internal: RuleInternal,
+    internal: ruleInternalSchema,
 });
 
-export type RuleType = z.infer<typeof Rule>;
+export const ruleDetailsSchema = ruleSchema.merge(internalRuleSchema).merge(
+    z.object({
+        created_at: z
+            .string()
+            .or(z.date())
+            .transform((d) => new Date(d)),
+    })
+);
+
+export type RuleDetails = z.infer<typeof ruleDetailsSchema>;
+
+export const newRuleSchema = internalRuleSchema.merge(ruleNameDescSchema);
+export type NewRule = z.infer<typeof newRuleSchema>;
