@@ -45,11 +45,13 @@
             {#each sensors as sensor}
                 <Sensor {sensor} on:click={handleDetails} />
             {/each}
+            <div class="flex items-center justify-center">
+                <Button variant="outline" size="icon" on:click={handleCreate}>
+                    <Plus />
+                </Button>
+            </div>
         </div>
     {/await}
-    <Button variant="outline" size="icon" on:click={handleCreate}>
-        <Plus />
-    </Button>
 </div>
 
 <Dialog.Root
