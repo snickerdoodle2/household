@@ -12,11 +12,17 @@
     import { authFetch } from '@/helpers/fetch';
 
     export let data: PageData;
+    export let open: boolean;
 
     let editing = false;
     let loading = true;
     let orgSensor: SensorDetails;
     let sensor: SensorDetails;
+
+    type Issues = Partial<{ uri: string; name: string; refresh_rate: string}>;
+
+    $: submitIssues = {} as Partial<{uri: string, name: string, refresh_rate: string}>;
+    let deleteIssue :string | null = null;
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -49,7 +55,15 @@
         const res = await authFetch(`/api/v1/sensor/${orgSensor.id}`, {
             method: 'DELETE',
         });
-        console.log(await res.json());
+
+        if (res.ok) {
+            console.log(await res.json());
+            open = false;
+        } else {
+            const resJson = await res.json();
+            console.log(resJson);
+            deleteIssue = resJson.error;
+        }
     };
 
     const handleSubmit = async () => {
@@ -57,6 +71,7 @@
             ...sensor,
             refresh_rate: +sensor.refresh_rate,
         });
+        
         if (!success) {
             console.log(error.issues);
             return;
@@ -69,7 +84,15 @@
             body: JSON.stringify(rest),
         });
 
-        console.log(await res.json());
+        if (res.ok) {
+            open = false;
+            console.log(await res.json())
+        } else {
+            const resJson = await res.json();
+            console.log(resJson);
+            submitIssues = resJson.error;
+        }
+
     };
 
     onMount(async () => {
@@ -97,6 +120,7 @@
                 name="name"
                 disabled={!editing}
                 bind:value={sensor.name}
+                errorMessage={submitIssues.name}
             />
             <Label for="refresh_rate" class={labelClass}>Refresh Rate</Label>
             <Input
@@ -104,6 +128,7 @@
                 name="refresh_rate"
                 disabled={!editing}
                 bind:value={sensor.refresh_rate}
+                errorMessage={submitIssues.refresh_rate}
             />
             <Label for="uri" class={labelClass}>URI</Label>
             <Input
@@ -111,6 +136,7 @@
                 name="uri"
                 disabled={!editing}
                 bind:value={sensor.uri}
+                errorMessage={submitIssues.uri}
             />
             <Label for="sensor_type" class={labelClass}>Type</Label>
             <Select.Root disabled={!editing} bind:selected={selectedType}>
@@ -127,24 +153,34 @@
             </Select.Root>
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
-            {#if editing}
-                <Button
-                    variant="destructive"
-                    size="bold"
-                    on:click={handleDelete}>Delete</Button
-                >
-                <Button variant="outline" size="bold" on:click={handleCancel}
-                    >Cancel</Button
-                >
-                <Button size="bold" on:click={handleSubmit}>Submit</Button>
-            {:else}
-                <Button
-                    on:click={() => {
-                        editing = true;
-                    }}
-                    size="bold">Edit</Button
-                >
-            {/if}
+            <div class="w-full flex flex-col gap-4 items-center justify-center">
+                
+                {#if deleteIssue} 
+                    <p class="mt-1 text-red-500 text-sm">{deleteIssue}</p>
+                {/if}
+                
+                <div class="flex w-full justify-end gap-3">
+                    {#if editing}
+                        <Button
+                            variant="destructive"
+                            size="bold"
+                            on:click={handleDelete}>Delete</Button
+                        >
+                        <Button variant="outline" size="bold" on:click={handleCancel}
+                            >Cancel</Button
+                        >
+                        <Button size="bold" on:click={handleSubmit}>Submit</Button>
+                    {:else}
+                        <Button
+                            on:click={() => {
+                                editing = true;
+                            }}
+                            size="bold">Edit</Button
+                        >
+                    {/if}
+    
+                </div>
+            </div>
         </Card.Footer>
     {/if}
 </Card.Root>

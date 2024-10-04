@@ -67,11 +67,13 @@
         <Dialog.Content
             class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
         >
+            <!-- @ts-ignore -->
             {#if $page.state.selected}
-                <DetailsPage data={{ sensor: $page.state.selected }} />
+                <DetailsPage bind:open={modalOpen} data={{ sensor: $page.state.selected }} />
             {:else if $page.state.new}
                 <CreatePage />
             {/if}
         </Dialog.Content>
     </Dialog.Portal>
 </Dialog.Root>
+
