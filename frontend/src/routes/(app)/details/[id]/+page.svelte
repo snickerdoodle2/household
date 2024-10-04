@@ -1,7 +1,7 @@
 <script lang="ts">
     import * as Card from '$lib/components/ui/card';
     import * as Select from '$lib/components/ui/select';
-    import { Input } from '@/components/ui/input';
+    import NewSensorInput from '$lib/components/FormInput.svelte';
     import { Label } from '@/components/ui/label';
     import type { PageData } from './$types';
     import type { SensorDetails } from '@/types/sensor';
@@ -19,10 +19,8 @@
     let orgSensor: SensorDetails;
     let sensor: SensorDetails;
 
-    type Issues = Partial<{ uri: string; name: string; refresh_rate: string}>;
-
-    $: submitIssues = {} as Partial<{uri: string, name: string, refresh_rate: string}>;
-    let deleteIssue :string | null = null;
+    $: fieldErrors = {} as Partial<Record<"uri" | "name" | "refresh_rate" | "type" , string>>;
+    let globalError :string | null = null;
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -39,8 +37,6 @@
             >;
         }
     }
-
-    const labelClass = 'font-semibold text-base';
 
     const handleCancel = () => {
         sensor = structuredClone(orgSensor);
@@ -62,7 +58,7 @@
         } else {
             const resJson = await res.json();
             console.log(resJson);
-            deleteIssue = resJson.error;
+            globalError = resJson.error;
         }
     };
 
@@ -84,13 +80,17 @@
             body: JSON.stringify(rest),
         });
 
+        const resJson = await res.json();
+        console.log(resJson)
+
         if (res.ok) {
             open = false;
-            console.log(await res.json())
         } else {
-            const resJson = await res.json();
-            console.log(resJson);
-            submitIssues = resJson.error;
+            if (typeof resJson.error === "string"){
+                globalError = resJson.error;
+            } else {
+                fieldErrors = resJson.error
+            }
         }
 
     };
@@ -113,39 +113,48 @@
         <Card.Header class="text-3xl">
             <Card.Title>Sensor Details</Card.Title>
         </Card.Header>
-        <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
-            <Label for="name" class={labelClass}>Name</Label>
-            <Input
-                type="text"
+        <Card.Content class="grid grid-cols-[3fr_4fr] items-center gap-3">
+            <NewSensorInput
                 name="name"
-                disabled={!editing}
+                label="Name"
                 bind:value={sensor.name}
-                errorMessage={submitIssues.name}
-            />
-            <Label for="refresh_rate" class={labelClass}>Refresh Rate</Label>
-            <Input
-                type="number"
-                name="refresh_rate"
-                disabled={!editing}
-                bind:value={sensor.refresh_rate}
-                errorMessage={submitIssues.refresh_rate}
-            />
-            <Label for="uri" class={labelClass}>URI</Label>
-            <Input
                 type="text"
-                name="uri"
-                disabled={!editing}
-                bind:value={sensor.uri}
-                errorMessage={submitIssues.uri}
+                errors={fieldErrors}
             />
-            <Label for="sensor_type" class={labelClass}>Type</Label>
-            <Select.Root disabled={!editing} bind:selected={selectedType}>
-                <Select.Trigger>
+            <NewSensorInput
+                name="refresh_rate"
+                label="Refresh rate"
+                bind:value={sensor.refresh_rate}
+                type="number"
+                errors={fieldErrors}
+            />
+            <NewSensorInput
+                name="uri"
+                label="URI"
+                bind:value={sensor.uri}
+                type="string"
+                errors={fieldErrors}
+            />
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Type
+                {#if fieldErrors['type']}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{fieldErrors['type']}</span
+                    >
+                {/if}
+            </Label>
+            <Select.Root bind:selected={selectedType} required name="type">
+                <Select.Trigger
+                    class={fieldErrors['type'] ? 'border-2 border-red-600' : ''}
+                >
                     <Select.Value />
                 </Select.Trigger>
                 <Select.Content>
                     {#each sensorTypes as type}
-                        <Select.Item value={type.label}
+                        <Select.Item value={type.value}
                             >{type.label}</Select.Item
                         >
                     {/each}
@@ -155,8 +164,8 @@
         <Card.Footer class="flex justify-end gap-3">
             <div class="w-full flex flex-col gap-4 items-center justify-center">
                 
-                {#if deleteIssue} 
-                    <p class="mt-1 text-red-500 text-sm">{deleteIssue}</p>
+                {#if globalError} 
+                    <p class="mt-1 text-red-500 text-sm">{globalError}</p>
                 {/if}
                 
                 <div class="flex w-full justify-end gap-3">

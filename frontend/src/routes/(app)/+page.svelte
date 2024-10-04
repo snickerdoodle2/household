@@ -71,7 +71,7 @@
             {#if $page.state.selected}
                 <DetailsPage bind:open={modalOpen} data={{ sensor: $page.state.selected }} />
             {:else if $page.state.new}
-                <CreatePage />
+                <CreatePage bind:open={modalOpen}/>
             {/if}
         </Dialog.Content>
     </Dialog.Portal>

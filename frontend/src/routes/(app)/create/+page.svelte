@@ -7,6 +7,8 @@
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import { authFetch } from '@/helpers/fetch';
 
+    export let open: boolean;
+
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
         // TODO: Add capitalization or full lables
@@ -18,7 +20,7 @@
     let uri: string;
     let type: { value: string; label: string } | undefined;
     let timeout: number;
-    let errors: Record<string, string> = {};
+    let errors: Partial<Record<"uri" | "name" | "refresh_rate" | "type" , string>> = {};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const debounce = (callback: Function, ...args: unknown[]) => {
@@ -40,6 +42,8 @@
             );
             return;
         }
+
+        console.log("validate", errors)
         errors = {};
     };
 
@@ -60,8 +64,16 @@
             { method: 'POST', body: JSON.stringify(data) },
             fetch
         );
+        
+        const resJson = await res.json()
+        console.log(resJson);
 
-        console.log(await res.json());
+        if (!res.ok){
+            errors = resJson.error
+        } else {
+            open = false;
+        }
+
     };
 </script>
 
