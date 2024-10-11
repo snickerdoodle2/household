@@ -3,9 +3,6 @@
     import * as Card from '$lib/components/ui/card/index.js';
     import Button from '@/components/ui/button/button.svelte';
     import { Plus } from 'radix-icons-svelte';
-    import { Dialog } from 'bits-ui';
-    import DetailsPage from './[id]/+page.svelte';
-    import { page } from '$app/stores';
     import { goto } from '$app/navigation';
 
     export let data: PageData;
