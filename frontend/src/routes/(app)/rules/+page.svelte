@@ -14,7 +14,7 @@
 
 <div class="flex h-full items-start">
     {#await data.rules then rules}
-    <div class="flex-1 grid py-20 gap-8 grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+    <div class="flex-1 grid py-20 gap-8 grid-cols-1 sm:grid-cols-1 lg:grid-cols-2">
         {#each rules as rule}
             <div class="lg:min-w-[32rem]">
                 <a href={`/rules/${rule.id}`}>
