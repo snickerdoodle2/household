@@ -11,33 +11,37 @@
     export let data: PageData;
 </script>
 
-
 <div class="flex h-full items-start">
     {#await data.rules then rules}
-    <div class="flex-1 grid py-20 gap-8 grid-cols-1 sm:grid-cols-1 lg:grid-cols-2">
-        {#each rules as rule}
-            <div class="lg:min-w-[32rem]">
-                <a href={`/rules/${rule.id}`}>
-                    <Card.Root class="hover:bg-accent">
-                        <Card.Header>
-                            <Card.Title>
-                                {rule.name}
-                            </Card.Title>
-                            <Card.Description>
-                                {rule.description}
-                            </Card.Description>
-                        </Card.Header>
-                    </Card.Root>
-                </a>
-            </div>
-        {/each}
+        <div
+            class="grid flex-1 grid-cols-1 gap-8 py-20 sm:grid-cols-1 lg:grid-cols-2"
+        >
+            {#each rules as rule}
+                <div class="lg:min-w-[32rem]">
+                    <a href={`/rules/${rule.id}`}>
+                        <Card.Root class="hover:bg-accent">
+                            <Card.Header>
+                                <Card.Title>
+                                    {rule.name}
+                                </Card.Title>
+                                <Card.Description>
+                                    {rule.description}
+                                </Card.Description>
+                            </Card.Header>
+                        </Card.Root>
+                    </a>
+                </div>
+            {/each}
 
-        <div class="flex items-center justify-center">
-            <Button variant="outline" size="icon" on:click={() => goto(`/rules/create`)}>
-                <Plus />
-            </Button>
+            <div class="flex items-center justify-center">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    on:click={() => goto(`/rules/create`)}
+                >
+                    <Plus />
+                </Button>
+            </div>
         </div>
-    </div>
     {/await}
 </div>
-

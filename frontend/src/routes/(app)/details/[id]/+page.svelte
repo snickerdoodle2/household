@@ -19,8 +19,10 @@
     let orgSensor: SensorDetails;
     let sensor: SensorDetails;
 
-    $: fieldErrors = {} as Partial<Record<"uri" | "name" | "refresh_rate" | "type" , string>>;
-    let globalError :string | null = null;
+    $: fieldErrors = {} as Partial<
+        Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
+    >;
+    let globalError: string | null = null;
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -67,7 +69,7 @@
             ...sensor,
             refresh_rate: +sensor.refresh_rate,
         });
-        
+
         if (!success) {
             console.log(error.issues);
             return;
@@ -81,18 +83,17 @@
         });
 
         const resJson = await res.json();
-        console.log(resJson)
+        console.log(resJson);
 
         if (res.ok) {
             open = false;
         } else {
-            if (typeof resJson.error === "string"){
+            if (typeof resJson.error === 'string') {
                 globalError = resJson.error;
             } else {
-                fieldErrors = resJson.error
+                fieldErrors = resJson.error;
             }
         }
-
     };
 
     onMount(async () => {
@@ -162,12 +163,11 @@
             </Select.Root>
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
-            <div class="w-full flex flex-col gap-4 items-center justify-center">
-                
-                {#if globalError} 
-                    <p class="mt-1 text-red-500 text-sm">{globalError}</p>
+            <div class="flex w-full flex-col items-center justify-center gap-4">
+                {#if globalError}
+                    <p class="mt-1 text-sm text-red-500">{globalError}</p>
                 {/if}
-                
+
                 <div class="flex w-full justify-end gap-3">
                     {#if editing}
                         <Button
@@ -175,10 +175,14 @@
                             size="bold"
                             on:click={handleDelete}>Delete</Button
                         >
-                        <Button variant="outline" size="bold" on:click={handleCancel}
-                            >Cancel</Button
+                        <Button
+                            variant="outline"
+                            size="bold"
+                            on:click={handleCancel}>Cancel</Button
                         >
-                        <Button size="bold" on:click={handleSubmit}>Submit</Button>
+                        <Button size="bold" on:click={handleSubmit}
+                            >Submit</Button
+                        >
                     {:else}
                         <Button
                             on:click={() => {
@@ -187,7 +191,6 @@
                             size="bold">Edit</Button
                         >
                     {/if}
-    
                 </div>
             </div>
         </Card.Footer>

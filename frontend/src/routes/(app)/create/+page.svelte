@@ -20,7 +20,9 @@
     let uri: string;
     let type: { value: string; label: string } | undefined;
     let timeout: number;
-    let errors: Partial<Record<"uri" | "name" | "refresh_rate" | "type" , string>> = {};
+    let errors: Partial<
+        Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
+    > = {};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const debounce = (callback: Function, ...args: unknown[]) => {
@@ -43,7 +45,7 @@
             return;
         }
 
-        console.log("validate", errors)
+        console.log('validate', errors);
         errors = {};
     };
 
@@ -64,16 +66,15 @@
             { method: 'POST', body: JSON.stringify(data) },
             fetch
         );
-        
-        const resJson = await res.json()
+
+        const resJson = await res.json();
         console.log(resJson);
 
-        if (!res.ok){
-            errors = resJson.error
+        if (!res.ok) {
+            errors = resJson.error;
         } else {
             open = false;
         }
-
     };
 </script>
 

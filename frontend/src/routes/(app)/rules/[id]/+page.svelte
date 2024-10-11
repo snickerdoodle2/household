@@ -52,7 +52,7 @@
     }
 
     const leave = () => {
-        goto(`/rules/`) 
+        goto(`/rules/`);
     };
 
     const resetRule = async () => {
@@ -92,21 +92,21 @@
             if (!success) {
                 error.issues.forEach((issue) => {
                     const fieldPath = issue.path.join('.');
-                    if (fieldPath === "name"){
+                    if (fieldPath === 'name') {
                         errors['name'] = issue.message;
-                    } else if (fieldPath === "description"){
+                    } else if (fieldPath === 'description') {
                         errors['description'] = issue.message;
-                    } else if (fieldPath === "on_valid.to"){
+                    } else if (fieldPath === 'on_valid.to') {
                         errors['type'] = issue.message;
-                    } else if (fieldPath === "on_valid.payload"){
+                    } else if (fieldPath === 'on_valid.payload') {
                         errors['payload'] = issue.message;
-                    } else if (fieldPath === "internal"){
+                    } else if (fieldPath === 'internal') {
                         errors['internal'] = issue.message;
                     }
                 });
                 console.log(error.issues);
                 return;
-            }            
+            }
             return;
         }
 
@@ -218,10 +218,7 @@
                 >
                 <Button size="bold" on:click={handleSubmit}>Submit</Button>
             {:else}
-                <Button
-                    on:click={leave}
-                    size="bold">Cancel</Button
-                >
+                <Button on:click={leave} size="bold">Cancel</Button>
                 <Button
                     on:click={() => {
                         editing = true;

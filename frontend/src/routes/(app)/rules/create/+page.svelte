@@ -53,13 +53,12 @@
                 JSON.parse(internal)
             );
 
-            if(success) {
+            if (success) {
                 delete errors['internal'];
                 errors = errors;
                 rule.internal = data;
             } else {
-                console.log("tbhjasr", error.issues);
-                
+                console.log('tbhjasr', error.issues);
             }
         } catch {
             errors['internal'] = 'Not a valid JSON';
@@ -72,15 +71,15 @@
         if (!success) {
             error.issues.forEach((issue) => {
                 const fieldPath = issue.path.join('.');
-                if (fieldPath === "name"){
+                if (fieldPath === 'name') {
                     errors['name'] = issue.message;
-                } else if (fieldPath === "description"){
+                } else if (fieldPath === 'description') {
                     errors['description'] = issue.message;
-                } else if (fieldPath === "on_valid.to"){
+                } else if (fieldPath === 'on_valid.to') {
                     errors['type'] = issue.message;
-                } else if (fieldPath === "on_valid.payload"){
+                } else if (fieldPath === 'on_valid.payload') {
                     errors['payload'] = issue.message;
-                } else if (fieldPath === "internal"){
+                } else if (fieldPath === 'internal') {
                     errors['internal'] = issue.message;
                 }
             });
@@ -99,7 +98,7 @@
             // TODO: direct errors to proper fields
             console.log('error');
         } else {
-            leave()
+            leave();
         }
     };
 
@@ -112,7 +111,7 @@
     });
 
     const leave = () => {
-        goto(`/rules/`) 
+        goto(`/rules/`);
     };
 </script>
 

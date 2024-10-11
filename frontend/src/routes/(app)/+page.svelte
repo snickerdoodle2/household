@@ -69,11 +69,13 @@
         >
             <!-- @ts-ignore -->
             {#if $page.state.selected}
-                <DetailsPage bind:open={modalOpen} data={{ sensor: $page.state.selected }} />
+                <DetailsPage
+                    bind:open={modalOpen}
+                    data={{ sensor: $page.state.selected }}
+                />
             {:else if $page.state.new}
-                <CreatePage bind:open={modalOpen}/>
+                <CreatePage bind:open={modalOpen} />
             {/if}
         </Dialog.Content>
     </Dialog.Portal>
 </Dialog.Root>
-
