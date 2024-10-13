@@ -6,6 +6,8 @@
     import { newSensorSchema, sensorTypeSchema } from '$lib/types/sensor';
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import { authFetch } from '@/helpers/fetch';
+    import type { RuleInternal } from '@/types/rule';
+    
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,

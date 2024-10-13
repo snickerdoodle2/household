@@ -2,6 +2,11 @@
     import type { PageData } from './$types';
     import * as Card from '$lib/components/ui/card/index.js';
     export let data: PageData;
+    import ruleData from '@/components/rule/ExampleRule.json';
+    import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
+    import type { RuleInternal } from '@/types/rule';
+
+    const ruleInternal = ruleData.internal as unknown as RuleInternal
 </script>
 
 {#await data.rules then rules}
@@ -21,4 +26,10 @@
             </a>
         {/each}
     </div>
+{/await}
+
+{#await data.sensors then sensors}
+<div>
+    <RuleInternalBuilder internal={ruleInternal} {sensors}/>
+</div>
 {/await}

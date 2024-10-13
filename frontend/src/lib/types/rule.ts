@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+
+
+
+// --------------------- Non-Expandable ---------------------
+
 const RuleGT = z.object({
     type: z.literal('gt'),
     sensor_id: z.string().uuid(),
@@ -12,35 +17,44 @@ const RuleLT = z.object({
     value: z.number(),
 });
 
-type RuleNotType = {
-    type: 'not';
-    wrapped: RuleInternal;
-};
+
+// --------------------- Expandable ---------------------  
 
 const RuleNot: z.ZodType<RuleNotType> = z.object({
     type: z.literal('not'),
     wrapped: z.lazy(() => ruleInternalSchema),
 });
 
+const RuleAnd: z.ZodType<RuleAndType> = z.object({
+    type: z.literal('and'),
+    children: z.lazy(() => ruleInternalSchema.array()),
+});
+
+const RuleOr: z.ZodType<RuleOrType> = z.object({
+    type: z.literal('or'),
+    children: z.lazy(() => ruleInternalSchema.array()),
+});
+
+
+// -------------------
+
+type RuleNotType = {
+    type: 'not';
+    wrapped: RuleInternal;
+};
+
+
 type RuleAndType = {
     type: 'and';
     children: RuleInternal[];
 };
 
-const RuleAnd: z.ZodType<RuleAndType> = z.object({
-    type: z.literal('and'),
-    children: z.lazy(() => ruleInternalSchema.array()),
-});
 
 type RuleOrType = {
     type: 'or';
     children: RuleInternal[];
 };
 
-const RuleOr: z.ZodType<RuleOrType> = z.object({
-    type: z.literal('or'),
-    children: z.lazy(() => ruleInternalSchema.array()),
-});
 
 export const ruleInternalSchema = z.union([
     RuleAnd,
@@ -50,7 +64,7 @@ export const ruleInternalSchema = z.union([
     RuleLT,
 ]);
 
-type RuleInternal =
+export type RuleInternal =
     | RuleAndType
     | RuleOrType
     | RuleNotType
