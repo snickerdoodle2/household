@@ -5,11 +5,14 @@
     import type { Sensor } from "@/types/sensor";
     import ComparisonRule from "./ComparisonRule.svelte";
 	import { Symbol } from 'radix-icons-svelte';
-    import { Trash } from "svelte-radix";
+    import { Trash, Plus, Slash} from "svelte-radix";
+
+	type Parent = RuleDetails | RuleNotType | RuleAndType | RuleOrType
 
 	export let expanded = false;
 	export let internal: RuleInternal;
-	export let parent: RuleDetails | RuleNotType | RuleAndType | RuleOrType
+	export let parent: Parent;
+	export let secondParent: Parent | undefined;
 	export let sensors: Sensor[];
 
 	function toggle() {
@@ -26,16 +29,81 @@
 
 	function deleteRule(){
 		if (isRuleDetails(parent)){
-			// todo errror
-			return {
-				isError: true,
-				data: "You cannot remove first rule"
+			console.log("You can't remove first rule")
+			return;
+		}
+
+		if (internal.type == "not"){
+			if (isRuleDetails(parent)){
+				parent.internal = internal.wrapped;
+				return;
+			}
+
+			else if (parent.type === "or" || parent.type === "and") {
+				parent.children = parent.children.filter((child) => {
+					return child != internal
+				})
+				parent.children.push(internal.wrapped)
+				return;
+			}
+
+			else if (parent.type === "not") {
+				parent.wrapped = internal.wrapped;
+				return;
 			}
 		}
 
 		if (parent.type === "or" || parent.type === "and") {
 			parent.children = parent.children.filter((child) => {
 				return child != internal
+			})
+		}
+
+		if (parent.type === "not") {
+			if (!secondParent) return;
+			
+			else if (isRuleDetails(secondParent)){
+				secondParent.internal = internal;
+				return;
+			}
+
+			else if (secondParent.type === "or" || secondParent.type === "and") {
+				secondParent.children = secondParent.children.filter((child) => {
+					return child != internal
+				})
+				secondParent.children.push(internal)
+				return;
+			}
+
+			else if (secondParent.type === "not") {
+				secondParent.wrapped = internal;
+				return;
+			}
+		}
+
+		// TODO: add removing not rule
+	}
+
+	function addRule(){
+
+	}
+
+	function negateRule(){
+		if (isRuleDetails(parent)){
+			parent.internal = {
+				type: "not",
+				wrapped: parent.internal
+			}
+			return;
+		}
+
+		if (parent.type === "or" || parent.type === "and") {
+			parent.children = parent.children.filter((child) => {
+				return child != internal
+			})
+			parent.children.push({
+				type: "not",
+				wrapped: internal
 			})
 		}
 	}
@@ -70,6 +138,12 @@
 			</div>
 		{:else}
 			<Button on:click={toggle}>{"NOT"}</Button>
+		{/if}	
+		
+		{#if internal.type != "not"} 
+			<Button on:click={negateRule}>
+				<Slash />
+			</Button>
 		{/if}
 		<Button on:click={deleteRule}>
 			<Trash />
@@ -81,14 +155,19 @@
 			<ul>
 				{#each internal.children as child}
 					<li>
-						<RuleInternalBuilder bind:internal={child} {sensors} bind:parent={internal}/>
+						<RuleInternalBuilder bind:internal={child} bind:parent={internal} bind:secondParent={parent} {sensors} />
 					</li>
 				{/each}
+				<li>
+					<Button on:click={addRule}>
+						<Plus />
+					</Button>
+				</li>
 			</ul>
 		{:else if internal.type === "not"}
 			<ul>
 				<li>
-					<RuleInternalBuilder bind:internal={internal.wrapped} {sensors} bind:parent={internal}/>
+					<RuleInternalBuilder bind:internal={internal.wrapped} bind:parent={internal} bind:secondParent={parent} {sensors}/>
 				</li>
 			</ul>
 		{/if}

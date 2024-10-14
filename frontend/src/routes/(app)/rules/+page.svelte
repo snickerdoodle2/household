@@ -30,6 +30,6 @@
 
 {#await data.sensors then sensors}
     <div>
-        <RuleInternalBuilder internal={rule.internal} {sensors} parent={rule}/>
+        <RuleInternalBuilder internal={rule.internal} {sensors} parent={rule} secondParent={undefined}/>
     </div>
 {/await}
