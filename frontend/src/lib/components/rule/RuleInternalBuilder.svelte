@@ -1,11 +1,12 @@
 <script lang="ts">
-    import type { RuleAndType, RuleDetails, RuleGtType, RuleInternal, RuleLtType, RuleNotType, RuleOrType } from "@/types/rule";
+    import type { RuleAndType, RuleDetails, RuleInternal, RuleNotType, RuleOrType } from "@/types/rule";
     import RuleInternalBuilder from "./RuleInternalBuilder.svelte";
 	import { Button } from '$lib/components/ui/button';
     import type { Sensor } from "@/types/sensor";
     import ComparisonRule from "./ComparisonRule.svelte";
 	import { Symbol } from 'radix-icons-svelte';
     import { Trash, Plus, Slash} from "svelte-radix";
+    import NewRule from "./NewRule.svelte";
 
 	type Parent = RuleDetails | RuleNotType | RuleAndType | RuleOrType
 
@@ -14,6 +15,8 @@
 	export let parent: Parent;
 	export let secondParent: Parent | undefined;
 	export let sensors: Sensor[];
+	
+	let adding = false;
 
 	function toggle() {
 		expanded = !expanded;
@@ -85,7 +88,7 @@
 	}
 
 	function addRule(){
-
+		adding = true;
 	}
 
 	function negateRule(){
@@ -108,19 +111,6 @@
 		}
 	}
 	
-	/** TODO:
-	 * śmietniczek po prawej stronie do usuwania
-	 *   - not - usuwa tylko nota
-	 *   - and/or - usuwa wszystko z zawartością
-	 *   - lg/lt - usuwa pojedynczą regułe 
-	 
-	 * zmiana typu reguły 
-	 *   - OR <-> AND
-	 
-	 * dodawanie grupy nowych reguł (OR / AND)
-	 * dodawanie pojedynczej reguły (LG / LT)
-	 * zaprzeczanie reguły po przez wykrzyknik koło śmietniczka
-	 * */ 
 </script>
 
 <div class="w-full">
@@ -158,11 +148,16 @@
 						<RuleInternalBuilder bind:internal={child} bind:parent={internal} bind:secondParent={parent} {sensors} />
 					</li>
 				{/each}
-				<li>
-					<Button on:click={addRule}>
-						<Plus />
-					</Button>
-				</li>
+
+				{#if adding}
+					<NewRule bind:open={adding} {sensors} bind:parent={internal}/>
+				{:else}
+					<li>
+						<Button on:click={addRule}>
+							<Plus />
+						</Button>
+					</li>
+				{/if}
 			</ul>
 		{:else if internal.type === "not"}
 			<ul>

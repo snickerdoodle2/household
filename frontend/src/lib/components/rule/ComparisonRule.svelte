@@ -1,5 +1,4 @@
 <script lang="ts">
-
     import { Input } from '@/components/ui/input';
     import type { RuleGtType, RuleLtType } from "@/types/rule";
     import type { Sensor } from '@/types/sensor';
@@ -21,6 +20,7 @@
         sensor: false,
         type: false
     }
+    
     let wrappingDiv: HTMLDivElement;
 
     function toggleEditing() {
