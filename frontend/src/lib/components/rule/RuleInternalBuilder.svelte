@@ -1,8 +1,10 @@
 <script lang="ts">
     import type { RuleInternal } from "@/types/rule";
     import RuleInternalBuilder from "./RuleInternalBuilder.svelte";
-    import Sensor from "../sensor/Sensor.svelte";
 	import { Button } from '$lib/components/ui/button';
+    import type { Sensor } from "@/types/sensor";
+    import ComparisonRule from "./ComparisonRule.svelte";
+	import { Symbol } from 'radix-icons-svelte';
 
 	export let expanded = false;
 	export let internal: RuleInternal;
@@ -22,29 +24,54 @@
 			return `Value of "${sensorName}" ${internal.type === "lt" ? "lower than" : "greater than"} ${internal.value}`;
 		}
 	}
+
+	/** TODO:
+	 * śmietniczek po prawej stronie do usuwania
+	 *   - not - usuwa tylko nota
+	 *   - and/or - usuwa wszystko z zawartością
+	 *   - lg/lt - usuwa pojedynczą regułe 
+	 
+	 * zmiana typu reguły 
+	 *   - OR <-> AND
+	 
+	 * dodawanie grupy nowych reguł (OR / AND)
+	 * dodawanie pojedynczej reguły (LG / LT)
+	 * zaprzeczanie reguły po przez wykrzyknik koło śmietniczka
+	 * */ 
+
 </script>
 
-<div>
-	<Button on:click={toggle}>{name}</Button>
-	{#if expanded}
+<div class="w-full">
+	{#if internal.type === "lt" || internal.type === "gt"}
+		<ComparisonRule internal={internal} {sensors}/>
+	{:else}
 		{#if internal.type === "and" || internal.type === "or"}
+			<div class="flex">
+				<Button on:click={toggle}>{internal.type.toUpperCase()}</Button>
+				<Button on:click={() => {
+					internal.type = internal.type === "and" ? "or" : "and";
+				}}>
+					<Symbol />
+				</Button>
+			</div>
+			{#if expanded}
 			<ul>
 				{#each internal.children as child}
-					<li>
-						<RuleInternalBuilder internal={child} {sensors}/>
-					</li>
+				<li>
+					<RuleInternalBuilder internal={child} {sensors}/>
+				</li>
 				{/each}
 			</ul>
-		{:else if internal.type === "not"}
-			<ul>
-				<li>
-					<RuleInternalBuilder internal={internal.wrapped} {sensors}/>
-				</li>
-			</ul>
+			{/if}
 		{:else}
-			<p>{internal.type}</p>
-			<p>{internal.sensor_id}</p>
-			<p>{internal.value}</p>
+			<Button on:click={toggle}>{"NOT"}</Button>
+			{#if expanded}
+				<ul>
+					<li>
+						<RuleInternalBuilder internal={internal.wrapped} {sensors}/>
+					</li>
+				</ul>
+			{/if}
 		{/if}
 	{/if}
 </div>

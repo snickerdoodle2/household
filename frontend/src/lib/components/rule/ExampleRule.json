@@ -15,19 +15,22 @@
         "type": "or",
         "children": [
             {
-                "type": "and",
-                "children": [
-                    {
-                        "sensor_id": "997488b1-d40a-43f6-b4b6-58ccf64678e4",
-                        "value": 1,
-                        "type": "gt"
-                    },
-                    {
-                        "sensor_id": "997488b1-d40a-43f6-b4b6-58ccf64678e4",
-                        "value": 5,
-                        "type": "lt"
-                    }
-                ]
+                "type": "not",
+                "wrapped": {
+                    "type": "and",
+                    "children": [
+                        {
+                            "sensor_id": "997488b1-d40a-43f6-b4b6-58ccf64678e4",
+                            "value": 1,
+                            "type": "gt"
+                        },
+                        {
+                            "sensor_id": "997488b1-d40a-43f6-b4b6-58ccf64678e4",
+                            "value": 5,
+                            "type": "lt"
+                        }
+                    ]
+                }
             },
             {
                 "type": "and",
