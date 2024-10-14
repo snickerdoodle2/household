@@ -4,9 +4,9 @@
     export let data: PageData;
     import ruleData from '@/components/rule/ExampleRule.json';
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
-    import type { RuleInternal } from '@/types/rule';
+    import type { RuleDetails } from '@/types/rule';
 
-    const ruleInternal = ruleData.internal as unknown as RuleInternal
+    const rule = ruleData as unknown as RuleDetails
 </script>
 
 {#await data.rules then rules}
@@ -29,7 +29,7 @@
 {/await}
 
 {#await data.sensors then sensors}
-<div>
-    <RuleInternalBuilder internal={ruleInternal} {sensors}/>
-</div>
+    <div>
+        <RuleInternalBuilder internal={rule.internal} {sensors} parent={rule}/>
+    </div>
 {/await}
