@@ -6,7 +6,7 @@
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { RuleDetails } from '@/types/rule';
 
-    const rule = ruleData as unknown as RuleDetails
+    const rule = ruleData as unknown as RuleDetails;
 </script>
 
 {#await data.rules then rules}
@@ -30,6 +30,11 @@
 
 {#await data.sensors then sensors}
     <div>
-        <RuleInternalBuilder internal={rule.internal} {sensors} parent={rule} secondParent={undefined}/>
+        <RuleInternalBuilder
+            internal={rule.internal}
+            {sensors}
+            parent={rule}
+            secondParent={undefined}
+        />
     </div>
 {/await}
