@@ -1,7 +1,7 @@
 <script lang="ts">
     import * as Card from '$lib/components/ui/card';
     import * as Select from '$lib/components/ui/select';
-    import { Input } from '@/components/ui/input';
+    import NewSensorInput from '$lib/components/FormInput.svelte';
     import { Label } from '@/components/ui/label';
     import type { PageData } from './$types';
     import type { SensorDetails } from '@/types/sensor';
@@ -12,11 +12,17 @@
     import { authFetch } from '@/helpers/fetch';
 
     export let data: PageData;
+    export let open: boolean;
 
     let editing = false;
     let loading = true;
     let orgSensor: SensorDetails;
     let sensor: SensorDetails;
+
+    $: fieldErrors = {} as Partial<
+        Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
+    >;
+    let globalError: string | null = null;
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -34,8 +40,6 @@
         }
     }
 
-    const labelClass = 'font-semibold text-base';
-
     const handleCancel = () => {
         sensor = structuredClone(orgSensor);
         selectedType =
@@ -49,7 +53,15 @@
         const res = await authFetch(`/api/v1/sensor/${orgSensor.id}`, {
             method: 'DELETE',
         });
-        console.log(await res.json());
+
+        if (res.ok) {
+            console.log(await res.json());
+            open = false;
+        } else {
+            const resJson = await res.json();
+            console.log(resJson);
+            globalError = resJson.error;
+        }
     };
 
     const handleSubmit = async () => {
@@ -57,6 +69,7 @@
             ...sensor,
             refresh_rate: +sensor.refresh_rate,
         });
+
         if (!success) {
             console.log(error.issues);
             return;
@@ -69,7 +82,18 @@
             body: JSON.stringify(rest),
         });
 
-        console.log(await res.json());
+        const resJson = await res.json();
+        console.log(resJson);
+
+        if (res.ok) {
+            open = false;
+        } else {
+            if (typeof resJson.error === 'string') {
+                globalError = resJson.error;
+            } else {
+                fieldErrors = resJson.error;
+            }
+        }
     };
 
     onMount(async () => {
@@ -90,36 +114,48 @@
         <Card.Header class="text-3xl">
             <Card.Title>Sensor Details</Card.Title>
         </Card.Header>
-        <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
-            <Label for="name" class={labelClass}>Name</Label>
-            <Input
-                type="text"
+        <Card.Content class="grid grid-cols-[3fr_4fr] items-center gap-3">
+            <NewSensorInput
                 name="name"
-                disabled={!editing}
+                label="Name"
                 bind:value={sensor.name}
-            />
-            <Label for="refresh_rate" class={labelClass}>Refresh Rate</Label>
-            <Input
-                type="number"
-                name="refresh_rate"
-                disabled={!editing}
-                bind:value={sensor.refresh_rate}
-            />
-            <Label for="uri" class={labelClass}>URI</Label>
-            <Input
                 type="text"
-                name="uri"
-                disabled={!editing}
-                bind:value={sensor.uri}
+                errors={fieldErrors}
             />
-            <Label for="sensor_type" class={labelClass}>Type</Label>
-            <Select.Root disabled={!editing} bind:selected={selectedType}>
-                <Select.Trigger>
+            <NewSensorInput
+                name="refresh_rate"
+                label="Refresh rate"
+                bind:value={sensor.refresh_rate}
+                type="number"
+                errors={fieldErrors}
+            />
+            <NewSensorInput
+                name="uri"
+                label="URI"
+                bind:value={sensor.uri}
+                type="string"
+                errors={fieldErrors}
+            />
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Type
+                {#if fieldErrors['type']}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{fieldErrors['type']}</span
+                    >
+                {/if}
+            </Label>
+            <Select.Root bind:selected={selectedType} required name="type">
+                <Select.Trigger
+                    class={fieldErrors['type'] ? 'border-2 border-red-600' : ''}
+                >
                     <Select.Value />
                 </Select.Trigger>
                 <Select.Content>
                     {#each sensorTypes as type}
-                        <Select.Item value={type.label}
+                        <Select.Item value={type.value}
                             >{type.label}</Select.Item
                         >
                     {/each}
@@ -127,24 +163,36 @@
             </Select.Root>
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
-            {#if editing}
-                <Button
-                    variant="destructive"
-                    size="bold"
-                    on:click={handleDelete}>Delete</Button
-                >
-                <Button variant="outline" size="bold" on:click={handleCancel}
-                    >Cancel</Button
-                >
-                <Button size="bold" on:click={handleSubmit}>Submit</Button>
-            {:else}
-                <Button
-                    on:click={() => {
-                        editing = true;
-                    }}
-                    size="bold">Edit</Button
-                >
-            {/if}
+            <div class="flex w-full flex-col items-center justify-center gap-4">
+                {#if globalError}
+                    <p class="mt-1 text-sm text-red-500">{globalError}</p>
+                {/if}
+
+                <div class="flex w-full justify-end gap-3">
+                    {#if editing}
+                        <Button
+                            variant="destructive"
+                            size="bold"
+                            on:click={handleDelete}>Delete</Button
+                        >
+                        <Button
+                            variant="outline"
+                            size="bold"
+                            on:click={handleCancel}>Cancel</Button
+                        >
+                        <Button size="bold" on:click={handleSubmit}
+                            >Submit</Button
+                        >
+                    {:else}
+                        <Button
+                            on:click={() => {
+                                editing = true;
+                            }}
+                            size="bold">Edit</Button
+                        >
+                    {/if}
+                </div>
+            </div>
         </Card.Footer>
     {/if}
 </Card.Root>

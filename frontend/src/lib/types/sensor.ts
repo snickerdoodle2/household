@@ -28,7 +28,7 @@ export type Sensor = z.infer<typeof sensorSchema>;
 
 export const newSensorSchema = z.object({
     name: z.string(),
-    refresh_rate: z.number().gt(0),
+    refresh_rate: z.number(),
     type: sensorTypeSchema,
     uri: z.string(),
 });

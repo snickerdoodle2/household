@@ -45,11 +45,13 @@
             {#each sensors as sensor}
                 <Sensor {sensor} on:click={handleDetails} />
             {/each}
+            <div class="flex items-center justify-center">
+                <Button variant="outline" size="icon" on:click={handleCreate}>
+                    <Plus />
+                </Button>
+            </div>
         </div>
     {/await}
-    <Button variant="outline" size="icon" on:click={handleCreate}>
-        <Plus />
-    </Button>
 </div>
 
 <Dialog.Root
@@ -65,10 +67,14 @@
         <Dialog.Content
             class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
         >
+            <!-- @ts-ignore -->
             {#if $page.state.selected}
-                <DetailsPage data={{ sensor: $page.state.selected }} />
+                <DetailsPage
+                    bind:open={modalOpen}
+                    data={{ sensor: $page.state.selected }}
+                />
             {:else if $page.state.new}
-                <CreatePage />
+                <CreatePage bind:open={modalOpen} />
             {/if}
         </Dialog.Content>
     </Dialog.Portal>

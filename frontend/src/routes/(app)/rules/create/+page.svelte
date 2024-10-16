@@ -12,6 +12,7 @@
     } from '$lib/types/rule';
     import type { PageData } from './$types';
     import { authFetch } from '@/helpers/fetch';
+    import { goto } from '$app/navigation';
 
     export let data: PageData;
 
@@ -51,15 +52,16 @@
             const { data, success, error } = ruleInternalSchema.safeParse(
                 JSON.parse(internal)
             );
+
             if (success) {
-                delete errors['payload'];
+                delete errors['internal'];
                 errors = errors;
                 rule.internal = data;
             } else {
-                console.log(error.issues);
+                console.log('tbhjasr', error.issues);
             }
         } catch {
-            errors['payload'] = 'Not a valid JSON';
+            errors['internal'] = 'Not a valid JSON';
         }
     }
 
@@ -67,6 +69,20 @@
         const { success, data, error } = newRuleSchema.safeParse(rule);
 
         if (!success) {
+            error.issues.forEach((issue) => {
+                const fieldPath = issue.path.join('.');
+                if (fieldPath === 'name') {
+                    errors['name'] = issue.message;
+                } else if (fieldPath === 'description') {
+                    errors['description'] = issue.message;
+                } else if (fieldPath === 'on_valid.to') {
+                    errors['type'] = issue.message;
+                } else if (fieldPath === 'on_valid.payload') {
+                    errors['payload'] = issue.message;
+                } else if (fieldPath === 'internal') {
+                    errors['internal'] = issue.message;
+                }
+            });
             console.log(error.issues);
             return;
         }
@@ -78,6 +94,12 @@
         );
 
         console.log(await res.json());
+        if (!res.ok) {
+            // TODO: direct errors to proper fields
+            console.log('error');
+        } else {
+            leave();
+        }
     };
 
     onMount(async () => {
@@ -87,6 +109,10 @@
         }));
         loading = false;
     });
+
+    const leave = () => {
+        goto(`/rules/`);
+    };
 </script>
 
 {#if loading}
@@ -152,6 +178,7 @@
             />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
+            <Button size="bold" on:click={leave}>Cancel</Button>
             <Button size="bold" on:click={handleSubmit}>Create</Button>
         </Card.Footer>
     </Card.Root>
