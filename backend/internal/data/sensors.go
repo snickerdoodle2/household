@@ -133,8 +133,55 @@ func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 	return &sensor, nil
 }
 
-func (m SensorModel) GetAll() ([]*Sensor, error) {
+type SensorSimple struct {
+	ID   uuid.UUID  `json:"id"`
+	Name string     `json:"name"`
+	Type SensorType `json:"type"`
+}
+
+func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 	// TODO: add filtering and pagination
+	query := `
+    SELECT id, name, sensor_type
+    FROM sensors
+    ORDER BY id
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	sensors := []*SensorSimple{}
+
+	for rows.Next() {
+		var sensor SensorSimple
+
+		err := rows.Scan(
+			&sensor.ID,
+			&sensor.Name,
+			&sensor.Type,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		sensors = append(sensors, &sensor)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return sensors, nil
+}
+
+func (m SensorModel) GetAll() ([]*Sensor, error) {
 	query := `
     SELECT id, name, uri, sensor_type, refresh_rate, created_at, version
     FROM sensors
@@ -177,6 +224,30 @@ func (m SensorModel) GetAll() ([]*Sensor, error) {
 	}
 
 	return sensors, nil
+}
+
+func (m SensorModel) GetUri(id uuid.UUID) (string, error) {
+	query := `
+    SELECT uri FROM sensors
+    WHERE id = $1
+    LIMIT 1
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var uri string
+
+	err := m.DB.QueryRow(ctx, query, id).Scan(&uri)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return "", ErrRecordNotFound
+		default:
+			return "", err
+		}
+	}
+	return uri, nil
 }
 
 func (m SensorModel) Update(sensor *Sensor) error {

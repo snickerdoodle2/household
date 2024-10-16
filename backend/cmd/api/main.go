@@ -4,13 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"inzynierka/internal/data"
-	"inzynierka/internal/listener"
-	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -30,10 +29,14 @@ type Config struct {
 
 type App struct {
 	config    Config
-	logger    *slog.Logger
+	logger    *log.Logger
 	models    data.Models
 	upgrader  websocket.Upgrader
-	listeners map[uuid.UUID]listener.ListenerT
+	listeners data.SensorListeners
+	rules     struct {
+		channel      chan data.ValidRuleAction
+		stopChannels map[uuid.UUID]chan struct{}
+	}
 }
 
 func main() {
@@ -49,7 +52,9 @@ func main() {
 
 	flag.Parse()
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := log.NewWithOptions(os.Stdout, log.Options{
+		ReportTimestamp: true,
+	})
 
 	db, err := openDB(cfg)
 	if err != nil {
@@ -65,7 +70,7 @@ func main() {
 		logger:    logger,
 		config:    cfg,
 		models:    data.NewModels(db),
-		listeners: make(map[uuid.UUID]listener.ListenerT),
+		listeners: make(data.SensorListeners),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -81,6 +86,13 @@ func main() {
 				}
 				return false
 			},
+		},
+		rules: struct {
+			channel      chan data.ValidRuleAction
+			stopChannels map[uuid.UUID]chan struct{}
+		}{
+			channel:      make(chan data.ValidRuleAction, 1),
+			stopChannels: make(map[uuid.UUID]chan struct{}),
 		},
 	}
 

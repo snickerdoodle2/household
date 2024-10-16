@@ -1,15 +1,18 @@
-import { SERVER_URL } from "@/const";
-import type { Result } from "@/types/result";
-import { Sensor, type SensorType } from "@/types/sensor";
-import { z } from "zod";
+import type { Result } from '@/types/result';
+import {
+    sensorDetailsSchema,
+    sensorSchema,
+    type Sensor,
+    type SensorDetails,
+} from '@/types/sensor';
+import { z } from 'zod';
+import { authFetch } from './fetch';
+import type { FetchFn } from '@/types/misc';
 
 export const getAllSensors = async (
-    fetch: (
-        input: RequestInfo | URL,
-        init?: RequestInit | undefined,
-    ) => Promise<Response>,
-): Promise<Result<SensorType[], string>> => {
-    const res = await fetch(`${SERVER_URL}/api/v1/sensor`);
+    fetch: FetchFn
+): Promise<Result<Sensor[], string>> => {
+    const res = await authFetch(`/api/v1/sensor`, {}, fetch);
     const data = await res.json();
     if (!res.ok) {
         return {
@@ -18,16 +21,43 @@ export const getAllSensors = async (
         };
     }
 
-    const parsed = z.object({ data: Sensor.array() }).safeParse(data);
+    const parsed = z.object({ data: sensorSchema.array() }).safeParse(data);
     if (!parsed.success) {
         return {
             isError: true,
-            error: "Error while parsing the data! (getAllSensors)",
+            error: 'Error while parsing the data! (getAllSensors)',
         };
     }
 
     return {
         isError: false,
         data: parsed.data.data,
+    };
+};
+
+export const getSensorDetails = async (
+    id: string,
+    fetch: FetchFn
+): Promise<Result<SensorDetails, string>> => {
+    const res = await authFetch(`/api/v1/sensor/${id}`, {}, fetch);
+    const data = await res.json();
+    if (!res.ok) {
+        return {
+            isError: true,
+            error: data.error,
+        };
+    }
+
+    const parsed = z.object({ sensor: sensorDetailsSchema }).safeParse(data);
+    if (!parsed.success) {
+        return {
+            isError: true,
+            error: 'Error while parsing the data! (getSensorDetails)',
+        };
+    }
+
+    return {
+        isError: false,
+        data: parsed.data.sensor,
     };
 };

@@ -6,23 +6,43 @@
 // uri : "127.0.0.1:10001"
 // version : 3
 
-import { z } from "zod";
+import { z } from 'zod';
 
-const SensorType = z.enum([
-    "binary_switch",
-    "binary_sensor",
-    "decimal_switch",
-    "decimal_sensor",
-    "button",
+export const sensorTypeSchema = z.enum([
+    'binary_switch',
+    'binary_sensor',
+    'decimal_switch',
+    'decimal_sensor',
+    'button',
 ]);
 
-export const Sensor = z.object({
+export type SensorType = z.infer<typeof sensorTypeSchema>;
+
+export const sensorSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
-    type: SensorType,
-    uri: z.string(),
-    created_at: z.string().datetime({ offset: true }), // TODO: add day.js to this :)
-    version: z.number(),
+    type: sensorTypeSchema,
 });
 
-export type SensorType = z.infer<typeof Sensor>;
+export type Sensor = z.infer<typeof sensorSchema>;
+
+export const newSensorSchema = z.object({
+    name: z.string(),
+    refresh_rate: z.number(),
+    type: sensorTypeSchema,
+    uri: z.string(),
+});
+
+export type NewSensor = z.infer<typeof newSensorSchema>;
+
+export const sensorDetailsSchema = newSensorSchema.merge(
+    z.object({
+        id: z.string().uuid(),
+        created_at: z
+            .string()
+            .or(z.date())
+            .transform((d) => new Date(d)),
+    })
+);
+
+export type SensorDetails = z.infer<typeof sensorDetailsSchema>;

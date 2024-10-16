@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -22,8 +23,15 @@ func main() {
 	value = false
 
 	addr := fmt.Sprintf(":%d", *port)
-	fmt.Printf("Server listening on http://localhost:%d", *port)
+	fmt.Printf("Server listening on http://localhost:%d\n", *port)
 	http.ListenAndServe(addr, mux)
+}
+
+func logger(next http.HandlerFunc) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("new request", "url", r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,6 +62,7 @@ func setValueHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	value = input.Value
+	fmt.Printf("Got: %t\n", value)
 	fmt.Fprintf(w, "{ \"value\": %t }", value)
 }
 

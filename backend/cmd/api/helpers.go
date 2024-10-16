@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
-	"inzynierka/internal/listener"
 	"io"
 	"net/http"
 	"net/url"
@@ -14,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type envelope map[string]any
@@ -125,13 +125,7 @@ func (app *App) readInt(qs url.Values, key string, defaulValue int, v *validator
 }
 
 func (app *App) startSensorListener(sensor *data.Sensor) {
-	var l listener.ListenerT
-	switch {
-	case sensor.Type == "binary_switch" || sensor.Type == "binary_sensor" || sensor.Type == "button":
-		l = listener.New[bool](sensor)
-	case sensor.Type == "decimal_switch" || sensor.Type == "decimal_sensor":
-		l = listener.New[float64](sensor)
-	}
+	l := data.NewListener[float64](sensor)
 	go l.Start()
 	app.listeners[sensor.ID] = l
 }
@@ -142,4 +136,39 @@ func (app *App) stopSensorListener(sensorId uuid.UUID) {
 	}
 
 	delete(app.listeners, sensorId)
+}
+
+func (app *App) startRule(rule *data.Rule) {
+	ch := make(chan struct{}, 2)
+	app.rules.stopChannels[rule.ID] = ch
+	go rule.Run(app.listeners, app.rules.channel, ch)
+}
+
+func (app *App) stopRule(ruleId uuid.UUID) {
+	if stopCh, ok := app.rules.stopChannels[ruleId]; ok {
+		stopCh <- struct{}{}
+	}
+
+	delete(app.rules.stopChannels, ruleId)
+}
+
+type SocketMsg struct {
+	Values []float64 `json:"values"`
+	Status string    `json:"status"`
+}
+
+func (app *App) sendSocketMessage(conn *websocket.Conn, data []float64) error {
+	var msg SocketMsg
+	if data == nil {
+		msg = SocketMsg{
+			Status: "OFFLINE",
+			Values: make([]float64, 0),
+		}
+	} else {
+		msg = SocketMsg{
+			Status: "ONLINE",
+			Values: data,
+		}
+	}
+	return conn.WriteJSON(msg)
 }

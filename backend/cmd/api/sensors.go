@@ -8,11 +8,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 )
 
 func (app *App) listSensorsHandler(w http.ResponseWriter, r *http.Request) {
-	sensors, err := app.models.Sensors.GetAll()
+	sensors, err := app.models.Sensors.GetAllInfo()
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -58,6 +57,25 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token := r.URL.Query().Get("token")
+
+	v := validator.New()
+	if data.ValidateTokenPlaintext(v, token); !v.Valid() {
+		app.invalidAuthenticationTokenResponse(w, r)
+		return
+	}
+
+	_, err = app.models.Users.GetForToken(token)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.invalidAuthenticationTokenResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
 	listener, ok := app.listeners[id]
 	if !ok {
 		app.notFoundResponse(w, r)
@@ -85,11 +103,22 @@ func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	msgCh := listener.GetBroker().Subscribe()
-	initMsg, _ := listener.GetCurrentValue()
-	_ = conn.WriteMessage(websocket.TextMessage, initMsg) // TODO: Handle error
+	defer listener.GetBroker().Unsubscribe(msgCh)
+
+	initValue := listener.GetCurrentValue()
+	err = app.sendSocketMessage(conn, initValue)
+
+	if err != nil {
+		app.logError(r, err)
+		return
+	}
 
 	for msg := range msgCh {
-		conn.WriteMessage(websocket.TextMessage, msg)
+		err = app.sendSocketMessage(conn, msg)
+		if err != nil {
+			app.logError(r, err)
+			return
+		}
 	}
 }
 
