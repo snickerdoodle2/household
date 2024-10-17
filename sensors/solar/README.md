@@ -1,4 +1,4 @@
 # GROWATT solar panels integration
-Serwer napisany w pythonie, odpowiedzialny za przetwarzanie danych i komunikację z instalacją fotowoltaiczną. Growatt nie ma oficjalnego API, więc używa biblioteki `growattServer` napisanej w pythonie powstałej przez reverse engineering zapytań z aplikacji mobilnej. **Może przestać działać bez ostrzeżenia**. 
-
-https://pypi.org/project/growattServer/
+Serwer napisany w pythonie, odpowiedzialny za przetwarzanie danych i komunikację z instalacją fotowoltaiczną. Growatt nie ma oficjalnego API, więc użyłem endpointów znalezionych w projektach z czeluści githuba. 
+## Endpointy
+- `GET /value` - zwraca średnią moc instalacji z ostatnich 5 minut
