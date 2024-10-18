@@ -42,6 +42,7 @@
 
     let selectedSensor: { value: string; label: string };
     let value: number;
+    let errors = { value: false, sensor: false };
 
     function constructRule(): RuleInternal | undefined {
         if (selectedType.value === 'gt' || selectedType.value === 'lt') {
@@ -78,13 +79,26 @@
             return;
         }
     }
+
+    const validate = () => {
+        errors.value = typeof value === 'undefined';
+        errors.sensor = !selectedSensor;
+    };
+
+    let timeout: number;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    const debounce = (callback: Function, ...args: unknown[]) => {
+        clearTimeout(timeout);
+        timeout = window.setTimeout(() => callback(args), 300);
+    };
+    $: debounce(validate, selectedSensor, value);
 </script>
 
 {#if open}
     <div class="flex min-w-[35rem] items-center gap-3">
         <Label>Type:</Label>
 
-        <Select.Root bind:selected={selectedType} required name="type">
+        <Select.Root bind:selected={selectedType}>
             <Select.Trigger>
                 <Select.Value />
             </Select.Trigger>
@@ -99,8 +113,10 @@
 
         {#if selectedType.value === 'gt' || selectedType.value === 'lt'}
             <Label>Sensor:</Label>
-            <Select.Root bind:selected={selectedSensor} required name="type">
-                <Select.Trigger>
+            <Select.Root bind:selected={selectedSensor}>
+                <Select.Trigger
+                    class={errors['sensor'] ? 'border-2 border-red-600' : ''}
+                >
                     <Select.Value />
                 </Select.Trigger>
                 <Select.Content>
@@ -114,7 +130,13 @@
 
             <Label>value:</Label>
 
-            <Input type="number" class="min-w-[4rem]" bind:value />
+            <Input
+                type="number"
+                class="min-w-[4rem] {errors['value']
+                    ? 'border-2 border-red-600'
+                    : ''}"
+                bind:value
+            />
         {/if}
 
         <div class="flex">
