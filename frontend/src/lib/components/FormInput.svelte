@@ -6,7 +6,7 @@
     export let name: string;
     export let label: string;
     export let type: HTMLInputTypeAttribute;
-    export let value: string;
+    export let value: any; // eslint-disable-line @typescript-eslint/no-explicit-any
     export let errors: Record<string, string>;
     export let disabled = false;
 </script>

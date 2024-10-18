@@ -12,6 +12,7 @@
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
     import { authFetch } from '@/helpers/fetch';
+    import { goto } from '$app/navigation';
     export let data: PageData;
     let rule: RuleDetails;
     let loading = true;
@@ -50,6 +51,10 @@
         }
     }
 
+    const leave = () => {
+        goto(`/rules/`);
+    };
+
     const resetRule = async () => {
         rule = { ...(await data.rule) };
         const tmp = sensors.find((e) => e.value === rule.on_valid.to);
@@ -70,7 +75,12 @@
         const res = await authFetch(`/api/v1/rule/${rule.id}`, {
             method: 'DELETE',
         });
+
         console.log(await res.json());
+
+        if (res.ok) {
+            leave();
+        }
     };
 
     const handleSubmit = async () => {
@@ -79,6 +89,24 @@
         });
         if (!success) {
             console.log(error.issues);
+            if (!success) {
+                error.issues.forEach((issue) => {
+                    const fieldPath = issue.path.join('.');
+                    if (fieldPath === 'name') {
+                        errors['name'] = issue.message;
+                    } else if (fieldPath === 'description') {
+                        errors['description'] = issue.message;
+                    } else if (fieldPath === 'on_valid.to') {
+                        errors['type'] = issue.message;
+                    } else if (fieldPath === 'on_valid.payload') {
+                        errors['payload'] = issue.message;
+                    } else if (fieldPath === 'internal') {
+                        errors['internal'] = issue.message;
+                    }
+                });
+                console.log(error.issues);
+                return;
+            }
             return;
         }
 
@@ -89,6 +117,10 @@
             method: 'PUT',
             body: JSON.stringify(rest),
         });
+
+        if (res.ok) {
+            leave();
+        }
 
         console.log(await res.json());
     };
@@ -186,6 +218,7 @@
                 >
                 <Button size="bold" on:click={handleSubmit}>Submit</Button>
             {:else}
+                <Button on:click={leave} size="bold">Cancel</Button>
                 <Button
                     on:click={() => {
                         editing = true;
