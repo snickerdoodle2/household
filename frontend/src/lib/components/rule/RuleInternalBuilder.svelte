@@ -159,7 +159,7 @@
                 {/if}
 
                 {#if !editingDisabled}
-                    {#if internal.type != 'not' && (parent && !isRootRule(parent) && parent.type !=  'not')}
+                    {#if internal.type != 'not' && (parent && (isRootRule(parent) || parent.type !=  'not'))}
                         <Button on:click={negateRule} size="sm">
                             <Slash class="w-4"/>
                         </Button>
