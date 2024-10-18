@@ -10,7 +10,7 @@
     import RuleInternalBuilder from './RuleInternalBuilder.svelte';
     import { Button } from '$lib/components/ui/button';
     import type { Sensor } from '@/types/sensor';
-    import ComparisonRule from './ComparisonRule.svelte';
+    import ComparisonRule from './ComparisonCondition.svelte';
     import { Symbol } from 'radix-icons-svelte';
     import { Trash, Plus, Slash } from 'svelte-radix';
     import ConditionBuilder from './ConditionBuilder.svelte';
@@ -22,6 +22,7 @@
     export let parent: Parent;
     export let secondParent: Parent | undefined;
     export let sensors: Sensor[];
+    export let editingDisabled: boolean = false;
     
     let adding = false;
 
@@ -127,41 +128,47 @@
         <!-- Main view (AND, OR, ...) -->
         <div class="flex inline-flex {background} rounded">
             {#if internal.type === 'lt' || internal.type === 'gt'}
-                <ComparisonRule {internal} {sensors}>
-                    <Button on:click={negateRule} variant="outline" size="icon" >
-                        <Slash class="w-4"/>
-                    </Button>
-                    <Button on:click={deleteRule} variant="outline" size="icon">
-                        <Trash class="w-4"/>
-                    </Button>
+                <ComparisonRule {internal} {sensors} bind:editingDisabled={editingDisabled}>
+                    {#if !editingDisabled}
+                        <Button on:click={negateRule} variant="outline" size="icon" >
+                            <Slash class="w-4"/>
+                        </Button>
+                        <Button on:click={deleteRule} variant="outline" size="icon">
+                            <Trash class="w-4"/>
+                        </Button>
+                    {/if}
                 </ComparisonRule>
             {:else}
                 {#if internal.type === 'and' || internal.type === 'or'}
                     <div class="flex">
                         <Button on:click={toggleExpand} size="sm">{internal.type.toUpperCase()}</Button>
-                        <Button
-                            on:click={() => {
-                                if (!isRule(internal)) return
-                                internal.type = internal.type === 'and' ? 'or' : 'and';
-                            }}
-                            size="sm"
-                        >
-                            <Symbol />
-                        </Button>
+                        {#if !editingDisabled}
+                            <Button
+                                on:click={() => {
+                                    if (!isRule(internal)) return
+                                    internal.type = internal.type === 'and' ? 'or' : 'and';
+                                }}
+                                size="sm"
+                            >
+                                <Symbol />
+                            </Button>
+                        {/if}
                     </div>
                 {:else}
                     <Button on:click={toggleExpand} size="sm">{'NOT'}</Button>
                 {/if}
 
-                {#if internal.type != 'not' && (parent && !isRootRule(parent) && parent.type !=  'not')}
-                    <Button on:click={negateRule} size="sm">
-                        <Slash class="w-4"/>
+                {#if !editingDisabled}
+                    {#if internal.type != 'not' && (parent && !isRootRule(parent) && parent.type !=  'not')}
+                        <Button on:click={negateRule} size="sm">
+                            <Slash class="w-4"/>
+                        </Button>
+                    {/if}
+
+                    <Button on:click={deleteRule} size="sm">
+                        <Trash class="w-4"/>
                     </Button>
                 {/if}
-
-                <Button on:click={deleteRule} size="sm">
-                    <Trash class="w-4"/>
-                </Button>
             {/if}
         </div>
 
@@ -176,6 +183,7 @@
                                 bind:parent={internal}
                                 bind:secondParent={parent}
                                 {sensors}
+                                bind:editingDisabled={editingDisabled}
                             />
                         </li>
                     {/each}
@@ -187,11 +195,13 @@
                             bind:parent={internal}
                         />
                     {:else}
-                        <li>
-                            <Button on:click={addRule} variant="outline" size="sm">
-                                <Plus class="w-4"/>
-                            </Button>
-                        </li>
+                        {#if !editingDisabled}
+                            <li>
+                                <Button on:click={addRule} variant="outline" size="sm">
+                                    <Plus class="w-4"/>
+                                </Button>
+                            </li>
+                        {/if}
                     {/if}
                 </ul>
             {:else if internal.type === 'not'}
@@ -202,6 +212,7 @@
                             bind:parent={internal}
                             bind:secondParent={parent}
                             {sensors}
+                            bind:editingDisabled={editingDisabled}
                         />
                     </li>
                 </ul>
@@ -211,16 +222,18 @@
 
     <!-- The internal is empty (first rule) -->
     {:else}
-        {#if adding}
-            <ConditionBuilder
-                bind:open={adding}
-                {sensors}
-                bind:parent={parent}
-            />
-        {:else}
-            <Button on:click={addRule} variant="outline" size="sm">
-                <Plus class="w-4"/>
-            </Button>
+        {#if !editingDisabled}
+            {#if adding}
+                <ConditionBuilder
+                    bind:open={adding}
+                    {sensors}
+                    bind:parent={parent}
+                />
+            {:else}
+                <Button on:click={addRule} variant="outline" size="sm">
+                    <Plus class="w-4"/>
+                </Button>
+            {/if}
         {/if}
     {/if}
 </div>

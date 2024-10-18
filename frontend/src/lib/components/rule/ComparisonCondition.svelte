@@ -11,6 +11,7 @@
 
     export let internal: RuleGtType | RuleLtType;
     export let sensors: Sensor[];
+    export let editingDisabled = false
 
     let editing = false;
 
@@ -117,21 +118,23 @@
 
     <Input type="number" bind:value disabled={!editing} />
 
-    {#if editing}
-        <Button
-            variant="outline"
-            size="icon"
-            on:click={() => {
-                save();
-                toggleEditing();
-            }}
-        >
-            <Disc />
-        </Button>
-    {:else}
-        <Button variant="outline" size="icon" on:click={toggleEditing}>
-            <Pencil1 />
-        </Button>
+    {#if !editingDisabled}
+        {#if editing}
+            <Button
+                variant="outline"
+                size="icon"
+                on:click={() => {
+                    save();
+                    toggleEditing();
+                }}
+            >
+                <Disc />
+            </Button>
+        {:else}
+            <Button variant="outline" size="icon" on:click={toggleEditing}>
+                <Pencil1 />
+            </Button>
+        {/if}
     {/if}
 
     <slot/>

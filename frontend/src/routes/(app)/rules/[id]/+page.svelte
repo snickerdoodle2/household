@@ -205,6 +205,7 @@
                     {sensors}
                     bind:parent={rule}
                     secondParent={undefined}
+                    editingDisabled={!editing}
                 />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
