@@ -6,10 +6,6 @@
     import { goto } from '$app/navigation';
 
     export let data: PageData;
-    import ruleData from '@/components/rule/ExampleRule.json';
-    import type { RuleDetails } from '@/types/rule';
-
-    const rule = ruleData as unknown as RuleDetails;
 </script>
 
 <div class="flex h-full items-start">

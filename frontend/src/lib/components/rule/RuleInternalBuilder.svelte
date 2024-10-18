@@ -27,7 +27,7 @@
     export let parent: Parent;
     export let secondParent: Parent | undefined;
     export let sensors: Sensor[];
-    export let editingDisabled: boolean = false;
+    export let editingDisabled = false;
 
     let adding = false;
 
