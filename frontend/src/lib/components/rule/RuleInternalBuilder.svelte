@@ -1,5 +1,6 @@
 <script lang="ts">
     import type {
+    NewRule,
         RuleAndType,
         RuleDetails,
         RuleInternal,
@@ -12,46 +13,45 @@
     import ComparisonRule from './ComparisonRule.svelte';
     import { Symbol } from 'radix-icons-svelte';
     import { Trash, Plus, Slash } from 'svelte-radix';
-    import NewRule from './NewRule.svelte';
+    import ConditionBuilder from './ConditionBuilder.svelte';
 
-    type Parent = RuleDetails | RuleNotType | RuleAndType | RuleOrType;
+    type Parent = RuleDetails | NewRule | RuleNotType | RuleAndType | RuleOrType;
 
     export let expanded = false;
-    export let internal: RuleInternal;
+    export let internal: RuleInternal | {};
     export let parent: Parent;
     export let secondParent: Parent | undefined;
     export let sensors: Sensor[];
-
+    
     let adding = false;
 
-    let background = internal.type === 'lt' || internal.type === 'gt' ? '' : 'bg-foreground';
-    let isFirstRule = isRuleDetails(parent);
+    $: background = isRule(internal) && (internal.type === 'lt' || internal.type === 'gt') ? '' : 'bg-foreground';
+    let isFirstRule = isRootRule(parent);
 
-    function toggle() {
+    function toggleExpand() {
         expanded = !expanded;
     }
 
-    $: if (
-        (internal.type == 'and' || internal.type == 'or') &&
-        internal.children
-    ) {
-        console.log('children changed', internal.children);
-    }
-
-    function isRuleDetails(
-        parentInput: RuleInternal | RuleDetails
-    ): parentInput is RuleDetails {
+    function isRootRule(
+        parentInput: RuleInternal | RuleDetails | NewRule
+    ): parentInput is RuleDetails | NewRule {
         return Object.hasOwn(parentInput, 'description');
     }
 
+    function isRule(internal: RuleInternal | {}): internal is RuleInternal {
+        return Object.keys(internal).length !== 0;
+    }
+
     function deleteRule() {
-        if (isRuleDetails(parent)) {
-            console.log("You can't remove first rule");
+        if(!isRule(internal)) return;
+
+        if (isRootRule(parent)) {
+            internal = {};
             return;
         }
 
         if (internal.type == 'not') {
-            if (isRuleDetails(parent)) {
+            if (isRootRule(parent)) {
                 parent.internal = internal.wrapped;
                 return;
             } else if (parent.type === 'or' || parent.type === 'and') {
@@ -74,7 +74,7 @@
 
         if (parent.type === 'not') {
             if (!secondParent) return;
-            else if (isRuleDetails(secondParent)) {
+            else if (isRootRule(secondParent)) {
                 secondParent.internal = internal;
                 return;
             } else if (
@@ -93,8 +93,6 @@
                 return;
             }
         }
-
-        // TODO: add removing not rule
     }
 
     function addRule() {
@@ -102,7 +100,9 @@
     }
 
     function negateRule() {
-        if (isRuleDetails(parent)) {
+        if(!isRule(internal)) return;
+
+        if (isRootRule(parent)) {
             parent.internal = {
                 type: 'not',
                 wrapped: parent.internal,
@@ -122,86 +122,105 @@
     }
 </script>
 
-<div class="w-full min-w--[32rem]">
-    <div class="flex inline-flex bg-background {background} rounded">
-        {#if internal.type === 'lt' || internal.type === 'gt'}
-            <ComparisonRule {internal} {sensors}>
-                <Button on:click={negateRule} variant="outline" size="icon" >
-                    <Slash class="w-4"/>
-                </Button>
-                <Button on:click={deleteRule} variant="outline" size="icon">
-                    <Trash class="w-4"/>
-                </Button>
-            </ComparisonRule>
-        {:else}
-            {#if internal.type === 'and' || internal.type === 'or'}
-                <div class="flex">
-                    <Button on:click={toggle}>{internal.type.toUpperCase()}</Button>
-                    <Button
-                        on:click={() => {
-                            internal.type = internal.type === 'and' ? 'or' : 'and';
-                        }}
-                    >
-                        <Symbol />
+<div class="w-full min-w-[35rem]">
+    {#if isRule(internal)}
+        <!-- Main view (AND, OR, ...) -->
+        <div class="flex inline-flex {background} rounded">
+            {#if internal.type === 'lt' || internal.type === 'gt'}
+                <ComparisonRule {internal} {sensors}>
+                    <Button on:click={negateRule} variant="outline" size="icon" >
+                        <Slash class="w-4"/>
                     </Button>
-                </div>
+                    <Button on:click={deleteRule} variant="outline" size="icon">
+                        <Trash class="w-4"/>
+                    </Button>
+                </ComparisonRule>
             {:else}
-                <Button on:click={toggle}>{'NOT'}</Button>
-            {/if}
+                {#if internal.type === 'and' || internal.type === 'or'}
+                    <div class="flex">
+                        <Button on:click={toggleExpand} size="sm">{internal.type.toUpperCase()}</Button>
+                        <Button
+                            on:click={() => {
+                                if (!isRule(internal)) return
+                                internal.type = internal.type === 'and' ? 'or' : 'and';
+                            }}
+                            size="sm"
+                        >
+                            <Symbol />
+                        </Button>
+                    </div>
+                {:else}
+                    <Button on:click={toggleExpand} size="sm">{'NOT'}</Button>
+                {/if}
 
-            {#if !isFirstRule}
-                {#if internal.type != 'not' }
-                    <Button on:click={negateRule}>
+                {#if internal.type != 'not' && (parent && !isRootRule(parent) && parent.type !=  'not')}
+                    <Button on:click={negateRule} size="sm">
                         <Slash class="w-4"/>
                     </Button>
                 {/if}
 
-                <Button on:click={deleteRule}>
-                    <Trash class="w-5"/>
+                <Button on:click={deleteRule} size="sm">
+                    <Trash class="w-4"/>
                 </Button>
             {/if}
-        {/if}
-    </div>
+        </div>
 
-    {#if expanded}
-        {#if internal.type === 'and' || internal.type === 'or'}
-            <ul>
-                {#each internal.children as child}
+        <!-- Expanded block -->
+        {#if expanded || isFirstRule || internal.type === 'not'}
+            {#if internal.type === 'and' || internal.type === 'or'}
+                <ul>
+                    {#each internal.children as child}
+                        <li>
+                            <RuleInternalBuilder
+                                bind:internal={child}
+                                bind:parent={internal}
+                                bind:secondParent={parent}
+                                {sensors}
+                            />
+                        </li>
+                    {/each}
+
+                    {#if adding}
+                        <ConditionBuilder
+                            bind:open={adding}
+                            {sensors}
+                            bind:parent={internal}
+                        />
+                    {:else}
+                        <li>
+                            <Button on:click={addRule} variant="outline" size="sm">
+                                <Plus class="w-4"/>
+                            </Button>
+                        </li>
+                    {/if}
+                </ul>
+            {:else if internal.type === 'not'}
+                <ul>
                     <li>
                         <RuleInternalBuilder
-                            bind:internal={child}
+                            bind:internal={internal.wrapped}
                             bind:parent={internal}
                             bind:secondParent={parent}
                             {sensors}
                         />
                     </li>
-                {/each}
+                </ul>
+            {/if}
+        {/if}
 
-                {#if adding}
-                    <NewRule
-                        bind:open={adding}
-                        {sensors}
-                        bind:parent={internal}
-                    />
-                {:else}
-                    <li>
-                        <Button on:click={addRule} variant="outline" size="sm">
-                            <Plus />
-                        </Button>
-                    </li>
-                {/if}
-            </ul>
-        {:else if internal.type === 'not'}
-            <ul>
-                <li>
-                    <RuleInternalBuilder
-                        bind:internal={internal.wrapped}
-                        bind:parent={internal}
-                        bind:secondParent={parent}
-                        {sensors}
-                    />
-                </li>
-            </ul>
+
+    <!-- The internal is empty (first rule) -->
+    {:else}
+        {#if adding}
+            <ConditionBuilder
+                bind:open={adding}
+                {sensors}
+                bind:parent={parent}
+            />
+        {:else}
+            <Button on:click={addRule} variant="outline" size="sm">
+                <Plus class="w-4"/>
+            </Button>
         {/if}
     {/if}
 </div>

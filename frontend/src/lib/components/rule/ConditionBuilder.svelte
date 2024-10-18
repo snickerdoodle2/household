@@ -5,21 +5,21 @@
     import Input from '../ui/input/input.svelte';
     import type { Sensor } from '@/types/sensor';
     import type {
+    NewRule,
         RuleAndType,
         RuleDetails,
         RuleInternal,
         RuleNotType,
         RuleOrType,
     } from '@/types/rule';
-    import RuleInternalBuilder from './RuleInternalBuilder.svelte';
 
     export let open: boolean;
     export let sensors: Sensor[];
-    export let parent: RuleDetails | RuleNotType | RuleAndType | RuleOrType;
+    export let parent: RuleDetails | NewRule | RuleNotType | RuleAndType | RuleOrType ;
 
-    function isRuleDetails(
-        parentInput: RuleInternal | RuleDetails
-    ): parentInput is RuleDetails {
+    function isRootRule(
+        parentInput: RuleInternal | RuleDetails | NewRule
+    ): parentInput is RuleDetails | NewRule {
         return Object.hasOwn(parentInput, 'description');
     }
 
@@ -62,7 +62,7 @@
         const rule = constructRule();
         if (!rule) return;
         open = false;
-        if (isRuleDetails(parent)) {
+        if (isRootRule(parent)) {
             parent.internal = rule;
             return;
         } else if (parent.type === 'or' || parent.type === 'and') {
@@ -76,7 +76,7 @@
 </script>
 
 {#if open}
-    <div class="flex items-center gap-3 min-w-[32rem]">
+    <div class="flex items-center gap-3 min-w-[35rem]">
         <Label>Type:</Label>
 
         <Select.Root bind:selected={selectedType} required name="type">
@@ -109,7 +109,7 @@
 
             <Label>value:</Label>
 
-            <Input type="number" bind:value />
+            <Input type="number" class="min-w-[4rem]" bind:value />
         {/if}
 
         <div class="flex">
