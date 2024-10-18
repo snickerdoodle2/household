@@ -76,7 +76,7 @@
 </script>
 
 {#if open}
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 min-w-[32rem]">
         <Label>Type:</Label>
 
         <Select.Root bind:selected={selectedType} required name="type">
@@ -113,9 +113,9 @@
         {/if}
 
         <div class="flex">
-            <Button on:click={() => (open = false)}>Cancel</Button>
+            <Button on:click={() => (open = false)} variant="outline">Cancel</Button>
 
-            <Button on:click={addRule}>Add</Button>
+            <Button on:click={addRule} variant="outline">Add</Button>
         </div>
     </div>
 {/if}

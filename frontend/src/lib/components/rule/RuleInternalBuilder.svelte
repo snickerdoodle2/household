@@ -24,6 +24,9 @@
 
     let adding = false;
 
+    let background = internal.type === 'lt' || internal.type === 'gt' ? '' : 'bg-foreground';
+    let isFirstRule = isRuleDetails(parent);
+
     function toggle() {
         expanded = !expanded;
     }
@@ -119,33 +122,45 @@
     }
 </script>
 
-<div class="w-full">
-    <div class="flex">
+<div class="w-full min-w--[32rem]">
+    <div class="flex inline-flex bg-background {background} rounded">
         {#if internal.type === 'lt' || internal.type === 'gt'}
-            <ComparisonRule {internal} {sensors} />
-        {:else if internal.type === 'and' || internal.type === 'or'}
-            <div class="flex">
-                <Button on:click={toggle}>{internal.type.toUpperCase()}</Button>
-                <Button
-                    on:click={() => {
-                        internal.type = internal.type === 'and' ? 'or' : 'and';
-                    }}
-                >
-                    <Symbol />
+            <ComparisonRule {internal} {sensors}>
+                <Button on:click={negateRule} variant="outline" size="icon" >
+                    <Slash class="w-4"/>
                 </Button>
-            </div>
+                <Button on:click={deleteRule} variant="outline" size="icon">
+                    <Trash class="w-4"/>
+                </Button>
+            </ComparisonRule>
         {:else}
-            <Button on:click={toggle}>{'NOT'}</Button>
-        {/if}
+            {#if internal.type === 'and' || internal.type === 'or'}
+                <div class="flex">
+                    <Button on:click={toggle}>{internal.type.toUpperCase()}</Button>
+                    <Button
+                        on:click={() => {
+                            internal.type = internal.type === 'and' ? 'or' : 'and';
+                        }}
+                    >
+                        <Symbol />
+                    </Button>
+                </div>
+            {:else}
+                <Button on:click={toggle}>{'NOT'}</Button>
+            {/if}
 
-        {#if internal.type != 'not'}
-            <Button on:click={negateRule}>
-                <Slash />
-            </Button>
+            {#if !isFirstRule}
+                {#if internal.type != 'not' }
+                    <Button on:click={negateRule}>
+                        <Slash class="w-4"/>
+                    </Button>
+                {/if}
+
+                <Button on:click={deleteRule}>
+                    <Trash class="w-5"/>
+                </Button>
+            {/if}
         {/if}
-        <Button on:click={deleteRule}>
-            <Trash />
-        </Button>
     </div>
 
     {#if expanded}
@@ -170,7 +185,7 @@
                     />
                 {:else}
                     <li>
-                        <Button on:click={addRule}>
+                        <Button on:click={addRule} variant="outline" size="sm">
                             <Plus />
                         </Button>
                     </li>

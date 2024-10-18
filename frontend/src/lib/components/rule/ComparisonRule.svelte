@@ -7,6 +7,7 @@
     import { Label } from '$lib/components/ui/label';
     import Button from '../ui/button/button.svelte';
     import { Disc, Pencil1 } from 'radix-icons-svelte';
+    import { Slash } from 'svelte-radix';
 
     export let internal: RuleGtType | RuleLtType;
     export let sensors: Sensor[];
@@ -96,21 +97,23 @@
 
     <Label>is</Label>
 
-    <Select.Root
-        bind:selected={type}
-        bind:open={dropDownsOpen.type}
-        required
-        name="type"
-        disabled={!editing}
-    >
-        <Select.Trigger>
-            <Select.Value />
-        </Select.Trigger>
-        <Select.Content>
-            <Select.Item value={'lt'}>{'Lower than'}</Select.Item>
-            <Select.Item value={'gt'}>{'Greater than'}</Select.Item>
-        </Select.Content>
-    </Select.Root>
+    <div class="min-w-[8rem]">
+        <Select.Root
+            bind:selected={type}
+            bind:open={dropDownsOpen.type}
+            required
+            name="type"
+            disabled={!editing}
+        >
+            <Select.Trigger>
+                <Select.Value />
+            </Select.Trigger>
+            <Select.Content >
+                <Select.Item value={'lt'}>{'Lower than'}</Select.Item>
+                <Select.Item value={'gt'}>{'Greater than'}</Select.Item>
+            </Select.Content>
+        </Select.Root>
+    </div>
 
     <Input type="number" bind:value disabled={!editing} />
 
@@ -130,4 +133,6 @@
             <Pencil1 />
         </Button>
     {/if}
+
+    <slot/>
 </div>
