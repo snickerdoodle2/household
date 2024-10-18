@@ -5,7 +5,7 @@
     import Input from '../ui/input/input.svelte';
     import type { Sensor } from '@/types/sensor';
     import type {
-    NewRule,
+        NewRule,
         RuleAndType,
         RuleDetails,
         RuleInternal,
@@ -15,7 +15,12 @@
 
     export let open: boolean;
     export let sensors: Sensor[];
-    export let parent: RuleDetails | NewRule | RuleNotType | RuleAndType | RuleOrType ;
+    export let parent:
+        | RuleDetails
+        | NewRule
+        | RuleNotType
+        | RuleAndType
+        | RuleOrType;
 
     function isRootRule(
         parentInput: RuleInternal | RuleDetails | NewRule
@@ -76,7 +81,7 @@
 </script>
 
 {#if open}
-    <div class="flex items-center gap-3 min-w-[35rem]">
+    <div class="flex min-w-[35rem] items-center gap-3">
         <Label>Type:</Label>
 
         <Select.Root bind:selected={selectedType} required name="type">
@@ -113,7 +118,9 @@
         {/if}
 
         <div class="flex">
-            <Button on:click={() => (open = false)} variant="outline">Cancel</Button>
+            <Button on:click={() => (open = false)} variant="outline"
+                >Cancel</Button
+            >
 
             <Button on:click={addRule} variant="outline">Add</Button>
         </div>

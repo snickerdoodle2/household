@@ -51,9 +51,8 @@
 
     $: if (!loading) {
         try {
-            const { data, success, error } = ruleInternalSchema.safeParse(
-                internal
-            );
+            const { data, success, error } =
+                ruleInternalSchema.safeParse(internal);
 
             if (success) {
                 delete errors['internal'];
@@ -155,9 +154,7 @@
                 </Select.Trigger>
                 <Select.Content>
                     {#each sensors as type}
-                        <Select.Item value={type.id}
-                            >{type.name}</Select.Item
-                        >
+                        <Select.Item value={type.id}>{type.name}</Select.Item>
                     {/each}
                 </Select.Content>
             </Select.Root>
@@ -176,11 +173,11 @@
                 Internal:
             </Label>
             <RuleInternalBuilder
-                    bind:internal={rule.internal}
-                    {sensors}
-                    bind:parent={rule}
-                    secondParent={undefined}
-                />
+                bind:internal={rule.internal}
+                {sensors}
+                bind:parent={rule}
+                secondParent={undefined}
+            />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             <Button size="bold" on:click={leave}>Cancel</Button>

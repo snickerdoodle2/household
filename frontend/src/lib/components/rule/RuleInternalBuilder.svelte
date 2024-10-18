@@ -1,6 +1,6 @@
 <script lang="ts">
     import type {
-    NewRule,
+        NewRule,
         RuleAndType,
         RuleDetails,
         RuleInternal,
@@ -15,7 +15,12 @@
     import { Trash, Plus, Slash } from 'svelte-radix';
     import ConditionBuilder from './ConditionBuilder.svelte';
 
-    type Parent = RuleDetails | NewRule | RuleNotType | RuleAndType | RuleOrType;
+    type Parent =
+        | RuleDetails
+        | NewRule
+        | RuleNotType
+        | RuleAndType
+        | RuleOrType;
 
     export let expanded = false;
     export let internal: RuleInternal | {};
@@ -23,10 +28,13 @@
     export let secondParent: Parent | undefined;
     export let sensors: Sensor[];
     export let editingDisabled: boolean = false;
-    
+
     let adding = false;
 
-    $: background = isRule(internal) && (internal.type === 'lt' || internal.type === 'gt') ? '' : 'bg-foreground';
+    $: background =
+        isRule(internal) && (internal.type === 'lt' || internal.type === 'gt')
+            ? ''
+            : 'bg-foreground';
     let isFirstRule = isRootRule(parent);
 
     function toggleExpand() {
@@ -44,7 +52,7 @@
     }
 
     function deleteRule() {
-        if(!isRule(internal)) return;
+        if (!isRule(internal)) return;
 
         if (isRootRule(parent)) {
             internal = {};
@@ -101,7 +109,7 @@
     }
 
     function negateRule() {
-        if(!isRule(internal)) return;
+        if (!isRule(internal)) return;
 
         if (isRootRule(parent)) {
             parent.internal = {
@@ -128,25 +136,36 @@
         <!-- Main view (AND, OR, ...) -->
         <div class="flex inline-flex {background} rounded">
             {#if internal.type === 'lt' || internal.type === 'gt'}
-                <ComparisonRule {internal} {sensors} bind:editingDisabled={editingDisabled}>
+                <ComparisonRule {internal} {sensors} bind:editingDisabled>
                     {#if !editingDisabled}
-                        <Button on:click={negateRule} variant="outline" size="icon" >
-                            <Slash class="w-4"/>
+                        <Button
+                            on:click={negateRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Slash class="w-4" />
                         </Button>
-                        <Button on:click={deleteRule} variant="outline" size="icon">
-                            <Trash class="w-4"/>
+                        <Button
+                            on:click={deleteRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Trash class="w-4" />
                         </Button>
                     {/if}
                 </ComparisonRule>
             {:else}
                 {#if internal.type === 'and' || internal.type === 'or'}
                     <div class="flex">
-                        <Button on:click={toggleExpand} size="sm">{internal.type.toUpperCase()}</Button>
+                        <Button on:click={toggleExpand} size="sm"
+                            >{internal.type.toUpperCase()}</Button
+                        >
                         {#if !editingDisabled}
                             <Button
                                 on:click={() => {
-                                    if (!isRule(internal)) return
-                                    internal.type = internal.type === 'and' ? 'or' : 'and';
+                                    if (!isRule(internal)) return;
+                                    internal.type =
+                                        internal.type === 'and' ? 'or' : 'and';
                                 }}
                                 size="sm"
                             >
@@ -159,14 +178,14 @@
                 {/if}
 
                 {#if !editingDisabled}
-                    {#if internal.type != 'not' && (parent && (isRootRule(parent) || parent.type !=  'not'))}
+                    {#if internal.type != 'not' && parent && (isRootRule(parent) || parent.type != 'not')}
                         <Button on:click={negateRule} size="sm">
-                            <Slash class="w-4"/>
+                            <Slash class="w-4" />
                         </Button>
                     {/if}
 
                     <Button on:click={deleteRule} size="sm">
-                        <Trash class="w-4"/>
+                        <Trash class="w-4" />
                     </Button>
                 {/if}
             {/if}
@@ -183,7 +202,7 @@
                                 bind:parent={internal}
                                 bind:secondParent={parent}
                                 {sensors}
-                                bind:editingDisabled={editingDisabled}
+                                bind:editingDisabled
                             />
                         </li>
                     {/each}
@@ -194,14 +213,16 @@
                             {sensors}
                             bind:parent={internal}
                         />
-                    {:else}
-                        {#if !editingDisabled}
-                            <li>
-                                <Button on:click={addRule} variant="outline" size="sm">
-                                    <Plus class="w-4"/>
-                                </Button>
-                            </li>
-                        {/if}
+                    {:else if !editingDisabled}
+                        <li>
+                            <Button
+                                on:click={addRule}
+                                variant="outline"
+                                size="sm"
+                            >
+                                <Plus class="w-4" />
+                            </Button>
+                        </li>
                     {/if}
                 </ul>
             {:else if internal.type === 'not'}
@@ -212,28 +233,21 @@
                             bind:parent={internal}
                             bind:secondParent={parent}
                             {sensors}
-                            bind:editingDisabled={editingDisabled}
+                            bind:editingDisabled
                         />
                     </li>
                 </ul>
             {/if}
         {/if}
 
-
-    <!-- The internal is empty (first rule) -->
-    {:else}
-        {#if !editingDisabled}
-            {#if adding}
-                <ConditionBuilder
-                    bind:open={adding}
-                    {sensors}
-                    bind:parent={parent}
-                />
-            {:else}
-                <Button on:click={addRule} variant="outline" size="sm">
-                    <Plus class="w-4"/>
-                </Button>
-            {/if}
+        <!-- The internal is empty (first rule) -->
+    {:else if !editingDisabled}
+        {#if adding}
+            <ConditionBuilder bind:open={adding} {sensors} bind:parent />
+        {:else}
+            <Button on:click={addRule} variant="outline" size="sm">
+                <Plus class="w-4" />
+            </Button>
         {/if}
     {/if}
 </div>

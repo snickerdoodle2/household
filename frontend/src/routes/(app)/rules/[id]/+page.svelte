@@ -32,9 +32,7 @@
 
     $: if (!loading) {
         try {
-            const { data, success } = ruleInternalSchema.safeParse(
-                internal
-            );
+            const { data, success } = ruleInternalSchema.safeParse(internal);
             if (success) {
                 rule.internal = data;
             }
@@ -61,7 +59,7 @@
         rule = { ...(await data.rule) };
         const sensor = sensors.find((e) => e.id === rule.on_valid.to);
         if (sensor) {
-            selectedSensor = {value: sensor.id, label: sensor.name};
+            selectedSensor = { value: sensor.id, label: sensor.name };
         }
         payload = JSON.stringify(rule.on_valid.payload);
         internal = JSON.stringify(rule.internal);
@@ -201,12 +199,12 @@
                 Internal:
             </Label>
             <RuleInternalBuilder
-                    bind:internal={rule.internal}
-                    {sensors}
-                    bind:parent={rule}
-                    secondParent={undefined}
-                    editingDisabled={!editing}
-                />
+                bind:internal={rule.internal}
+                {sensors}
+                bind:parent={rule}
+                secondParent={undefined}
+                editingDisabled={!editing}
+            />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             {#if editing}

@@ -11,7 +11,7 @@
 
     export let internal: RuleGtType | RuleLtType;
     export let sensors: Sensor[];
-    export let editingDisabled = false
+    export let editingDisabled = false;
 
     let editing = false;
 
@@ -74,7 +74,7 @@
 </script>
 
 <div
-    class="flex flex-row items-center gap-2 whitespace-nowrap w-full min-w-[35rem]"
+    class="flex w-full min-w-[35rem] flex-row items-center gap-2 whitespace-nowrap"
     bind:this={wrappingDiv}
 >
     <Label>Value of</Label>
@@ -109,7 +109,7 @@
             <Select.Trigger>
                 <Select.Value />
             </Select.Trigger>
-            <Select.Content >
+            <Select.Content>
                 <Select.Item value={'lt'}>{'Lower than'}</Select.Item>
                 <Select.Item value={'gt'}>{'Greater than'}</Select.Item>
             </Select.Content>
@@ -137,5 +137,5 @@
         {/if}
     {/if}
 
-    <slot/>
+    <slot />
 </div>
