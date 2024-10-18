@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime, timedelta
 from jproperties import Properties
-from flask import Flask
+from flask import Flask, jsonify
 
 
 def login():
@@ -21,8 +21,6 @@ def login():
         'password': (configs.get("PASSWORD").data)
     }
 
-    print(login_data)
-
     try:
         response = requests.post(url, headers=headers, data=login_data)
 
@@ -32,7 +30,6 @@ def login():
         return cookies
 
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred during login: {e}")
         return None
 
 
@@ -59,7 +56,6 @@ def get_plant_detail(cookies):
         return response.json()
 
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred during the plant detail request: {e}")
         return None
 
 
@@ -87,13 +83,27 @@ api = Flask(__name__)
 @api.route('/value', methods=['GET'])
 def get_value():
     global cookies
-    if not cookies:
+
+    if not cookies or 'JSESSIONID' not in cookies:
         cookies = login()
+        if not cookies or 'JSESSIONID' not in cookies:
+            print("login error")
+            return "GroWatt login error", 500
+
     response_json = get_plant_detail(cookies)
-    if response_json:
-        return str(get_most_recent_data(response_json))
-    else:
-        return "-1"
+
+    if not response_json:
+        print("plant details error")
+        return "Get plant detail error", 500
+
+    return str(get_most_recent_data(response_json))
+
+
+@api.route('/status', methods=['GET'])
+def get_status():
+    response = jsonify(status="online",
+                       type="decimal_sensor")
+    return response, 200
 
 
 if __name__ == '__main__':
