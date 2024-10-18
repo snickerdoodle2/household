@@ -13,14 +13,16 @@
     import { Button } from '@/components/ui/button';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
+    import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
+    import type { Sensor } from '@/types/sensor';
     export let data: PageData;
     let rule: RuleDetails;
     let loading = true;
     let errors: Record<string, string> = {};
     let editing = false;
-    let sensors: { label: string; value: string }[] = [];
+    let sensors: Sensor[] = [];
     let selectedSensor: { label: string; value: string };
-    let internal = '';
+    let internal = {};
     let payload = '';
 
     // TODO: make single validation function
@@ -31,7 +33,7 @@
     $: if (!loading) {
         try {
             const { data, success } = ruleInternalSchema.safeParse(
-                JSON.parse(internal)
+                internal
             );
             if (success) {
                 rule.internal = data;
@@ -57,9 +59,9 @@
 
     const resetRule = async () => {
         rule = { ...(await data.rule) };
-        const tmp = sensors.find((e) => e.value === rule.on_valid.to);
-        if (tmp) {
-            selectedSensor = tmp;
+        const sensor = sensors.find((e) => e.id === rule.on_valid.to);
+        if (sensor) {
+            selectedSensor = {value: sensor.id, label: sensor.name};
         }
         payload = JSON.stringify(rule.on_valid.payload);
         internal = JSON.stringify(rule.internal);
@@ -88,7 +90,6 @@
             ...rule,
         });
         if (!success) {
-            console.log(error.issues);
             if (!success) {
                 error.issues.forEach((issue) => {
                     const fieldPath = issue.path.join('.');
@@ -104,7 +105,6 @@
                         errors['internal'] = issue.message;
                     }
                 });
-                console.log(error.issues);
                 return;
             }
             return;
@@ -126,10 +126,7 @@
     };
 
     onMount(async () => {
-        sensors = (await data.sensors).map((e) => ({
-            value: e.id,
-            label: e.name,
-        }));
+        sensors = await data.sensors;
         await resetRule();
         loading = false;
     });
@@ -182,9 +179,9 @@
                     <Select.Value />
                 </Select.Trigger>
                 <Select.Content>
-                    {#each sensors as type}
-                        <Select.Item value={type.value}
-                            >{type.label}</Select.Item
+                    {#each sensors as sensor}
+                        <Select.Item value={sensor.id}
+                            >{sensor.name}</Select.Item
                         >
                     {/each}
                 </Select.Content>
@@ -197,14 +194,18 @@
                 bind:value={payload}
                 disabled={!editing}
             />
-            <FormInput
-                name="internal"
-                type="text"
-                label="Internal FIXME"
-                {errors}
-                bind:value={internal}
-                disabled={!editing}
-            />
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Internal:
+            </Label>
+            <RuleInternalBuilder
+                    bind:internal={rule.internal}
+                    {sensors}
+                    bind:parent={rule}
+                    secondParent={undefined}
+                />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             {#if editing}

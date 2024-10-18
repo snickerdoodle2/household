@@ -43,7 +43,7 @@
             return {
                 type: selectedType.value,
                 sensor_id: selectedSensor.value,
-                value: value,
+                value: +value,
             };
         } else if (
             selectedType.value === 'and' ||

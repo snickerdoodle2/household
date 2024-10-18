@@ -31,7 +31,7 @@
     function save() {
         if (type.value === 'not found') return;
         internal.type = type.value;
-        internal.value = value;
+        internal.value = +value;
         internal.sensor_id = selectedSensor.value;
     }
 
@@ -47,7 +47,7 @@
             value: initialSensor?.id ?? 'not found',
             label: initialSensor?.name ?? 'not found',
         };
-        value = internal.value;
+        value = +internal.value;
     }
 
     function handleClick(event: MouseEvent) {

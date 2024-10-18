@@ -54,12 +54,7 @@ export const ruleInternalSchema = z.union([
     RuleLT,
 ]);
 
-export type RuleInternal =
-    | RuleAndType
-    | RuleOrType
-    | RuleNotType
-    | RuleGtType
-    | RuleLtType;
+export type RuleInternal = z.infer<typeof ruleInternalSchema>;
 
 const ruleNameDescSchema = z.object({
     name: z.string().min(1).max(32),
