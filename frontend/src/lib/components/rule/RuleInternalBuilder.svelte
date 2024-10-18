@@ -23,7 +23,7 @@
         | RuleOrType;
 
     export let expanded = false;
-    export let internal: RuleInternal | {};
+    export let internal: RuleInternal | object;
     export let parent: Parent;
     export let secondParent: Parent | undefined;
     export let sensors: Sensor[];
@@ -47,7 +47,7 @@
         return Object.hasOwn(parentInput, 'description');
     }
 
-    function isRule(internal: RuleInternal | {}): internal is RuleInternal {
+    function isRule(internal: RuleInternal | object): internal is RuleInternal {
         return Object.keys(internal).length !== 0;
     }
 

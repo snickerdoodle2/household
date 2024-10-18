@@ -7,7 +7,6 @@
 
     export let data: PageData;
     import ruleData from '@/components/rule/ExampleRule.json';
-    import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { RuleDetails } from '@/types/rule';
 
     const rule = ruleData as unknown as RuleDetails;

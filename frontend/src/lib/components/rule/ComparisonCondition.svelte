@@ -7,7 +7,6 @@
     import { Label } from '$lib/components/ui/label';
     import Button from '../ui/button/button.svelte';
     import { Disc, Pencil1 } from 'radix-icons-svelte';
-    import { Slash } from 'svelte-radix';
 
     export let internal: RuleGtType | RuleLtType;
     export let sensors: Sensor[];
