@@ -155,7 +155,7 @@ def get_value():
         print("plant details error")
         return "Get plant detail error", 500
 
-    return str(get_most_recent_value(response_json))
+    return jsonify(value=get_most_recent_value(response_json))
 
 
 @api.route('/status', methods=['GET'])

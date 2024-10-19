@@ -64,7 +64,7 @@ def get_plant_detail(cookies):
         return None
 
 
-def get_most_recent_data(response_json):
+def get_most_recent_value(response_json):
     plant_data = response_json.get('back', {}).get('data', {})
 
     if not plant_data:
@@ -101,7 +101,7 @@ def get_value():
         print("plant details error")
         return "Get plant detail error", 500
 
-    return str(get_most_recent_data(response_json))
+    return jsonify(value=get_most_recent_value(response_json))
 
 
 @api.route('/status', methods=['GET'])
