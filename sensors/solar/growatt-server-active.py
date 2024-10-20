@@ -1,3 +1,4 @@
+import json
 import threading
 import requests
 from datetime import datetime, timedelta
@@ -12,11 +13,12 @@ last_response_json = None
 
 is_running = True
 
-# test endpoint - to be changed
-POST_URL = "http://10.0.0.55:5000/activesensorupdate"
+# test server endpoint - to be changed
+POST_URL = "http://127.0.0.1:5000/activesensorupdate"
 
 
 def login():
+    print("logging in")
     configs = Properties()
     with open('credentials.properties', 'rb') as config_file:
         configs.load(config_file)
@@ -92,37 +94,38 @@ def get_most_recent_value(response_json):
     return 0
 
 
-def fetch_data_periodically():
+def fetch_data_periodically(app):
     """
     This function runs in a background thread, checking for new data every 5 minutes when minutes % 5 == 2.
     If new data is found, it sends a POST request with the data.
     """
     global cookies, last_response_json, is_running
 
-    while is_running:
-        now = datetime.now()
-        minutes = now.minute
+    with app.app_context():
+        while is_running:
+            now = datetime.now()
+            minutes = now.minute
 
-        # on growatt server data is updated every 5 minutes, but with various delay
-        # delay of 2 minutes should ensure that new data is always available
-        if minutes % 5 == 2:
-            if not cookies or 'JSESSIONID' not in cookies:
-                cookies = login()
+            # on growatt server data is updated every 5 minutes, but with various delay
+            # checking delay of 2-3 minutes should ensure that new data is always available
+            if minutes % 5 == 2:
                 if not cookies or 'JSESSIONID' not in cookies:
-                    print("GroWatt login error")
+                    cookies = login()
+                    if not cookies or 'JSESSIONID' not in cookies:
+                        print("GroWatt login error")
+                        continue
+
+                response_json = get_plant_detail(cookies)
+                if not response_json:
+                    print("Error fetching plant details")
                     continue
 
-            response_json = get_plant_detail(cookies)
-            if not response_json:
-                print("Error fetching plant details")
-                continue
+                if response_json != last_response_json:
+                    last_response_json = response_json
+                    print(now, "Data updated, sending POST request")
+                    send_post_request(get_most_recent_value(last_response_json))
 
-            if response_json != last_response_json:
-                last_response_json = response_json
-                print("Data updated, sending POST request")
-                send_post_request(get_most_recent_value(last_response_json))
-
-        time.sleep(60)
+            time.sleep(60)
 
 
 def send_post_request(value):
@@ -130,13 +133,16 @@ def send_post_request(value):
     Sends a POST request with the data to the specified POST_URL.
     """
     try:
-        response = requests.post(POST_URL, jsonify(sensor_id="abba1221", value=value))
+        headers = {'Content-Type': 'application/json'}
+        data = json.dumps({"sensor_id": "growatt-5min", "value": value})  # Create JSON payload
+        response = requests.post(POST_URL, data=data, headers=headers)
         if response.status_code == 200:
             print("Data sent successfully")
         else:
             print(f"Failed to send data: {response.status_code}")
     except Exception as e:
-        print(f"Error sending POST request: {e}")
+        # print(f"Error sending POST request: {e}")
+        pass
 
 
 @api.route('/value', methods=['GET'])
@@ -166,7 +172,8 @@ def get_status():
 
 
 if __name__ == '__main__':
-    data_fetch_thread = threading.Thread(target=fetch_data_periodically)
+    login()
+    data_fetch_thread = threading.Thread(target=fetch_data_periodically, args=(api,))
     data_fetch_thread.daemon = True
     data_fetch_thread.start()
 
