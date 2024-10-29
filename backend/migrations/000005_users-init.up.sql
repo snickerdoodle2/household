@@ -5,6 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
     username citext UNIQUE NOT NULL,
     display_name text NOT NULL,
     password_hash bytea NOT NULL,
-    created_at timestamp(0) NOT NULL DEFAULT NOW(),
+    created_at timestamptz(0) NOT NULL DEFAULT NOW(),
     version integer NOT NULL DEFAULT 1
 );
