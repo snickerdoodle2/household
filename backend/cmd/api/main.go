@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"inzynierka/internal/data"
 	"net/http"
 	"os"
@@ -75,16 +74,17 @@ func main() {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			CheckOrigin: func(r *http.Request) bool {
-				origin := r.Header.Get("Origin")
-				if origin == fmt.Sprintf("http://localhost:%d", cfg.port) {
-					return true
-				}
-				for _, v := range cfg.cors.trustedOrigins {
-					if origin == v {
-						return true
-					}
-				}
-				return false
+				// origin := r.Header.Get("Origin")
+				// if origin == fmt.Sprintf("http://localhost:%d", cfg.port) {
+				// 	return true
+				// }
+				// for _, v := range cfg.cors.trustedOrigins {
+				// 	if origin == v {
+				// 		return true
+				// 	}
+				// }
+				// return false
+				return true
 			},
 		},
 		rules: struct {
