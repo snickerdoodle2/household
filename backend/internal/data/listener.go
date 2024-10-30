@@ -7,16 +7,15 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/google/uuid"
 )
 
-func NewListener[T any](sensor *Sensor) *Listener[T] {
+func NewListener[T any](sensor *Sensor, onNewValue func(T)) *Listener[T] {
 	return &Listener[T]{
-		sensor: sensor,
-		values: make([]T, 0),
-		StopCh: make(chan struct{}, 2),
-		Broker: broker.NewBroker[[]T](),
+		sensor:     sensor,
+		values:     make([]T, 0),
+		StopCh:     make(chan struct{}, 2),
+		Broker:     broker.NewBroker[[]T](),
+		onNewValue: onNewValue,
 	}
 }
 
@@ -27,11 +26,11 @@ type Response[T any] struct {
 }
 
 type Listener[T any] struct {
-	sensor    *Sensor
-	values    []T
-	StopCh    chan struct{}
-	Broker    *broker.Broker[[]T]
-	onSuccess func(uuid.UUID, T) error
+	sensor     *Sensor
+	values     []T
+	StopCh     chan struct{}
+	Broker     *broker.Broker[[]T]
+	onNewValue func(T)
 }
 
 func (l *Listener[T]) Start() error {
@@ -77,6 +76,8 @@ func (l *Listener[T]) Start() error {
 		if len(l.values) > 5 {
 			l.values = l.values[1:]
 		}
+
+		l.onNewValue(input.Value)
 
 		l.Broker.Publish(l.values)
 

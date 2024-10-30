@@ -11,9 +11,9 @@ import (
 )
 
 type SensorMeasurement struct {
-	sensor_id      uuid.UUID
-	measured_at    time.Time
-	measured_value float64
+	SensorID      uuid.UUID
+	MeasuredAt    time.Time
+	MeasuredValue float64
 }
 
 type SensorMeasurementModel struct {
@@ -22,11 +22,11 @@ type SensorMeasurementModel struct {
 
 func (m *SensorMeasurementModel) Insert(measurement *SensorMeasurement) error {
 	query := `
-    INSERT INTO sensor_measurements (sensor_id, measured_at, measured_value,)
+    INSERT INTO sensor_measurements (sensor_id, measured_at, measured_value)
     VALUES ($1, $2, $3)
     `
 
-	args := []any{measurement.sensor_id, measurement.measured_at, measurement.measured_value}
+	args := []any{measurement.SensorID, measurement.MeasuredAt, measurement.MeasuredValue}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -51,8 +51,8 @@ func (m *SensorMeasurementModel) GetLastMeasurement(id uuid.UUID) (*SensorMeasur
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	lastMeasurement := SensorMeasurement{sensor_id: id}
-	err := m.DB.QueryRow(ctx, query, id).Scan(&lastMeasurement.measured_at, &lastMeasurement.measured_value)
+	lastMeasurement := SensorMeasurement{SensorID: id}
+	err := m.DB.QueryRow(ctx, query, id).Scan(&lastMeasurement.MeasuredAt, &lastMeasurement.MeasuredValue)
 
 	if err != nil {
 		switch {
@@ -89,9 +89,9 @@ func (m *SensorMeasurementModel) GetLastNMeasurements(id uuid.UUID, n int) ([]*S
 	measurements := []*SensorMeasurement{}
 
 	for rows.Next() {
-		measurement := SensorMeasurement{sensor_id: id}
+		measurement := SensorMeasurement{SensorID: id}
 
-		err := rows.Scan(&measurement.measured_at, &measurement.measured_value)
+		err := rows.Scan(&measurement.MeasuredAt, &measurement.MeasuredValue)
 		if err != nil {
 			return nil, err
 		}
