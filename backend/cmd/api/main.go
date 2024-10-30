@@ -2,16 +2,13 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"inzynierka/internal/data"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 )
 
 type Config struct {
@@ -31,7 +28,6 @@ type App struct {
 	config    Config
 	logger    *log.Logger
 	models    data.Models
-	upgrader  websocket.Upgrader
 	listeners data.SensorListeners
 	rules     struct {
 		channel      chan data.ValidRuleAction
@@ -71,22 +67,6 @@ func main() {
 		config:    cfg,
 		models:    data.NewModels(db),
 		listeners: make(data.SensorListeners),
-		upgrader: websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				origin := r.Header.Get("Origin")
-				if origin == fmt.Sprintf("http://localhost:%d", cfg.port) {
-					return true
-				}
-				for _, v := range cfg.cors.trustedOrigins {
-					if origin == v {
-						return true
-					}
-				}
-				return false
-			},
-		},
 		rules: struct {
 			channel      chan data.ValidRuleAction
 			stopChannels map[uuid.UUID]chan struct{}
