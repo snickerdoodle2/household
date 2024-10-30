@@ -1,3 +1,4 @@
 static/*
 static/**/*
 !static/embedfs.go
+staticcheck.conf
