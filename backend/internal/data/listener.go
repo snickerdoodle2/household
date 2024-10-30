@@ -9,12 +9,13 @@ import (
 	"time"
 )
 
-func NewListener[T any](sensor *Sensor) *Listener[T] {
+func NewListener[T any](sensor *Sensor, onNewValue func(T)) *Listener[T] {
 	return &Listener[T]{
-		sensor: sensor,
-		values: make([]T, 0),
-		StopCh: make(chan struct{}, 2),
-		Broker: broker.NewBroker[[]T](),
+		sensor:     sensor,
+		values:     make([]T, 0),
+		StopCh:     make(chan struct{}, 2),
+		Broker:     broker.NewBroker[[]T](),
+		onNewValue: onNewValue,
 	}
 }
 
@@ -25,10 +26,11 @@ type Response[T any] struct {
 }
 
 type Listener[T any] struct {
-	sensor *Sensor
-	values []T
-	StopCh chan struct{}
-	Broker *broker.Broker[[]T]
+	sensor     *Sensor
+	values     []T
+	StopCh     chan struct{}
+	Broker     *broker.Broker[[]T]
+	onNewValue func(T)
 }
 
 func (l *Listener[T]) Start() error {
@@ -51,7 +53,7 @@ func (l *Listener[T]) Start() error {
 
 		res, err := http.Get(fmt.Sprintf("http://%v/value", l.sensor.URI))
 		if err != nil {
-			fmt.Printf(err.Error())
+			fmt.Print(err.Error())
 
 			l.Broker.Publish(nil)
 
@@ -69,10 +71,13 @@ func (l *Listener[T]) Start() error {
 			return err
 		}
 
+		// TODO: wyrzucic do konfigu
 		l.values = append(l.values, input.Value)
 		if len(l.values) > 5 {
 			l.values = l.values[1:]
 		}
+
+		l.onNewValue(input.Value)
 
 		l.Broker.Publish(l.values)
 

@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -125,7 +126,18 @@ func (app *App) readInt(qs url.Values, key string, defaulValue int, v *validator
 }
 
 func (app *App) startSensorListener(sensor *data.Sensor) {
-	l := data.NewListener[float64](sensor)
+	onNewValue := func(value float64) {
+		measuserment := data.SensorMeasurement{
+			SensorID:      sensor.ID,
+			MeasuredAt:    time.Now(),
+			MeasuredValue: value,
+		}
+
+		if err := app.models.SensorMeasurements.Insert(&measuserment); err != nil {
+			app.logger.Error("zapisywanie odczytu do bazy", "error", err)
+		}
+	}
+	l := data.NewListener[float64](sensor, onNewValue)
 	go l.Start()
 	app.listeners[sensor.ID] = l
 }
