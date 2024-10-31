@@ -150,11 +150,18 @@ func (app *App) handleSubscribeMsg(conn *websocket.Conn, input json.RawMessage) 
 			data[tmp] = sensorErrorMsg("INVALID_UUID")
 			continue
 		}
+		// TODO: handle error
+		tmp, _ := handleSensorSubcribtion(sensorID)
+		data[sensorID.String()] = tmp
 	}
 
 	res := map[string]interface{}{"type": subscribeMsg, "data": data}
 
 	return wsjson.Write(context.Background(), conn, res)
+}
+
+func handleSensorSubcribtion(id uuid.UUID) (map[string]interface{}, error) {
+	return map[string]interface{}{"foo": "bar"}, nil
 }
 
 func sensorErrorMsg(msg string) map[string]string {
