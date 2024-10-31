@@ -16,9 +16,8 @@ import (
 )
 
 type connStatus struct {
-	mu           sync.Mutex
-	authed       bool
-	subscribedTo []uuid.UUID
+	mu     sync.Mutex
+	authed bool
 }
 
 func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
@@ -43,8 +42,7 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	connStatus := &connStatus{
-		authed:       false,
-		subscribedTo: make([]uuid.UUID, 0),
+		authed: false,
 	}
 
 	for {
@@ -62,8 +60,9 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 type messageType string
 
 const (
-	authMsg     messageType = "auth"
-	serverError messageType = "server_error"
+	authMsg      messageType = "auth"
+	serverError  messageType = "server_error"
+	subscribeMsg messageType = "subscribe"
 )
 
 type websocketMsg struct {
@@ -94,21 +93,19 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 }
 
 func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input json.RawMessage) error {
-	var msgData struct {
-		Token string `json:"token"`
-	}
+	var token string
 
-	err := json.Unmarshal(input, &msgData)
+	err := json.Unmarshal(input, &token)
 	if err != nil {
 		return err
 	}
 
 	v := validator.New()
-	if data.ValidateTokenPlaintext(v, msgData.Token); !v.Valid() {
+	if data.ValidateTokenPlaintext(v, token); !v.Valid() {
 		return invalidTokenResponse(conn)
 	}
 
-	_, err = app.models.Users.GetForToken(msgData.Token)
+	_, err = app.models.Users.GetForToken(token)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
