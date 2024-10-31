@@ -12,6 +12,7 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
+	"github.com/google/uuid"
 )
 
 type connStatus struct {
@@ -90,6 +91,11 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 	if !status.authed {
 		return authResponse(conn, "NO_AUTH")
 	}
+
+	if msg.Type == subscribeMsg {
+		return app.handleSubscribeMsg(conn, msg.Data)
+	}
+
 	return nil
 }
 
@@ -120,6 +126,39 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 	defer status.mu.Unlock()
 	status.authed = true
 	return authResponse(conn, "ok")
+}
+
+func (app *App) handleSubscribeMsg(conn *websocket.Conn, input json.RawMessage) error {
+	var sensorIDs []json.RawMessage
+
+	err := json.Unmarshal(input, &sensorIDs)
+	if err != nil {
+		return err
+	}
+
+	data := make(map[string]interface{})
+
+	for _, sensorIDraw := range sensorIDs {
+		var sensorID uuid.UUID
+		err = json.Unmarshal(sensorIDraw, &sensorID)
+		if err != nil {
+			var tmp string
+			err = json.Unmarshal(sensorIDraw, &tmp)
+			if err != nil {
+				return err
+			}
+			data[tmp] = sensorErrorMsg("INVALID_UUID")
+			continue
+		}
+	}
+
+	res := map[string]interface{}{"type": subscribeMsg, "data": data}
+
+	return wsjson.Write(context.Background(), conn, res)
+}
+
+func sensorErrorMsg(msg string) map[string]string {
+	return map[string]string{"status": "error", "message": msg}
 }
 
 func invalidTokenResponse(conn *websocket.Conn) error {
