@@ -12,7 +12,6 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
-	"github.com/google/uuid"
 )
 
 type connStatus struct {
@@ -47,12 +46,14 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		err = app.handleWebSocketMessage(conn, connStatus)
-		switch {
-		case websocket.CloseStatus(err) == websocket.StatusNormalClosure:
-			return
-		default:
-			app.logger.Error("unhandled ws error", "error", err)
-			return
+		if err != nil {
+			switch {
+			case websocket.CloseStatus(err) == websocket.StatusNormalClosure:
+				return
+			default:
+				app.logger.Error("unhandled ws error", "error", err)
+				return
+			}
 		}
 	}
 }
