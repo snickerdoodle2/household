@@ -24,7 +24,7 @@ func (app *App) routes() http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/healthcheck", app.healthcheckHandler)
 
-		// r.Get("/sensor/values", app.getSensorValueHandler)
+		r.Get("/sensor/measurements", app.upgradeSensorWebsocket)
 
 		r.Route("/", func(r chi.Router) {
 			r.Use(app.requireAuthenticated)
