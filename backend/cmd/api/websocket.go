@@ -84,9 +84,11 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 		return app.handleAuthMsg(conn, status, msg.Data)
 	}
 
+	status.mu.Lock()
+	defer status.mu.Unlock()
+
 	if !status.authed {
-		res := map[string]string{"type": string(authMsg), "message": "NO_AUTH"}
-		return wsjson.Write(context.Background(), conn, res)
+		return authResponse(conn, "NO_AUTH")
 	}
 	return nil
 }
@@ -116,6 +118,8 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 		}
 	}
 
+	status.mu.Lock()
+	defer status.mu.Unlock()
 	status.authed = true
 	return authResponse(conn, "ok")
 }
