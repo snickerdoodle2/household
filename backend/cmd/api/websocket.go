@@ -47,10 +47,10 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		err = app.handleWebSocketMessage(conn, connStatus)
-		if websocket.CloseStatus(err) == websocket.StatusNormalClosure {
+		switch {
+		case websocket.CloseStatus(err) == websocket.StatusNormalClosure:
 			return
-		}
-		if err != nil {
+		default:
 			app.logger.Error("unhandled ws error", "error", err)
 			return
 		}
