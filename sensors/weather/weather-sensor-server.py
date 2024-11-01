@@ -1,13 +1,19 @@
 import json
 import argparse
 import requests
+from sensor import Sensor
+from sensortype import SensorType
 
-parser = argparse.ArgumentParser(description="Configure the server credentials")
-parser.add_argument("-u", "--username", type=str, help="Project Server username")
-parser.add_argument("-p", "--password", type=str, help="Project Server password")
+parser = argparse.ArgumentParser(
+    description="Configure the server credentials")
+parser.add_argument("-u", "--username", type=str,
+                    help="Project Server username")
+parser.add_argument("-p", "--password", type=str,
+                    help="Project Server password")
 
 with open("config.json", "r") as file:
     config = json.load(file)
+
 
 def load_server_config():
     global srv_ip, srv_port, username, password
@@ -26,8 +32,8 @@ def load_server_config():
 
     return srv_ip, srv_port, username, password
 
-def login() -> str:
-    srv_ip, srv_port, username, password = load_server_config()
+
+def login(srv_ip, srv_port, username, password) -> str:
     if not srv_ip or not srv_port:
         print("Server IP and port must be configured.")
         return None
@@ -47,6 +53,34 @@ def login() -> str:
         print("Login failed:", e)
         return None
 
+
+def add_sensor_to_server(srv_ip: str, srv_port: str | int, token: str, sensor: Sensor) -> bool:
+    url = f"http://{srv_ip}:{srv_port}/api/v1/sensor"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    payload = {
+        'name': sensor.name,
+        'refresh_rate': sensor.refresh_rate,
+        'uri': "127.0.0.1:5005",
+        'type': sensor.type.value
+    }
+
+    try:
+        response = requests.post(url=url, headers=headers, json=payload)
+        response.raise_for_status()
+        return True
+    except requests.exceptions.RequestException as e:
+        print("Adding sensor failed:", e)
+        return False
+
+
 if __name__ == '__main__':
-    token = login()
+    srv_ip, srv_port, username, password = load_server_config()
+    token = login(srv_ip, srv_port, username, password)
     print(token)
+    test_sensor = Sensor("nazwa", 1200, "127.0.0.1:5555",
+                         SensorType.BINARY_SENSOR)
+    print(add_sensor_to_server(srv_ip, srv_port, token, test_sensor))
