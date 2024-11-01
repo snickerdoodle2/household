@@ -1,8 +1,37 @@
 {
-    "server":{
+    "server": {
         "ip_addr": "172.30.227.16",
         "port": 8080,
         "username": "admin",
         "password": "admin000"
-    }
+    },
+    "sensors": [
+        {
+            "name": "cloud-cover",
+            "ip_addr": "127.0.0.1",
+            "port": 9000,
+            "refresh_rate": 900,
+            "aggregation": false,
+            "params": {
+                "latitude": 50.3,
+                "longitude": 19.28,
+                "current": "cloud_cover"
+            }
+        },
+        {
+            "name": "precipitation-sum-next-3-days",
+            "ip_addr": "127.0.0.1",
+            "port": 9001,
+            "refresh_rate": 3600,
+            "processing": "sum_future",
+            "number_of_hours": 36,
+            "params": {
+                "latitude": 50.3,
+                "longitude": 19.28,
+                "hourly": "temperature_2m",
+                "past_days": 3,
+                "forecast_days": 3
+            }
+        }
+    ]
 }
