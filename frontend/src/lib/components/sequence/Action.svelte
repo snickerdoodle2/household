@@ -18,7 +18,7 @@ let time = {
     seconds: 0,
 };
 
-$: if (action) syncActionValues();
+$: action && syncActionValues(); // eslint-disable-line @typescript-eslint/no-unused-expressions
 $: action.value = Number(value);
 $: action.msDelay = convertTimeToMs(time);
 $: action.target = selectedSensor.value;
