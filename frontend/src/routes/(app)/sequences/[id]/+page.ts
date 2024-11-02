@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import { getDummySequenceDetails } from '@/helpers/sequence';
 
-export const load: PageLoad = async ({ params}) => {
+export const load: PageLoad = async ({ params }) => {
     return {
         sequence: (async () => {
             const res = await getDummySequenceDetails(params.id);

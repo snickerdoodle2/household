@@ -1,11 +1,11 @@
 <script lang="ts">
-    import type { PageData } from './$types';
-    import * as Card from '$lib/components/ui/card/index.js';
-    import Button from '@/components/ui/button/button.svelte';
-    import { Plus } from 'radix-icons-svelte';
-    import { goto } from '$app/navigation';
+import type { PageData } from './$types';
+import * as Card from '$lib/components/ui/card/index.js';
+import Button from '@/components/ui/button/button.svelte';
+import { Plus } from 'radix-icons-svelte';
+import { goto } from '$app/navigation';
 
-    export let data: PageData;
+export let data: PageData;
 </script>
 
 <div class="flex h-full items-start">
