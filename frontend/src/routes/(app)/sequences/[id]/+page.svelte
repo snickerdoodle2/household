@@ -13,6 +13,7 @@
     let sequence: SequenceDetails;
     let loading = true;
     let errors: Record<string, string> = {};
+    let actionFieldErrors: Record<number, string[]>
     let editing = false;
     let sensors: { label: string; value: string }[] = [];
     let actions: SequenceAction[] = [];
@@ -24,6 +25,7 @@
     const resetSequence = async () => {
         sequence = { ...(await data.sequence) };
         actions = JSON.parse(JSON.stringify(sequence.actions)); //deep copy
+        sequence.actions = actions;
         console.log(actions)
     };
 
@@ -49,21 +51,23 @@
             ...sequence,
         });
         if (!success) {
+            actionFieldErrors = {};
+            errors = {};
+            
+            error.issues.forEach((issue) => {
+                const fieldPath = issue.path.join('.');
+                if (fieldPath === 'name') {
+                    errors['name'] = issue.message;
+                } else if (fieldPath === 'description') {
+                    errors['description'] = issue.message;
+                }
+
+                if (issue.path[0] === "actions" && typeof issue.path[1] =='number' && typeof issue.path[2] == "string"){
+                    const errors = actionFieldErrors[issue.path[1]] ?? [];
+                    actionFieldErrors[issue.path[1]] = [...errors, issue.path[2]]
+                }
+            });
             console.log(error.issues);
-            if (!success) {
-                error.issues.forEach((issue) => {
-                    const fieldPath = issue.path.join('.');
-                    if (fieldPath === 'name') {
-                        errors['name'] = issue.message;
-                    } else if (fieldPath === 'description') {
-                        errors['description'] = issue.message;
-                    } else if (fieldPath === 'actions') {
-                        errors['actions'] = issue.message;
-                    }
-                });
-                console.log(error.issues);
-                return;
-            }
             return;
         }
 
@@ -96,7 +100,7 @@
     <p>Loading...</p>
 {:else}
     <Card.Root class="w-[1000px] border-none shadow-none">
-        <Card.Header class="text-3xl">
+        <Card.Header class="text-3xl">min-w-[150px]
             <Card.Title>Sequence Details</Card.Title>
         </Card.Header>
         <Card.Content class="grid grid-cols-[1fr_10fr] items-center gap-3">
@@ -122,7 +126,12 @@
             >
                 Actions:
             </Label>
-            <ActionsBuilder bind:sensors bind:actions={actions} bind:editing />
+            <ActionsBuilder
+                bind:sensors
+                bind:actions
+                bind:editing
+                bind:fieldErrors={actionFieldErrors}
+            />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             {#if editing}

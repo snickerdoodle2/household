@@ -6,8 +6,9 @@
     import Label from "../ui/label/label.svelte";
     
     export let action: SequenceAction;
-    export let sensors: { label: string; value: string }[]
+    export let sensors: { label: string; value: string }[];
     export let editing = false;
+    export let errorFields: string[] | undefined = []
 
     let selectedSensor = { value: "unknown", label: "unknown" };
     let value = "0";
@@ -23,9 +24,9 @@
     $: action.target = selectedSensor.value;
     
     function convertMsToTime(ms: number): { hours: number; minutes: number; seconds: number } {
-        const seconds = Math.floor((ms / 1000) % 60);
-        const minutes = Math.floor((ms / (1000 * 60)) % 60);
-        const hours = Math.floor(ms / (1000 * 60 * 60));
+        const seconds = Math.floor(Math.max(0, (ms / 1000)) % 60);
+        const minutes = Math.floor(Math.max(0, (ms / (1000 * 60))) % 60);
+        const hours = Math.floor(Math.max(0, ms / (1000 * 60 * 60)));
 
         return {
             hours,
@@ -67,10 +68,14 @@
     <Select.Root
         bind:selected={selectedSensor}
         required
-        name="Sensor"
+        name="target"
         disabled={!editing}
     >
-        <Select.Trigger>
+        <Select.Trigger
+            class="min-w-[150px]{errorFields && errorFields.includes('target')
+                ? 'border-2 border-red-600'
+                : ''}"
+        >
             <Select.Value />
         </Select.Trigger>
         <Select.Content>
@@ -80,23 +85,44 @@
         </Select.Content>
     </Select.Root>
 
-    <Label>Value to send:</Label>
-    <Input type="number" bind:value disabled={!editing} />
+    <Label class="pl-3">Value to send:</Label>
+    <Input
+        type="number"
+        class={errorFields && errorFields.includes('value')
+            ? 'border-2 border-red-600'
+            : ''}
+        bind:value
+        disabled={!editing}
+    />
 
-    <Label>Delay:</Label>
+    <Label class="pl-3">Delay:</Label>
+    <div
+        class="flex flex-row items-center rounded-md gap-1{errorFields &&
+        errorFields.includes('msDelay')
+            ? 'border-2 border-red-600'
+            : ''}"
+    >
+        <div class="flex items-center">
+            <Input type="number" bind:value={time.hours} disabled={!editing} />
+            <Label>h</Label>
+        </div>
 
-    <div class="flex items-center">
-        <Input type="number" bind:value={time.hours} disabled={!editing} />
-        <Label>h</Label>
-    </div>
+        <div class="flex items-center">
+            <Input
+                type="number"
+                bind:value={time.minutes}
+                disabled={!editing}
+            />
+            <Label>m</Label>
+        </div>
 
-    <div class="flex items-center">
-        <Input type="number" bind:value={time.minutes} disabled={!editing} />
-        <Label>m</Label>
-    </div>
-
-    <div class="flex items-center">
-        <Input type="number" bind:value={time.seconds} disabled={!editing} />
-        <Label>s</Label>
+        <div class="flex items-center">
+            <Input
+                type="number"
+                bind:value={time.seconds}
+                disabled={!editing}
+            />
+            <Label>s</Label>
+        </div>
     </div>
 </div>

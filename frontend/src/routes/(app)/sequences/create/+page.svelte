@@ -20,6 +20,7 @@
         actions: [] as SequenceAction[],
     };
     let errors: Record<string, string> = {};
+    let actionFieldErrors: Record<number, string[]>
 
     const handleSubmit = async () => {
         const { success, data, error } = newSequenceSchema.safeParse(sequence);
@@ -31,8 +32,11 @@
                     errors['name'] = issue.message;
                 } else if (fieldPath === 'description') {
                     errors['description'] = issue.message;
-                } else if (fieldPath === 'on_valid.to') {
-                    errors['actions'] = issue.message;
+                } 
+
+                if (issue.path[0] === "actions" && typeof issue.path[1] =='number' && typeof issue.path[2] == "string"){
+                    const errors = actionFieldErrors[issue.path[1]] ?? [];
+                    actionFieldErrors[issue.path[1]] = [...errors, issue.path[2]]
                 }
             });
             console.log(error.issues);
@@ -99,6 +103,7 @@
             <ActionsBuilder
                 bind:sensors
                 bind:actions={sequence.actions}
+                bind:fieldErrors={actionFieldErrors}
             />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">

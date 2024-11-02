@@ -7,6 +7,7 @@
     export let actions: SequenceAction[];
     export let sensors: { label: string; value: string }[]
     export let editing: boolean = true;
+    export let fieldErrors: Record<number, string[]> = []
 
     function addAction(){
         actions.push({
@@ -28,15 +29,18 @@
         actions[idx] = actions[idx + 1]
         actions[idx + 1] = tmp
     }
-
-    $: console.log(actions, "from builder")
 </script>
 
 <div class="w-full min-w-[40rem]">
     <ul>
         {#each actions as action, idx}
             <li class="flex p-1 items-center justify-center">
-                <Action bind:sensors bind:action bind:editing />
+                <Action
+                    bind:sensors
+                    bind:action
+                    bind:editing
+                    bind:errorFields={fieldErrors[idx]}
+                />
                 {#if editing}
                     <Button
                         on:click={() => moveDown(idx)}
@@ -52,7 +56,7 @@
                         class="ml-1"
                         size="sm"
                     >
-                        <Trash class="w-4"/>
+                        <Trash class="w-4" />
                     </Button>
                 {/if}
             </li>
