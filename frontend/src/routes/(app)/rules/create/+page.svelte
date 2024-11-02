@@ -13,11 +13,13 @@
     import type { PageData } from './$types';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
+    import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
+    import type { Sensor } from '@/types/sensor';
 
     export let data: PageData;
 
     let loading = true;
-    let sensors: { label: string; value: string }[] = [];
+    let sensors: Sensor[] = [];
     let selectedSensor: { label: string; value: string };
     let rule: NewRule = {
         name: '',
@@ -30,7 +32,7 @@
         internal: {},
     };
     let errors: Record<string, string> = {};
-    let internal = '';
+    let internal = {};
     let payload = '';
 
     $: if (!loading && selectedSensor) {
@@ -49,9 +51,8 @@
 
     $: if (!loading) {
         try {
-            const { data, success, error } = ruleInternalSchema.safeParse(
-                JSON.parse(internal)
-            );
+            const { data, success, error } =
+                ruleInternalSchema.safeParse(internal);
 
             if (success) {
                 delete errors['internal'];
@@ -103,10 +104,7 @@
     };
 
     onMount(async () => {
-        sensors = (await data.sensors).map((e) => ({
-            value: e.id,
-            label: e.name,
-        }));
+        sensors = await data.sensors;
         loading = false;
     });
 
@@ -156,9 +154,7 @@
                 </Select.Trigger>
                 <Select.Content>
                     {#each sensors as type}
-                        <Select.Item value={type.value}
-                            >{type.label}</Select.Item
-                        >
+                        <Select.Item value={type.id}>{type.name}</Select.Item>
                     {/each}
                 </Select.Content>
             </Select.Root>
@@ -169,12 +165,18 @@
                 {errors}
                 bind:value={payload}
             />
-            <FormInput
-                name="internal"
-                type="text"
-                label="Internal FIXME"
-                {errors}
-                bind:value={internal}
+
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Internal:
+            </Label>
+            <RuleInternalBuilder
+                bind:internal={rule.internal}
+                {sensors}
+                bind:parent={rule}
+                secondParent={undefined}
             />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
