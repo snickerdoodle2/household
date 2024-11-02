@@ -6,23 +6,23 @@
     import type { PageData } from './$types';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
-    import { newSequenceSchema, type NewSequence } from '@/types/sequence';
+    import { newSequenceSchema, type NewSequence, type SequenceAction } from '@/types/sequence';
+    import Label from '@/components/ui/label/label.svelte';
+    import ActionsBuilder from '@/components/sequence/ActionsBuilder.svelte';
 
     export let data: PageData;
 
     let loading = true;
     let sensors: { label: string; value: string }[] = [];
-    let rule: NewSequence = {
+    let sequence: NewSequence = {
         name: '',
         description: '',
-        // @ts-expect-error nah dont wanna do this
-        actions: {},
+        actions: [] as SequenceAction[],
     };
     let errors: Record<string, string> = {};
-    let actions = '';
 
     const handleSubmit = async () => {
-        const { success, data, error } = newSequenceSchema.safeParse(rule);
+        const { success, data, error } = newSequenceSchema.safeParse(sequence);
 
         if (!success) {
             error.issues.forEach((issue) => {
@@ -80,22 +80,25 @@
                 type="text"
                 label="Name"
                 {errors}
-                bind:value={rule.name}
+                bind:value={sequence.name}
             />
             <FormInput
                 name="description"
                 type="text"
                 label="Description"
                 {errors}
-                bind:value={rule.description}
+                bind:value={sequence.description}
             />
 
-            <FormInput
-                name="actions"
-                type="text"
-                label="actions FIXME"
-                {errors}
-                bind:value={actions}
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Actions:
+            </Label>
+            <ActionsBuilder
+                bind:sensors
+                bind:actions={sequence.actions}
             />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">

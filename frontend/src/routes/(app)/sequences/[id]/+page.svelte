@@ -6,14 +6,16 @@
     import { Button } from '@/components/ui/button';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
-    import { sequenceDetailsSchema, type SequenceDetails } from '@/types/sequence';
+    import { sequenceDetailsSchema, type SequenceAction, type SequenceDetails } from '@/types/sequence';
+    import Label from '@/components/ui/label/label.svelte';
+    import ActionsBuilder from '@/components/sequence/ActionsBuilder.svelte';
     export let data: PageData;
     let sequence: SequenceDetails;
     let loading = true;
     let errors: Record<string, string> = {};
     let editing = false;
     let sensors: { label: string; value: string }[] = [];
-    let actions = '';
+    let actions: SequenceAction[] = [];
 
     const leave = () => {
         goto(`/sequences/`);
@@ -21,7 +23,8 @@
 
     const resetSequence = async () => {
         sequence = { ...(await data.sequence) };
-        actions = JSON.stringify(sequence.actions);
+        actions = JSON.parse(JSON.stringify(sequence.actions)); //deep copy
+        console.log(actions)
     };
 
     const handleCancel = async () => {
@@ -113,14 +116,13 @@
                 bind:value={sequence.description}
                 disabled={!editing}
             />
-            <FormInput
-                name="actions"
-                type="text"
-                label="Internal FIXME"
-                {errors}
-                bind:value={actions}
-                disabled={!editing}
-            />
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Actions:
+            </Label>
+            <ActionsBuilder bind:sensors bind:actions={actions} bind:editing />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             {#if editing}

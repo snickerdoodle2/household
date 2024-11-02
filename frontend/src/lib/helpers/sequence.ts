@@ -74,7 +74,7 @@ export const getAllDummySequences = async (): Promise<
 };
 
 export const getDummySequenceDetails = async (
-    id: string,
+    id: string
 ): Promise<Result<SequenceDetails, string>> => {
     return new Promise((resolve, reject) => {
         const sequence = dummySequenceDetails.find((s) => s.id === id);
@@ -114,6 +114,7 @@ const dummySequenceDetails: SequenceDetails[] = [
                 msDelay: 3000,
             },
         ],
+        created_at: new Date('2024-11-02T12:34:56Z'),
     },
     {
         id: '56fa3e94-9273-46b4-a9c3-8f87f0f9e123',
@@ -142,6 +143,7 @@ const dummySequenceDetails: SequenceDetails[] = [
                 msDelay: 3500,
             },
         ],
+        created_at: new Date('2024-11-02T12:34:56Z'),
     },
     {
         id: 'd9b437b1-5154-4be5-95d5-3349f7e6c123',
@@ -170,6 +172,7 @@ const dummySequenceDetails: SequenceDetails[] = [
                 msDelay: 3500,
             },
         ],
+        created_at: new Date('2024-11-02T12:34:56Z'),
     },
     {
         id: '2a1f9b5c-7c57-4c2b-8a8d-4b1f9e2d1234',
@@ -193,6 +196,7 @@ const dummySequenceDetails: SequenceDetails[] = [
                 msDelay: 2500,
             },
         ],
+        created_at: new Date('2024-11-02T12:34:56Z'),
     },
     {
         id: '7f4d6a85-9d58-4c8a-8a6e-f3b9e7d5b123',
@@ -216,6 +220,7 @@ const dummySequenceDetails: SequenceDetails[] = [
                 msDelay: 1500,
             },
         ],
+        created_at: new Date('2024-11-02T12:34:56Z'),
     },
 ];
 const dummySequences = dummySequenceDetails.map((s) => ({
