@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const sequenceActionSchema = z.object({
     target: z.string().uuid(),
     value: z.number().gte(0).finite(),
-    msDelay: z.number().gte(0).finite(),
+    msDelay: z.number().gte(0).finite(), // delay from start of the sequence given in ms
 });
 
 export const sequenceSchema = z.object({
