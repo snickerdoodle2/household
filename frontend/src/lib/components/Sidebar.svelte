@@ -3,6 +3,7 @@
     import LightSwitch from './LightSwitch.svelte';
     import { Button } from './ui/button';
     import { authToken } from '@/auth/token';
+    import { Reader } from 'radix-icons-svelte';
 
     const LINKS = [
         {
@@ -14,6 +15,11 @@
             icon: Checkbox,
             name: 'Rules',
             url: '/rules',
+        },
+        {
+            icon: Reader,
+            name: 'Sequences',
+            url: '/sequences',
         },
         {
             icon: MagicWand,
