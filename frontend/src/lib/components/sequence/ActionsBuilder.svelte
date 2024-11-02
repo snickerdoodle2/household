@@ -6,7 +6,7 @@ import { Plus, ArrowDown, Trash } from 'svelte-radix';
 
 export let actions: SequenceAction[];
 export let sensors: { label: string; value: string }[];
-export let editing: boolean = true;
+export let editing = true;
 export let fieldErrors: Record<number, string[]> = [];
 
 function addAction() {

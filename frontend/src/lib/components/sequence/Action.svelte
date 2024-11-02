@@ -18,7 +18,7 @@ let time = {
     seconds: 0,
 };
 
-$: action && syncActionValues();
+$: if (action) syncActionValues();
 $: action.value = Number(value);
 $: action.msDelay = convertTimeToMs(time);
 $: action.target = selectedSensor.value;
@@ -98,7 +98,7 @@ onMount(() => {
         class={errorFields && errorFields.includes('value')
             ? 'border-2 border-red-600'
             : ''}
-        bind:value={value}
+        bind:value
         disabled={!editing}
     />
 
