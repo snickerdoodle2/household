@@ -108,8 +108,7 @@ onMount(async () => {
     <p>Loading...</p>
 {:else}
     <Card.Root class="w-[1000px] border-none shadow-none">
-        <Card.Header class="text-3xl"
-            >min-w-[150px]
+        <Card.Header class="text-3xl">
             <Card.Title>Sequence Details</Card.Title>
         </Card.Header>
         <Card.Content class="grid grid-cols-[1fr_10fr] items-center gap-3">
@@ -117,7 +116,7 @@ onMount(async () => {
                 name="name"
                 type="text"
                 label="Name"
-                errors={errors}
+                {errors}
                 bind:value={sequence.name}
                 disabled={!editing}
             />
@@ -125,7 +124,7 @@ onMount(async () => {
                 name="description"
                 type="text"
                 label="Description"
-                errors={errors}
+                {errors}
                 bind:value={sequence.description}
                 disabled={!editing}
             />
@@ -136,9 +135,9 @@ onMount(async () => {
                 Actions:
             </Label>
             <ActionsBuilder
-                bind:sensors={sensors}
-                bind:actions={actions}
-                bind:editing={editing}
+                bind:sensors
+                bind:actions
+                bind:editing
                 bind:fieldErrors={actionFieldErrors}
             />
         </Card.Content>
