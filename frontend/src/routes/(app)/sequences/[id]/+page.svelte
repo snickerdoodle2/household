@@ -95,11 +95,11 @@
 {#if loading}
     <p>Loading...</p>
 {:else}
-    <Card.Root class="w-[600px] border-none shadow-none">
+    <Card.Root class="w-[1000px] border-none shadow-none">
         <Card.Header class="text-3xl">
             <Card.Title>Sequence Details</Card.Title>
         </Card.Header>
-        <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
+        <Card.Content class="grid grid-cols-[1fr_5fr] items-center gap-3">
             <FormInput
                 name="name"
                 type="text"
