@@ -14,7 +14,7 @@ const sensorDataSuccessSchema = z.object({
         return Object.entries(e).reduce((acc, [key, value]) => {
             acc.set(new Date(key), value)
             return acc
-        }, new Map<Date, number>)
+        }, new SvelteMap<Date, number>)
     })
 })
 
@@ -28,12 +28,19 @@ const subscribeSchema = z.object({
     data: z.record(z.string(), z.discriminatedUnion('status', [sensorDataSuccessSchema, sensorDataErrorSchema]))
 })
 
-const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema])
+const measurementSchema = z.object({
+    type: z.literal('measurment'),
+    sensor_id: z.string().uuid(),
+    time: z.string().datetime({ offset: true }).or(z.date()).transform(d => new Date(d)),
+    value: z.number(),
+})
+
+const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema, measurementSchema])
 
 export class SensorWebsocket {
     private toSubscribe: string[] = []
     private websocket: WebSocket
-    data: SvelteMap<string, Map<Date, number>> = $state(new SvelteMap());
+    data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
 
     constructor(toSubscribe: string[] | undefined = undefined) {
         toSubscribe ??= []
@@ -65,6 +72,9 @@ export class SensorWebsocket {
             }
             if (message.type === 'subscribe') {
                 this.handleSubscribeMessage(message)
+            }
+            if (message.type === 'measurment') {
+                this.handleMeasurementMessage(message)
             }
         })
 
@@ -100,5 +110,9 @@ export class SensorWebsocket {
             if (value.status === 'error') continue;
             this.data.set(key, value.values)
         }
+    }
+
+    private handleMeasurementMessage(message: z.infer<typeof measurementSchema>) {
+        this.data.get(message.sensor_id)?.set(message.time, message.value)
     }
 }
