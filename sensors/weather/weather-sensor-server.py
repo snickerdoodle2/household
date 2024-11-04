@@ -1,10 +1,17 @@
 import json
 import argparse
-from typing import List
+from random import random
+from typing import Dict, List
 import requests
 from sensor import Sensor
-from sensortype import SensorType
 from processingtype import ProcessingType
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+sensors: Dict[str, Sensor] = {}
+self_host = None
+self_port = None
+
 
 parser = argparse.ArgumentParser(
     description="Configure the server credentials")
@@ -14,7 +21,7 @@ parser.add_argument("-p", "--password", type=str,
                     help="Project Server password")
 
 
-def load_server_config():
+def get_system_server_config():
     with open("config.json", "r") as file:
         config = json.load(file)
 
@@ -24,21 +31,32 @@ def load_server_config():
 
     if username is None or password is None:
         print("Username or password not configured as arguments, trying to parse them from config.json")
-        username = config["server"].get("username")
-        password = config["server"].get("password")
+        username = config["system-server"].get("username")
+        password = config["system-server"].get("password")
 
-    srv_ip = config["server"].get("ip_addr")
-    srv_port = config["server"].get("port")
+    srv_host = config["system-server"].get("host")
+    srv_port = config["system-server"].get("port")
 
-    return srv_ip, srv_port, username, password
+    return srv_host, srv_port, username, password
 
 
-def login(srv_ip, srv_port, username, password) -> str:
-    if not srv_ip or not srv_port:
+def load_weather_server_config():
+    with open("config.json", "r") as file:
+        config = json.load(file)
+
+    global self_host
+    global self_port
+
+    self_host = config["weather-server"].get("host")
+    self_port = config["weather-server"].get("port")
+
+
+def login(srv_host, srv_port, username, password) -> str:
+    if not srv_host or not srv_port:
         print("Server IP and port must be configured.")
         return None
 
-    url = f"http://{srv_ip}:{srv_port}/api/v1/login"
+    url = f"http://{srv_host}:{srv_port}/api/v1/login"
 
     credentials = {
         'userName': username,
@@ -54,17 +72,18 @@ def login(srv_ip, srv_port, username, password) -> str:
         return None
 
 
-def add_sensor_to_server(srv_ip: str, srv_port: str | int, token: str, sensor: Sensor) -> bool:
+def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sensor: Sensor) -> bool:
     url = f"http://{srv_ip}:{srv_port}/api/v1/sensor"
+    global self_host, self_port
 
     headers = {
-        "Authorization": f"Bearer {token}"
+        "Authorization": f"Bearer {auth_token}"
     }
 
     payload = {
         'name': sensor.name,
         'refresh_rate': sensor.refresh_rate,
-        'uri': sensor.uri,
+        'uri': f"{self_host}:{self_port}/{sensor.name}",
         'type': sensor.type.value
     }
 
@@ -77,16 +96,14 @@ def add_sensor_to_server(srv_ip: str, srv_port: str | int, token: str, sensor: S
         return False
 
 
-def load_sensors_from_config() -> List[Sensor]:
+def get_sensors_from_config() -> List[Sensor]:
     with open("config.json", "r") as file:
         config = json.load(file)
 
-    sensors = []
+    config_sensors = []
 
     for sensor_data in config.get("sensors", []):
         name = sensor_data.get("name")
-        ip_addr = sensor_data.get("ip_addr")
-        port = sensor_data.get("port")
         refresh_rate = sensor_data.get("refresh_rate")
 
         processing_str = sensor_data.get("processing")
@@ -97,22 +114,52 @@ def load_sensors_from_config() -> List[Sensor]:
 
         sensor = Sensor(
             name=name,
-            ip_addr=ip_addr,
-            port=port,
             refresh_rate=refresh_rate,
             processing=processing,
             number_of_hours=number_of_hours,
             params=params
         )
 
-        sensors.append(sensor)
+        config_sensors.append(sensor)
 
-    return sensors
+    return config_sensors
+
+
+def initialize_sensors():
+    global sensors
+    srv_ip, srv_port, username, password = get_system_server_config()
+    token = login(srv_ip, srv_port, username, password)
+    sensor_list = get_sensors_from_config()
+    for sensor in sensor_list:
+        if add_sensor_to_server(srv_ip, srv_port, token, sensor):
+            sensors[sensor.name] = sensor
+
+
+@app.route("/<sensor_name>/status", methods=["GET"])
+def get_sensor_status(sensor_name):
+    global sensors
+    sensor = sensors.get(sensor_name)
+    if sensor:
+        response = jsonify(status="online",
+                           type="decimal_sensor")
+        return response, 200
+    else:
+        return jsonify({"error": "Sensor not found"}), 404
+
+
+@app.route("/<sensor_name>/value", methods=["GET"])
+def get_sensor_value(sensor_name):
+    global sensors
+    sensor = sensors.get(sensor_name)
+    if sensor:
+        # MOCK for now
+        response = jsonify(value=random()*100)
+        return response, 200
+    else:
+        return jsonify({"error": "Sensor not found"}), 404
 
 
 if __name__ == '__main__':
-    srv_ip, srv_port, username, password = load_server_config()
-    token = login(srv_ip, srv_port, username, password)
-    sensors = load_sensors_from_config()
-    for sensor in sensors:
-        add_sensor_to_server(srv_ip, srv_port, token, sensor)
+    load_weather_server_config()
+    initialize_sensors()
+    app.run(host=self_host, port=self_port)

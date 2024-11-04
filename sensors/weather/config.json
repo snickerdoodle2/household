@@ -1,6 +1,10 @@
 {
-    "server": {
-        "ip_addr": "172.30.227.16",
+    "weather-server": {
+        "host": "127.0.0.1",
+        "port": 9001
+    },
+    "system-server": {
+        "host": "172.30.227.16",
         "port": 8080,
         "username": "admin",
         "password": "admin000"
@@ -8,9 +12,7 @@
     "sensors": [
         {
             "name": "cloud-cover",
-            "ip_addr": "127.0.0.1",
-            "port": 9000,
-            "refresh_rate": 900,
+            "refresh_rate": 3,
             "aggregation": false,
             "params": {
                 "latitude": 50.3,
@@ -20,9 +22,7 @@
         },
         {
             "name": "precipitation-sum-next-3-days",
-            "ip_addr": "127.0.0.1",
-            "port": 9001,
-            "refresh_rate": 3600,
+            "refresh_rate": 5,
             "processing": "sum_future",
             "number_of_hours": 36,
             "params": {
