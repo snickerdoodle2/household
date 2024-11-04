@@ -9,7 +9,12 @@ const authSchema = z.object({
 
 const sensorDataSuccessSchema = z.object({
     status: z.literal('ok'),
-    values: z.record(z.string().or(z.date()).transform(d => new Date(d)), z.number())
+    values: z.record(z.string().datetime({ offset: true }), z.number()).transform(e => {
+        return Object.entries(e).reduce((acc, [key, value]) => {
+            acc.set(new Date(key), value)
+            return acc
+        }, new Map<Date, number>)
+    })
 })
 
 const sensorDataErrorSchema = z.object({
@@ -27,12 +32,11 @@ const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema]
 export class SensorWebsocket {
     private toSubscribe: string[] = []
     private websocket: WebSocket
-    data: Map<string, Map<Date, number>>
+    data: Map<string, Map<Date, number>> = $state(new Map());
 
     constructor(toSubscribe: string[] | undefined = undefined) {
         toSubscribe ??= []
         this.toSubscribe = toSubscribe
-        this.data = new Map()
 
         const token = get(authToken);
         if (!token) {
@@ -50,8 +54,11 @@ export class SensorWebsocket {
 
         // AUTH
         this.websocket.addEventListener('message', e => {
-            const { data: message, success } = messageSchema.safeParse(JSON.parse(e.data))
-            if (!success) return;
+            const { data: message, success, error } = messageSchema.safeParse(JSON.parse(e.data))
+            if (!success) {
+                console.error(error.issues)
+                return;
+            }
             if (message.type === 'auth') {
                 this.handleAuthMessage(message)
             }
@@ -88,6 +95,9 @@ export class SensorWebsocket {
     }
 
     private handleSubscribeMessage(message: z.infer<typeof subscribeSchema>) {
-        console.log(message.data)
+        for (const [key, value] of Object.entries(message.data)) {
+            if (value.status === 'error') continue;
+            this.data.set(key, value.values)
+        }
     }
 }
