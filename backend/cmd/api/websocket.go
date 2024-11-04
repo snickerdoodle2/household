@@ -80,6 +80,12 @@ type wsMsg struct {
 type wsChan chan wsMsg
 
 func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
+	// TODO: brokers sending only current value?
+	type wsListener struct {
+		id    uuid.UUID
+		msgCh chan []float64
+	}
+
 	for {
 		// wait for being authed
 		status.mu.Lock()
@@ -89,6 +95,8 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 		}
 		status.mu.Unlock()
 	}
+
+	listeners := make([]wsListener, 0)
 
 	defer app.logger.Debug("sendSensorUpdates", "action", "closing")
 	channels := make([]reflect.SelectCase, 1)
@@ -107,10 +115,19 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 				return
 			case actionSubscribe:
 				app.logger.Debug("sendSensorUpdates", "action", "subscribe", "sensorID", action.id)
+				listener, ok := app.listeners[action.id] // should be in listeners
+				if !ok {
+					app.logger.Error("sendSensorUpdates", "action", "subscribe", "sensorID", action.id, "error", "listener not found")
+					continue
+				}
+				msgCh := listener.Broker.Subscribe()
+				listeners = append(listeners, wsListener{id: action.id, msgCh: msgCh})
+				channels = append(channels, reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(msgCh)})
 			}
-
 			continue
 		}
+		values := msg.Interface().([]float64)
+		app.logger.Debug("sendSensorUpdate", "sensorID", i-1, "values", values)
 	}
 }
 
