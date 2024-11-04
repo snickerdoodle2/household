@@ -112,6 +112,13 @@ export class SensorWebsocket {
         }
     }
 
+    subscribe(sensorID: string) {
+        this.websocket.send(JSON.stringify({
+            type: 'subscribe',
+            data: [sensorID]
+        }))
+    }
+
     private handleMeasurementMessage(message: z.infer<typeof measurementSchema>) {
         this.data.get(message.sensor_id)?.set(message.time, message.value)
     }
