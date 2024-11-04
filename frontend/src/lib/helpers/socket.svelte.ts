@@ -1,4 +1,5 @@
 import { authToken } from "@/auth/token"
+import { SvelteMap } from "svelte/reactivity"
 import { get } from "svelte/store"
 import { z } from "zod"
 
@@ -32,7 +33,7 @@ const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema]
 export class SensorWebsocket {
     private toSubscribe: string[] = []
     private websocket: WebSocket
-    data: Map<string, Map<Date, number>> = $state(new Map());
+    data: SvelteMap<string, Map<Date, number>> = $state(new SvelteMap());
 
     constructor(toSubscribe: string[] | undefined = undefined) {
         toSubscribe ??= []
