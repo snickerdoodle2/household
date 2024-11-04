@@ -7,7 +7,22 @@ const authSchema = z.object({
     message: z.string()
 })
 
-const messageSchema = z.discriminatedUnion('type', [authSchema])
+const sensorDataSuccessSchema = z.object({
+    status: z.literal('ok'),
+    values: z.record(z.string().or(z.date()).transform(d => new Date(d)), z.number())
+})
+
+const sensorDataErrorSchema = z.object({
+    status: z.literal('error'),
+    message: z.string()
+})
+
+const subscribeSchema = z.object({
+    type: z.literal('subscribe'),
+    data: z.record(z.string(), z.discriminatedUnion('status', [sensorDataSuccessSchema, sensorDataErrorSchema]))
+})
+
+const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema])
 
 export class SensorWebsocket {
     private toSubscribe: string[] = []
@@ -37,7 +52,12 @@ export class SensorWebsocket {
         this.websocket.addEventListener('message', e => {
             const { data: message, success } = messageSchema.safeParse(JSON.parse(e.data))
             if (!success) return;
-            if (message.type === 'auth') this.handleAuthMessage(message)
+            if (message.type === 'auth') {
+                this.handleAuthMessage(message)
+            }
+            if (message.type === 'subscribe') {
+                this.handleSubscribeMessage(message)
+            }
         })
 
 
@@ -65,5 +85,9 @@ export class SensorWebsocket {
                 data: this.toSubscribe
             }))
         }
+    }
+
+    private handleSubscribeMessage(message: z.infer<typeof subscribeSchema>) {
+        console.log(message.data)
     }
 }
