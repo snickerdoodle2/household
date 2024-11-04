@@ -54,6 +54,9 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 	for {
 		err = app.handleWebSocketMessage(conn, connStatus)
 		if err != nil {
+			connStatus.ch <- wsMsg{
+				action: actionClose,
+			}
 			switch {
 			case websocket.CloseStatus(err) == websocket.StatusNormalClosure:
 				return
@@ -97,6 +100,14 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 	}
 
 	listeners := make([]wsListener, 0)
+
+	defer (func() {
+		for _, tmp := range listeners {
+			listener := app.listeners[tmp.id]
+			listener.Broker.Unsubscribe(tmp.msgCh)
+			app.logger.Debug("sendSensorUpdates", "action", "cleanup", "sensorID", tmp.id)
+		}
+	})()
 
 	defer app.logger.Debug("sendSensorUpdates", "action", "closing")
 	channels := make([]reflect.SelectCase, 1)
