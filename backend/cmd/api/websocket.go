@@ -19,6 +19,7 @@ import (
 type connStatus struct {
 	mu     sync.Mutex
 	authed bool
+	ch     wsChan
 }
 
 func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
@@ -44,14 +45,10 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 
 	connStatus := &connStatus{
 		authed: false,
-	}
-	msgCh := make(wsChan, 32)
-	msgCh <- wsMsg{
-		action: actionClose,
-		id:     uuid.Nil,
+		ch:     make(wsChan, 32),
 	}
 
-	go app.sendSensorUpdates(conn, connStatus, msgCh)
+	go app.sendSensorUpdates(conn, connStatus)
 
 	for {
 		err = app.handleWebSocketMessage(conn, connStatus)
@@ -70,7 +67,8 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 type wsAction string
 
 const (
-	actionClose wsAction = "CLOSE"
+	actionClose     wsAction = "CLOSE"
+	actionSubscribe wsAction = "SUBSCRIBE"
 )
 
 type wsMsg struct {
@@ -80,7 +78,7 @@ type wsMsg struct {
 
 type wsChan chan wsMsg
 
-func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus, msgCh wsChan) {
+func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 	for {
 		// wait for being authed
 		status.mu.Lock()
@@ -91,11 +89,14 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus, msgC
 		status.mu.Unlock()
 	}
 
-	defer app.logger.Debug("sendSensorUpdates", "status", "closing")
+	defer app.logger.Debug("sendSensorUpdates", "action", "closing")
 
-	for msg := range msgCh {
-		if msg.action == actionClose {
+	for msg := range status.ch {
+		switch msg.action {
+		case actionClose:
 			return
+		case actionSubscribe:
+			app.logger.Debug("sendSensorUpdates", "action", "subscribe", "sensorID", msg.id)
 		}
 	}
 }
@@ -134,7 +135,7 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 	}
 
 	if msg.Type == subscribeMsg {
-		return app.handleSubscribeMsg(conn, msg.Data)
+		return app.handleSubscribeMsg(conn, status, msg.Data)
 	}
 
 	return nil
@@ -169,7 +170,7 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 	return authResponse(conn, "ok")
 }
 
-func (app *App) handleSubscribeMsg(conn *websocket.Conn, input json.RawMessage) error {
+func (app *App) handleSubscribeMsg(conn *websocket.Conn, status *connStatus, input json.RawMessage) error {
 	var sensorIDs []json.RawMessage
 
 	err := json.Unmarshal(input, &sensorIDs)
@@ -197,6 +198,11 @@ func (app *App) handleSubscribeMsg(conn *websocket.Conn, input json.RawMessage) 
 			app.logger.Error("handleSensorSubcribtion: fetch measurements data from db", "error", err)
 			data[sensorID.String()] = sensorErrorMsg("SERVER_ERROR")
 			continue
+		}
+
+		status.ch <- wsMsg{
+			action: actionSubscribe,
+			id:     sensorID,
 		}
 
 		data[sensorID.String()] = values
