@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import { Button } from '$lib/components/ui/button';
@@ -13,14 +15,13 @@
         RuleOrType,
     } from '@/types/rule';
 
-    export let open: boolean;
-    export let sensors: Sensor[];
-    export let parent:
-        | RuleDetails
-        | NewRule
-        | RuleNotType
-        | RuleAndType
-        | RuleOrType;
+    interface Props {
+        open: boolean;
+        sensors: Sensor[];
+        parent: RuleDetails | NewRule | RuleNotType | RuleAndType | RuleOrType;
+    }
+
+    let { open = $bindable(), sensors, parent = $bindable() }: Props = $props();
 
     function isRootRule(
         parentInput: RuleInternal | RuleDetails | NewRule
@@ -28,10 +29,10 @@
         return Object.hasOwn(parentInput, 'description');
     }
 
-    let selectedType = {
+    let selectedType = $state({
         value: 'and',
         label: 'And',
-    };
+    });
 
     const typeConfig = [
         { value: 'gt', label: 'Greater than' },
@@ -40,9 +41,9 @@
         { value: 'or', label: 'Or' },
     ];
 
-    let selectedSensor: { value: string; label: string };
-    let value: number;
-    let errors = { value: false, sensor: false };
+    let selectedSensor: { value: string; label: string } = $state();
+    let value: number = $state();
+    let errors = $state({ value: false, sensor: false });
 
     function constructRule(): RuleInternal | undefined {
         if (selectedType.value === 'gt' || selectedType.value === 'lt') {
@@ -91,7 +92,9 @@
         clearTimeout(timeout);
         timeout = window.setTimeout(() => callback(args), 300);
     };
-    $: debounce(validate, selectedSensor, value);
+    run(() => {
+        debounce(validate, selectedSensor, value);
+    });
 </script>
 
 {#if open}

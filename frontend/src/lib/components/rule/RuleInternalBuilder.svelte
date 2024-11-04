@@ -22,19 +22,26 @@
         | RuleAndType
         | RuleOrType;
 
-    export let expanded = false;
-    export let internal: RuleInternal | object;
-    export let parent: Parent;
-    export let secondParent: Parent | undefined;
-    export let sensors: Sensor[];
-    export let editingDisabled = false;
+    interface Props {
+        expanded?: boolean;
+        internal: RuleInternal | object;
+        parent: Parent;
+        secondParent: Parent | undefined;
+        sensors: Sensor[];
+        editingDisabled?: boolean;
+    }
 
-    let adding = false;
+    let {
+        expanded = $bindable(false),
+        internal = $bindable(),
+        parent = $bindable(),
+        secondParent = $bindable(),
+        sensors,
+        editingDisabled = $bindable(false),
+    }: Props = $props();
 
-    $: background =
-        isRule(internal) && (internal.type === 'lt' || internal.type === 'gt')
-            ? ''
-            : 'bg-foreground';
+    let adding = $state(false);
+
     let isFirstRule = isRootRule(parent);
 
     function toggleExpand() {
@@ -129,6 +136,11 @@
             });
         }
     }
+    let background = $derived(
+        isRule(internal) && (internal.type === 'lt' || internal.type === 'gt')
+            ? ''
+            : 'bg-foreground'
+    );
 </script>
 
 <div class="w-full min-w-[35rem]">

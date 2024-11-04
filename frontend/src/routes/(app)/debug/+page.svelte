@@ -6,13 +6,17 @@
     import { get } from 'svelte/store';
     import type { LayoutData } from '../$types';
 
-    let message = {};
+    let message = $state({});
 
-    export let data: LayoutData;
+    interface Props {
+        data: LayoutData;
+    }
+
+    let { data }: Props = $props();
 
     let socket: WebSocket | undefined = undefined;
 
-    let selected: string | undefined;
+    let selected: string | undefined = $state();
 
     const updateSocket = (item: Selected<string> | undefined) => {
         const token = get(authToken);

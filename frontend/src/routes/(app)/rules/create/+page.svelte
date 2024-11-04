@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import * as Card from '$lib/components/ui/card';
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
@@ -16,12 +18,16 @@
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { Sensor } from '@/types/sensor';
 
-    export let data: PageData;
+    interface Props {
+        data: PageData;
+    }
 
-    let loading = true;
-    let sensors: Sensor[] = [];
-    let selectedSensor: { label: string; value: string };
-    let rule: NewRule = {
+    let { data }: Props = $props();
+
+    let loading = $state(true);
+    let sensors: Sensor[] = $state([]);
+    let selectedSensor: { label: string; value: string } = $state();
+    let rule: NewRule = $state({
         name: '',
         description: '',
         on_valid: {
@@ -30,41 +36,47 @@
         },
         // @ts-expect-error nah dont wanna do this
         internal: {},
-    };
-    let errors: Record<string, string> = {};
+    });
+    let errors: Record<string, string> = $state({});
     let internal = {};
-    let payload = '';
+    let payload = $state('');
 
-    $: if (!loading && selectedSensor) {
-        rule.on_valid.to = selectedSensor.value;
-    }
-
-    $: if (!loading) {
-        try {
-            rule.on_valid.payload = JSON.parse(payload);
-            delete errors['payload'];
-            errors = errors;
-        } catch {
-            errors['payload'] = 'Not a valid JSON';
+    run(() => {
+        if (!loading && selectedSensor) {
+            rule.on_valid.to = selectedSensor.value;
         }
-    }
+    });
 
-    $: if (!loading) {
-        try {
-            const { data, success, error } =
-                ruleInternalSchema.safeParse(internal);
-
-            if (success) {
-                delete errors['internal'];
+    run(() => {
+        if (!loading) {
+            try {
+                rule.on_valid.payload = JSON.parse(payload);
+                delete errors['payload'];
                 errors = errors;
-                rule.internal = data;
-            } else {
-                console.log('tbhjasr', error.issues);
+            } catch {
+                errors['payload'] = 'Not a valid JSON';
             }
-        } catch {
-            errors['internal'] = 'Not a valid JSON';
         }
-    }
+    });
+
+    run(() => {
+        if (!loading) {
+            try {
+                const { data, success, error } =
+                    ruleInternalSchema.safeParse(internal);
+
+                if (success) {
+                    delete errors['internal'];
+                    errors = errors;
+                    rule.internal = data;
+                } else {
+                    console.log('tbhjasr', error.issues);
+                }
+            } catch {
+                errors['internal'] = 'Not a valid JSON';
+            }
+        }
+    });
 
     const handleSubmit = async () => {
         const { success, data, error } = newRuleSchema.safeParse(rule);

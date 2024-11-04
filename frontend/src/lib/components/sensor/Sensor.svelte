@@ -1,10 +1,17 @@
 <script lang="ts">
+    import { createBubbler, preventDefault } from 'svelte/legacy';
+
+    const bubble = createBubbler();
     import { type Sensor } from '@/types/sensor';
     import { DotsVertical } from 'svelte-radix';
     import { socketStore } from '$lib/helpers/socket';
     import { onDestroy } from 'svelte';
     import Chart from './Chart.svelte';
-    export let sensor: Sensor;
+    interface Props {
+        sensor: Sensor;
+    }
+
+    let { sensor }: Props = $props();
 
     let socket = socketStore(sensor.id);
 
@@ -20,8 +27,10 @@
             <div class="flex items-center gap-2">
                 <div
                     class={`aspect-square w-2 rounded-full ${$socket.status === 'ONLINE' ? 'bg-green-400' : 'bg-red-400'}`}
-                />
-                <a href={`/details/${sensor.id}`} on:click|preventDefault
+                ></div>
+                <a
+                    href={`/details/${sensor.id}`}
+                    onclick={preventDefault(bubble('click'))}
                     ><DotsVertical class="h-5 w-5" /></a
                 >
             </div>

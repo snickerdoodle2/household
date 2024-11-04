@@ -3,8 +3,12 @@
     import { onDestroy, onMount } from 'svelte';
     import { type SocketStore } from '$lib/helpers/socket';
     import { get } from 'svelte/store';
-    export let socket: SocketStore;
-    let chartEl: HTMLCanvasElement;
+    interface Props {
+        socket: SocketStore;
+    }
+
+    let { socket }: Props = $props();
+    let chartEl: HTMLCanvasElement = $state();
     let chart: Chart;
 
     const unsubscribe = socket.subscribe((data) => {
@@ -43,4 +47,4 @@
     });
 </script>
 
-<canvas bind:this={chartEl} />
+<canvas bind:this={chartEl}></canvas>
