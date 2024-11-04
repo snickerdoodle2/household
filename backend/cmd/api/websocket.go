@@ -8,6 +8,7 @@ import (
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
+	"reflect"
 	"sync"
 	"time"
 
@@ -90,13 +91,25 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 	}
 
 	defer app.logger.Debug("sendSensorUpdates", "action", "closing")
+	channels := make([]reflect.SelectCase, 1)
+	channels[0] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(status.ch)}
 
-	for msg := range status.ch {
-		switch msg.action {
-		case actionClose:
-			return
-		case actionSubscribe:
-			app.logger.Debug("sendSensorUpdates", "action", "subscribe", "sensorID", msg.id)
+	for {
+		i, msg, ok := reflect.Select(channels)
+		if !ok {
+			app.logger.Debug("sendSensorUpdates", "error", "read from channel", "channel idx", i)
+		}
+		if i == 0 {
+			action := msg.Interface().(wsMsg)
+
+			switch action.action {
+			case actionClose:
+				return
+			case actionSubscribe:
+				app.logger.Debug("sendSensorUpdates", "action", "subscribe", "sensorID", action.id)
+			}
+
+			continue
 		}
 	}
 }
