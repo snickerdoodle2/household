@@ -45,6 +45,13 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 	connStatus := &connStatus{
 		authed: false,
 	}
+	msgCh := make(wsChan, 32)
+	msgCh <- wsMsg{
+		action: actionClose,
+		id:     uuid.Nil,
+	}
+
+	go app.sendSensorUpdates(conn, connStatus, msgCh)
 
 	for {
 		err = app.handleWebSocketMessage(conn, connStatus)
@@ -56,6 +63,39 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 				app.logger.Error("unhandled ws error", "error", err)
 				return
 			}
+		}
+	}
+}
+
+type wsAction string
+
+const (
+	actionClose wsAction = "CLOSE"
+)
+
+type wsMsg struct {
+	action wsAction
+	id     uuid.UUID
+}
+
+type wsChan chan wsMsg
+
+func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus, msgCh wsChan) {
+	for {
+		// wait for being authed
+		status.mu.Lock()
+		if status.authed {
+			status.mu.Unlock()
+			break
+		}
+		status.mu.Unlock()
+	}
+
+	defer app.logger.Debug("sendSensorUpdates", "status", "closing")
+
+	for msg := range msgCh {
+		if msg.action == actionClose {
+			return
 		}
 	}
 }
