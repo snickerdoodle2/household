@@ -9,6 +9,7 @@ import (
 	"inzynierka/internal/data/validator"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
@@ -150,9 +151,15 @@ func (app *App) handleSubscribeMsg(conn *websocket.Conn, input json.RawMessage) 
 			data[tmp] = sensorErrorMsg("INVALID_UUID")
 			continue
 		}
-		// TODO: handle error
-		tmp, _ := handleSensorSubcribtion(sensorID)
-		data[sensorID.String()] = tmp
+
+		values, err := app.handleSensorSubcribtion(sensorID)
+		if err != nil {
+			app.logger.Error("handleSensorSubcribtion: fetch measurements data from db", "error", err)
+			data[sensorID.String()] = sensorErrorMsg("SERVER_ERROR")
+			continue
+		}
+
+		data[sensorID.String()] = values
 	}
 
 	res := map[string]interface{}{"type": subscribeMsg, "data": data}
@@ -160,12 +167,22 @@ func (app *App) handleSubscribeMsg(conn *websocket.Conn, input json.RawMessage) 
 	return wsjson.Write(context.Background(), conn, res)
 }
 
-func handleSensorSubcribtion(id uuid.UUID) (map[string]interface{}, error) {
-	return map[string]interface{}{"foo": "bar"}, nil
+func (app *App) handleSensorSubcribtion(id uuid.UUID) (map[string]interface{}, error) {
+	measurements, err := app.models.SensorMeasurements.GetMeasurementsSince(id, 5*time.Hour)
+	if err != nil {
+		return nil, err
+	}
+
+	values := make(map[string]float64)
+	for _, measurement := range measurements {
+		values[measurement.MeasuredAt.Format(time.RFC3339)] = measurement.MeasuredValue
+	}
+
+	return map[string]interface{}{"status": "ok", "values": values}, nil
 }
 
-func sensorErrorMsg(msg string) map[string]string {
-	return map[string]string{"status": "error", "message": msg}
+func sensorErrorMsg(msg string) map[string]interface{} {
+	return map[string]interface{}{"status": "error", "message": msg}
 }
 
 func invalidTokenResponse(conn *websocket.Conn) error {
