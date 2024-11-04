@@ -37,7 +37,7 @@
                     href={link.url}
                     class="flex h-12 items-center gap-8 rounded-md px-2 hover:bg-secondary"
                 >
-                    <svelte:component this={link.icon} class="h-6 w-6" />
+                    <link.icon class="h-6 w-6" />
                     <span class="hidden pb-1 text-base group-hover:inline"
                         >{link.name}</span
                     >
