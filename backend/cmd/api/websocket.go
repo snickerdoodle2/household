@@ -126,17 +126,40 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 			}
 			continue
 		}
+
 		values := msg.Interface().([]float64)
-		app.logger.Debug("sendSensorUpdate", "sensorID", i-1, "values", values)
+		err := sendSensorUpdate(conn, listeners[i-1].id, values[len(values)-1])
+		if err != nil {
+			app.logger.Error("sendSensorUpdates", "action", "update", "error", err)
+		}
 	}
+}
+
+func sendSensorUpdate(conn *websocket.Conn, id uuid.UUID, value float64) error {
+	type Msg struct {
+		Type     messageType `json:"type"`
+		SensorId uuid.UUID   `json:"sensor_id"`
+		Time     time.Time   `json:"time"`
+		Value    float64     `json:"value"`
+	}
+
+	msg := Msg{
+		Type:     measurementMsg,
+		SensorId: id,
+		Time:     time.Now(),
+		Value:    value,
+	}
+
+	return wsjson.Write(context.Background(), conn, msg)
 }
 
 type messageType string
 
 const (
-	authMsg      messageType = "auth"
-	serverError  messageType = "server_error"
-	subscribeMsg messageType = "subscribe"
+	authMsg        messageType = "auth"
+	serverError    messageType = "server_error"
+	subscribeMsg   messageType = "subscribe"
+	measurementMsg messageType = "measurment"
 )
 
 type websocketMsg struct {
