@@ -9,9 +9,9 @@
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import { authFetch } from '@/helpers/fetch';
 
-    interface Props {
+    type Props = {
         open: boolean;
-    }
+    };
 
     let { open = $bindable() }: Props = $props();
 

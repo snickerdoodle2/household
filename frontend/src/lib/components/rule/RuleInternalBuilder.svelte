@@ -22,14 +22,14 @@
         | RuleAndType
         | RuleOrType;
 
-    interface Props {
+    type Props = {
         expanded?: boolean;
         internal: RuleInternal | object;
         parent: Parent;
         secondParent: Parent | undefined;
         sensors: Sensor[];
         editingDisabled?: boolean;
-    }
+    };
 
     let {
         expanded = $bindable(false),
@@ -207,10 +207,11 @@
         {#if expanded || isFirstRule || internal.type === 'not'}
             {#if internal.type === 'and' || internal.type === 'or'}
                 <ul>
-                    {#each internal.children as child}
+                    <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+                    {#each internal.children as _, childIdx}
                         <li>
                             <RuleInternalBuilder
-                                bind:internal={child}
+                                bind:internal={internal.children[childIdx]}
                                 bind:parent={internal}
                                 bind:secondParent={parent}
                                 {sensors}

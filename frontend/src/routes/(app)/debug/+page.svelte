@@ -8,9 +8,9 @@
 
     let message = $state({});
 
-    interface Props {
+    type Props = {
         data: LayoutData;
-    }
+    };
 
     let { data }: Props = $props();
 

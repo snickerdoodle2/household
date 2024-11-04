@@ -3,9 +3,9 @@
     import { onDestroy, onMount } from 'svelte';
     import { type SocketStore } from '$lib/helpers/socket';
     import { get } from 'svelte/store';
-    interface Props {
+    type Props = {
         socket: SocketStore;
-    }
+    };
 
     let { socket }: Props = $props();
     let chartEl: HTMLCanvasElement = $state();

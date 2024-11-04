@@ -15,11 +15,11 @@
         RuleOrType,
     } from '@/types/rule';
 
-    interface Props {
+    type Props = {
         open: boolean;
         sensors: Sensor[];
         parent: RuleDetails | NewRule | RuleNotType | RuleAndType | RuleOrType;
-    }
+    };
 
     let { open = $bindable(), sensors, parent = $bindable() }: Props = $props();
 

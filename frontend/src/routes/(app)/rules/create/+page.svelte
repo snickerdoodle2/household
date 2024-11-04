@@ -18,9 +18,9 @@
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { Sensor } from '@/types/sensor';
 
-    interface Props {
+    type Props = {
         data: PageData;
-    }
+    };
 
     let { data }: Props = $props();
 

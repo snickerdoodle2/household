@@ -7,9 +7,9 @@
     import { socketStore } from '$lib/helpers/socket';
     import { onDestroy } from 'svelte';
     import Chart from './Chart.svelte';
-    interface Props {
+    type Props = {
         sensor: Sensor;
-    }
+    };
 
     let { sensor }: Props = $props();
 

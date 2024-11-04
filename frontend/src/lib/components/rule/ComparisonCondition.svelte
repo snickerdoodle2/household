@@ -8,12 +8,12 @@
     import Button from '../ui/button/button.svelte';
     import { Disc, Pencil1 } from 'radix-icons-svelte';
 
-    interface Props {
+    type Props = {
         internal: RuleGtType | RuleLtType;
         sensors: Sensor[];
         editingDisabled?: boolean;
         children?: import('svelte').Snippet;
-    }
+    };
 
     let {
         internal = $bindable(),

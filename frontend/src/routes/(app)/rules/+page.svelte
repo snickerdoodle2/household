@@ -5,9 +5,9 @@
     import { Plus } from 'radix-icons-svelte';
     import { goto } from '$app/navigation';
 
-    interface Props {
+    type Props = {
         data: PageData;
-    }
+    };
 
     let { data }: Props = $props();
 </script>

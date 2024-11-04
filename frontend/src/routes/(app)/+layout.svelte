@@ -1,8 +1,8 @@
 <script lang="ts">
     import Sidebar from '@/components/Sidebar.svelte';
-    interface Props {
+    type Props = {
         children?: import('svelte').Snippet;
-    }
+    };
 
     let { children }: Props = $props();
 </script>

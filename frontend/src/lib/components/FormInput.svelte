@@ -3,14 +3,15 @@
     import { Input } from '$lib/components/ui/input';
     import type { HTMLInputTypeAttribute } from 'svelte/elements';
 
-    interface Props {
+    type Props = {
         name: string;
         label: string;
         type: HTMLInputTypeAttribute;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         value: any;
         errors: Record<string, string>;
         disabled?: boolean;
-    }
+    };
 
     let {
         name,

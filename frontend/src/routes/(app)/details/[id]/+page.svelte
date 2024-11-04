@@ -13,10 +13,10 @@
     import { z } from 'zod';
     import { authFetch } from '@/helpers/fetch';
 
-    interface Props {
+    type Props = {
         data: PageData;
         open: boolean;
-    }
+    };
 
     let { data, open = $bindable() }: Props = $props();
 
@@ -25,7 +25,7 @@
     let orgSensor: SensorDetails;
     let sensor: SensorDetails = $state();
 
-    let fieldErrors;
+    let fieldErrors = $state();
     run(() => {
         fieldErrors = {} as Partial<
             Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
