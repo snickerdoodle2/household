@@ -1,6 +1,5 @@
 import json
 import argparse
-from random import random
 from typing import Dict, List
 import requests
 from sensor import Sensor
@@ -67,6 +66,7 @@ def login(srv_host, srv_port, username, password) -> str:
         response = requests.post(url=url, json=credentials)
         response.raise_for_status()
         return response.json().get("auth_token", {}).get("token")
+    # TODO: handle None response when the Household server is down
     except requests.exceptions.RequestException as e:
         print("Login failed:", e, response.json().get('error'))
         return None
@@ -91,6 +91,7 @@ def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sens
         response = requests.post(url=url, headers=headers, json=payload)
         response.raise_for_status()
         return True
+    # TODO: display warning on error: {'uri': 'a sensor with this URI already exists'} adn continue working normally
     except requests.exceptions.RequestException as e:
         print("Adding sensor failed:", e, response.json().get('error'))
         return False
@@ -152,8 +153,8 @@ def get_sensor_value(sensor_name):
     global sensors
     sensor = sensors.get(sensor_name)
     if sensor:
-        # MOCK for now
-        response = jsonify(value=random()*100)
+        value = float(sensor.get_value())
+        response = jsonify(value=value)
         return response, 200
     else:
         return jsonify({"error": "Sensor not found"}), 404
