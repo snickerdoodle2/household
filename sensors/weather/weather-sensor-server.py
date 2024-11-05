@@ -105,11 +105,8 @@ def get_sensors_from_config() -> List[Sensor]:
     for sensor_data in config.get("sensors", []):
         name = sensor_data.get("name")
         refresh_rate = sensor_data.get("refresh_rate")
-
-        processing_str = sensor_data.get("processing")
-        processing = ProcessingType(processing_str) if processing_str else None
+        processing = ProcessingType(sensor_data.get("processing"))
         number_of_hours = sensor_data.get("number_of_hours")
-
         params = sensor_data.get("params", {})
 
         sensor = Sensor(
@@ -119,8 +116,11 @@ def get_sensors_from_config() -> List[Sensor]:
             number_of_hours=number_of_hours,
             params=params
         )
-
-        config_sensors.append(sensor)
+        if sensor.validate_params():
+            config_sensors.append(sensor)
+        else:
+            print(
+                f"sensor {sensor.name} failed param validation and will not be processed")
 
     return config_sensors
 

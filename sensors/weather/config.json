@@ -13,7 +13,7 @@
         {
             "name": "cloud-cover",
             "refresh_rate": 3,
-            "aggregation": false,
+            "processing": "current",
             "params": {
                 "latitude": 50.3,
                 "longitude": 19.28,
@@ -21,15 +21,14 @@
             }
         },
         {
-            "name": "precipitation-sum-next-3-days",
+            "name": "rain sum next 24 hours",
             "refresh_rate": 5,
             "processing": "sum_future",
-            "number_of_hours": 36,
+            "number_of_hours": 24,
             "params": {
                 "latitude": 50.3,
                 "longitude": 19.28,
-                "hourly": "temperature_2m",
-                "past_days": 3,
+                "hourly": "rain",
                 "forecast_days": 3
             }
         }

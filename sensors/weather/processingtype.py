@@ -10,3 +10,4 @@ class ProcessingType(Enum):
     MIN_FUTURE = "min_future"
     AVG_PAST = "avg_past"
     AVG_FUTURE = "avg_future"
+    CURRENT = "current"
