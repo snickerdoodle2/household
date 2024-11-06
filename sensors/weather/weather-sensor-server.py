@@ -16,18 +16,18 @@ logger.setLevel("INFO")
 
 
 parser = argparse.ArgumentParser(
-    description="Configure the server credentials")
+    description="Configure the Weather Data Server")
 parser.add_argument("-u", "--username", type=str,
-                    help="Project Server username")
+                    help="Household Server username")
 parser.add_argument("-p", "--password", type=str,
-                    help="Project Server password")
+                    help="Household Server password")
 parser.add_argument("-c", "--configpath", type=str,
                     help = "Path to config.json file")
 
 args = parser.parse_args()
 config_path = args.configpath if args.configpath is not None else "config.json"
 
-def get_system_server_config():
+def get_household_server_config():
     with open(config_path, "r") as file:
         config = json.load(file)
 
@@ -36,11 +36,11 @@ def get_system_server_config():
 
     if username is None or password is None:
         logger.info("Username or password not configured as arguments, trying to parse them from config.json")
-        username = config["system-server"].get("username")
-        password = config["system-server"].get("password")
+        username = config["household-server"].get("username")
+        password = config["household-server"].get("password")
 
-    srv_host = config["system-server"].get("host")
-    srv_port = config["system-server"].get("port")
+    srv_host = config["household-server"].get("host")
+    srv_port = config["household-server"].get("port")
 
     return srv_host, srv_port, username, password
 
@@ -56,12 +56,12 @@ def load_weather_server_config():
     self_port = config["weather-server"].get("port")
 
 
-def login(srv_host, srv_port, username, password) -> str:
-    if not srv_host or not srv_port:
+def login(household_host, household_port, username, password) -> str:
+    if not household_host or not household_port:
         logger.error("Server IP and port must be configured.")
         return None
 
-    url = f"http://{srv_host}:{srv_port}/api/v1/login"
+    url = f"http://{household_host}:{household_port}/api/v1/login"
 
     credentials = {
         'userName': username,
@@ -73,18 +73,18 @@ def login(srv_host, srv_port, username, password) -> str:
         response.raise_for_status()
         return response.json().get("auth_token", {}).get("token")
     except requests.exceptions.ConnectionError as e:
-        logger.error("Login failed: Unable to connect to the server.")
+        logger.error("Login failed: Unable to connect to the Household server.")
         exit(0)
     except requests.exceptions.RequestException as e:
         error_message = (
             response.json().get('error') if 'response' in locals() and response else str(e)
         )
-        logger.error("Login failed:", e, error_message)
+        logger.error("Login to Household failed:", e, error_message)
         exit(0)
 
 
-def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sensor: Sensor) -> bool:
-    url = f"http://{srv_ip}:{srv_port}/api/v1/sensor"
+def add_sensor_to_household(household_ip: str, household_port: str | int, auth_token: str, sensor: Sensor) -> bool:
+    url = f"http://{household_ip}:{household_port}/api/v1/sensor"
     global self_host, self_port
 
     headers = {
@@ -110,7 +110,7 @@ def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sens
                   payload['uri']} already exists. Continuing without adding duplicate.")
             return True
 
-        logger.error("Adding sensor failed:", e, error_message)
+        logger.error("Adding sensor to Household failed:", e, error_message)
         return False
 
 
@@ -145,11 +145,11 @@ def get_sensors_from_config() -> List[Sensor]:
 
 def initialize_sensors():
     global sensors
-    srv_ip, srv_port, username, password = get_system_server_config()
-    token = login(srv_ip, srv_port, username, password)
+    household_ip, household_port, username, password = get_household_server_config()
+    token = login(household_ip, household_port, username, password)
     sensor_list = get_sensors_from_config()
     for sensor in sensor_list:
-        if add_sensor_to_server(srv_ip, srv_port, token, sensor):
+        if add_sensor_to_household(household_ip, household_port, token, sensor):
             sensors[sensor.name] = sensor
 
 

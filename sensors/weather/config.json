@@ -3,7 +3,7 @@
         "host": "127.0.0.1",
         "port": 9001
     },
-    "system-server": {
+    "household-server": {
         "host": "172.30.227.16",
         "port": 8080,
         "username": "admin",
@@ -12,7 +12,7 @@
     "sensors": [
         {
             "name": "cloud-cover",
-            "refresh_rate": 60,
+            "refresh_rate": 900,
             "processing": "current",
             "params": {
                 "latitude": 50.3,
