@@ -66,10 +66,14 @@ def login(srv_host, srv_port, username, password) -> str:
         response = requests.post(url=url, json=credentials)
         response.raise_for_status()
         return response.json().get("auth_token", {}).get("token")
-    # TODO: handle None response when the Household server is down
+    except requests.exceptions.ConnectionError as e:
+        print("Login failed: Unable to connect to the server.")
+        exit(0)
     except requests.exceptions.RequestException as e:
-        print("Login failed:", e, response.json().get('error'))
-        return None
+        error_message = (
+            response.json().get('error') if 'response' in locals() and response else str(e)
+        )
+        print("Login failed:", e, error_message)
 
 
 def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sensor: Sensor) -> bool:
@@ -91,9 +95,15 @@ def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sens
         response = requests.post(url=url, headers=headers, json=payload)
         response.raise_for_status()
         return True
-    # TODO: display warning on error: {'uri': 'a sensor with this URI already exists'} adn continue working normally
     except requests.exceptions.RequestException as e:
-        print("Adding sensor failed:", e, response.json().get('error'))
+        error_message = response.json().get('error', {})
+
+        if error_message.get('uri') == 'a sensor with this URI already exists':
+            print(f"Warning: Sensor with URI {
+                  payload['uri']} already exists. Continuing without adding duplicate.")
+            return True
+
+        print("Adding sensor failed:", e, error_message)
         return False
 
 
