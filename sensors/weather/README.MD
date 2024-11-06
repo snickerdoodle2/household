@@ -4,10 +4,6 @@ Serwer zintegrowany z projektem Household - po skonfigurowaniu i uruchomieniu se
 
 Serwer korzysta z API open-meteo i umożliwia korzystanie z wszystkich danych znajdujących się w sekcjach **_Hourly Weather Variables_** i **_Current Weather_**. Jeden sensor zajmuje się przetwarzaniem tylko jednej zmiennej pogodowej.
 
-## Konfiguracja
-
-Konfiguracja serwera odbywa się poprzez plik config.json. W tym pliku należy zdefiniować parametry serwera pogodowego, serwera aplikacji _Household_ oraz listę sensorów pogodowych w odpowiednim formacie.
-
 ## Uruchomienie
 
 Program uruchamiamy z linii komend wywołując:
@@ -24,6 +20,10 @@ python weather-sensor-server.py
 - `-c, --configpath` - konfiguracja ścieżki do pliku konfiguracyjnego
 
 Wszystkie parametry są opcjonalne, w przypadku niepodania username lub hasła, program podejmie próbę odczytania ich z pliku konfiguracyjnego. Domyślną lokalizacją pliku konfiguracyjnego jest katalog główny serwera (z niego wywołujemy komendę uruchamiającą), a jego nazwa to config.json
+
+## Konfiguracja
+
+Konfiguracja serwera odbywa się poprzez plik config.json. W tym pliku należy zdefiniować parametry serwera pogodowego, serwera aplikacji _Household_ oraz listę sensorów pogodowych w odpowiednim formacie.
 
 **Przykładowy fragment pliku konfiguracyjnego:**
 
