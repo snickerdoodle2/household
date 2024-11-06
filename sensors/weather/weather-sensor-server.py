@@ -5,7 +5,6 @@ import requests
 from sensor import Sensor
 from processingtype import ProcessingType
 from flask import Flask, jsonify
-import logging
 
 
 app = Flask(__name__)
@@ -13,7 +12,7 @@ sensors: Dict[str, Sensor] = {}
 self_host = None
 self_port = None
 logger = app.logger
-
+logger.setLevel("INFO")
 
 
 parser = argparse.ArgumentParser(
@@ -22,13 +21,16 @@ parser.add_argument("-u", "--username", type=str,
                     help="Project Server username")
 parser.add_argument("-p", "--password", type=str,
                     help="Project Server password")
+parser.add_argument("-c", "--configpath", type=str,
+                    help = "Path to config.json file")
 
+args = parser.parse_args()
+config_path = args.configpath if args.configpath is not None else "config.json"
 
 def get_system_server_config():
-    with open("config.json", "r") as file:
+    with open(config_path, "r") as file:
         config = json.load(file)
 
-    args = parser.parse_args()
     username = args.username
     password = args.password
 
@@ -44,7 +46,7 @@ def get_system_server_config():
 
 
 def load_weather_server_config():
-    with open("config.json", "r") as file:
+    with open(config_path, "r") as file:
         config = json.load(file)
 
     global self_host
@@ -113,7 +115,7 @@ def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sens
 
 
 def get_sensors_from_config() -> List[Sensor]:
-    with open("config.json", "r") as file:
+    with open(config_path, "r") as file:
         config = json.load(file)
 
     config_sensors = []
