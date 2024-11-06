@@ -34,7 +34,6 @@ class Sensor:
 
         elif self.processing == ProcessingType.CURRENT:
             return current is not None
-        print(34)
         return False
 
     def get_value(self):

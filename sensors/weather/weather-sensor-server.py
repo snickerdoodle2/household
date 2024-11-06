@@ -5,11 +5,15 @@ import requests
 from sensor import Sensor
 from processingtype import ProcessingType
 from flask import Flask, jsonify
+import logging
+
 
 app = Flask(__name__)
 sensors: Dict[str, Sensor] = {}
 self_host = None
 self_port = None
+logger = app.logger
+
 
 
 parser = argparse.ArgumentParser(
@@ -29,7 +33,7 @@ def get_system_server_config():
     password = args.password
 
     if username is None or password is None:
-        print("Username or password not configured as arguments, trying to parse them from config.json")
+        logger.info("Username or password not configured as arguments, trying to parse them from config.json")
         username = config["system-server"].get("username")
         password = config["system-server"].get("password")
 
@@ -52,7 +56,7 @@ def load_weather_server_config():
 
 def login(srv_host, srv_port, username, password) -> str:
     if not srv_host or not srv_port:
-        print("Server IP and port must be configured.")
+        logger.error("Server IP and port must be configured.")
         return None
 
     url = f"http://{srv_host}:{srv_port}/api/v1/login"
@@ -67,13 +71,14 @@ def login(srv_host, srv_port, username, password) -> str:
         response.raise_for_status()
         return response.json().get("auth_token", {}).get("token")
     except requests.exceptions.ConnectionError as e:
-        print("Login failed: Unable to connect to the server.")
+        logger.error("Login failed: Unable to connect to the server.")
         exit(0)
     except requests.exceptions.RequestException as e:
         error_message = (
             response.json().get('error') if 'response' in locals() and response else str(e)
         )
-        print("Login failed:", e, error_message)
+        logger.error("Login failed:", e, error_message)
+        exit(0)
 
 
 def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sensor: Sensor) -> bool:
@@ -99,11 +104,11 @@ def add_sensor_to_server(srv_ip: str, srv_port: str | int, auth_token: str, sens
         error_message = response.json().get('error', {})
 
         if error_message.get('uri') == 'a sensor with this URI already exists':
-            print(f"Warning: Sensor with URI {
+            logger.warning(f"Sensor with URI {
                   payload['uri']} already exists. Continuing without adding duplicate.")
             return True
 
-        print("Adding sensor failed:", e, error_message)
+        logger.error("Adding sensor failed:", e, error_message)
         return False
 
 
@@ -130,7 +135,7 @@ def get_sensors_from_config() -> List[Sensor]:
         if sensor.validate_params():
             config_sensors.append(sensor)
         else:
-            print(
+            logger.warning(
                 f"sensor {sensor.name} failed param validation and will not be processed")
 
     return config_sensors
