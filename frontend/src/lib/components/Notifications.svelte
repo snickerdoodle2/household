@@ -3,7 +3,7 @@
     import { dummyNotifications, NotificationType } from '@/types/notification';
     import { CheckCircled, CrossCircled, InfoCircled, ExclamationTriangle } from 'radix-icons-svelte';
 
-    const notifications = dummyNotifications;
+    const notifications = dummyNotifications.sort((n1, n2) => n2.date.getTime() - n1.date.getTime());
 
     const notificationMap = {
         [NotificationType.Success]: {

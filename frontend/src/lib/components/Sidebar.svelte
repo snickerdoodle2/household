@@ -7,8 +7,6 @@
     import { Bell } from 'radix-icons-svelte';
     import Notifications from './Notifications.svelte';
 
-    let notificationsOpen = false;
-
     const LINKS = [
         {
             icon: Home,
@@ -26,6 +24,40 @@
             url: '/debug',
         },
     ];
+
+    // Notification stuff
+    let notificationsOpen = false;
+    // let notificationSocket = initializeNotificationSocket()
+
+    // function initializeNotificationSocket() {
+    //     const token = get(authToken);
+    //     if (!token) throw new Error('auth token is required');
+
+    //     const { set, subscribe } = writable<NotificationSocketMessage | null>();
+
+    //     const url = new URL(`/api/v1/notifications`, window.location.href);
+    //     url.protocol = url.protocol.replace('http', 'ws');
+    //     url.searchParams.set('token', token.token);
+
+    //     const socket = new WebSocket(url.toString());
+
+    //     socket.addEventListener('message', (message) => {
+    //         const { data, success } = notificationSocketMessageSchema.safeParse(
+    //             JSON.parse(message.data)
+    //         );
+    //         if (!success) return;
+
+    //         set(data.sort((n1, n2) => n2.date.getTime() - n1.date.getTime()););
+    //     });
+
+    //     return {
+    //         subscribe,
+    //         close: () => {
+    //             socket.close();
+    //         },
+    //     };
+    // };
+
 </script>
 
 <nav
@@ -71,7 +103,8 @@
             </a>
         </Button>
 
-        <LightSwitch /> <!-- TODO: move this to the settings --> 
+        <LightSwitch />
+        <!-- TODO: move this to the settings -->
 
         {#if $authToken != undefined}
             <Button
@@ -104,7 +137,7 @@
         <Dialog.Content
             class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
         >
-            <Notifications/>
+            <Notifications />
         </Dialog.Content>
     </Dialog.Portal>
 </Dialog.Root>

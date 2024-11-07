@@ -7,7 +7,7 @@ export enum NotificationType {
     Success = 'success',
 }
 
-export const notificationcSchema = z.object({
+export const notificationSchema = z.object({
     type: z.nativeEnum(NotificationType),
     name: z.string().min(1).max(64),
     description: z.string().max(256),
@@ -17,7 +17,7 @@ export const notificationcSchema = z.object({
         .transform((d) => new Date(d)),
 });
 
-export type Notification = z.infer<typeof notificationcSchema>;
+export type Notification = z.infer<typeof notificationSchema>;
 
 // TODO: remove this after backend integration
 export const dummyNotifications: Notification[] = [

@@ -1,5 +1,8 @@
 import { authToken } from '@/auth/token';
-import { socketMessageSchema, type SocketMessage } from '@/types/socketMessage';
+import {
+    sensorSocketMessageSchema,
+    type SensorSocketMessage,
+} from '@/types/socketMessage';
 import { get, writable } from 'svelte/store';
 
 export const socketStore = (id: string) => {
@@ -8,7 +11,7 @@ export const socketStore = (id: string) => {
         throw new Error('auth token is required');
     }
 
-    const { set, subscribe } = writable<SocketMessage | null>();
+    const { set, subscribe } = writable<SensorSocketMessage | null>();
 
     const url = new URL(`/api/v1/sensor/${id}/value`, window.location.href);
     url.protocol = url.protocol.replace('http', 'ws');
@@ -17,7 +20,7 @@ export const socketStore = (id: string) => {
     const socket = new WebSocket(url.toString());
 
     socket.addEventListener('message', (message) => {
-        const { data, success } = socketMessageSchema.safeParse(
+        const { data, success } = sensorSocketMessageSchema.safeParse(
             JSON.parse(message.data)
         );
         if (!success) return;
