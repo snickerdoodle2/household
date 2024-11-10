@@ -46,7 +46,7 @@
 </script>
 
 
-<div class="flex flex-col w-full justify-start p-8">
+<div class="flex flex-col h-full w-full justify-start p-8">
     <div class="w-full flex justify-between">
         <h2 class="text-3xl font-bold pb-5">All Users ({users.length})</h2>
         <Button class="mt-auto" variant="outline" size="sm" on:click={handleUserAdd}> Add user </Button>    
