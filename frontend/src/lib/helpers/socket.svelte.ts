@@ -119,6 +119,14 @@ export class SensorWebsocket {
         }))
     }
 
+    unsubscribe(sensorID: string) {
+        this.websocket.send(JSON.stringify({
+            type: "unsubscribe",
+            data: sensorID
+        }))
+        this.data.delete(sensorID)
+    }
+
     private handleMeasurementMessage(message: z.infer<typeof measurementSchema>) {
         this.data.get(message.sensor_id)?.set(message.time, message.value)
     }

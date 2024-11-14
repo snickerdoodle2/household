@@ -4,6 +4,7 @@
     import type { PageData } from './$types';
     import { Button } from '@/components/ui/button';
     import { untrack } from 'svelte';
+    import { X } from 'lucide-svelte';
     let ws = new SensorWebsocket();
 
     let selected = $state('');
@@ -52,14 +53,24 @@
         <div>
             <ol>
                 {#each ws.data.entries() as [key, value]}
-                    <li>
-                        <code>{sensors.find((e) => e.id === key)?.name}</code> - {(
-                            value.values().reduce((acc, cur) => acc + cur, 0) /
-                            value.values().reduce((acc) => acc + 1, 0)
-                        ).toFixed(2)} ({value
-                            .values()
-                            .reduce((acc, cur) => acc + cur, 0)
-                            .toFixed()})
+                    <li class="flex gap-3">
+                        <div>
+                            <code
+                                >{sensors.find((e) => e.id === key)?.name}</code
+                            >
+                            - {(
+                                value
+                                    .values()
+                                    .reduce((acc, cur) => acc + cur, 0) /
+                                value.values().reduce((acc) => acc + 1, 0)
+                            ).toFixed(2)} ({value
+                                .values()
+                                .reduce((acc, cur) => acc + cur, 0)
+                                .toFixed()})
+                        </div>
+                        <button onclick={() => ws.unsubscribe(key)}
+                            ><X /></button
+                        >
                     </li>
                 {/each}
             </ol>
