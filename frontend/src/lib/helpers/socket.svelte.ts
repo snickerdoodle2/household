@@ -35,6 +35,7 @@ const measurementSchema = z.object({
     value: z.number(),
 })
 
+// HANDLE UNSUBSCRIBE MESSAGE
 const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema, measurementSchema])
 
 export class SensorWebsocket {
