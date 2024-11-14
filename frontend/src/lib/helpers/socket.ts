@@ -10,10 +10,7 @@ export const socketStore = (id: string) => {
 
     const { set, subscribe } = writable<SocketMessage | null>();
 
-    const url = new URL(
-        `/api/v1/sensor/${id}/value`,
-        `ws://172.30.227.16:8080`
-    );
+    const url = new URL(`/api/v1/sensor/${id}/value`, window.location.href);
     url.protocol = url.protocol.replace('http', 'ws');
     url.searchParams.set('token', token.token);
 
