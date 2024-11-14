@@ -128,6 +128,10 @@ export class SensorWebsocket {
         this.data.delete(sensorID)
     }
 
+    close() {
+        this.websocket.close()
+    }
+
     private handleMeasurementMessage(message: z.infer<typeof measurementSchema>) {
         this.data.get(message.sensor_id)?.set(message.time, message.value)
     }
