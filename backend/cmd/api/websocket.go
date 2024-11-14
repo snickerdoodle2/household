@@ -146,6 +146,7 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 			continue
 		}
 
+		// message fron sensor listener
 		values := msg.Interface().([]float64)
 		err := sendSensorUpdate(conn, listeners[i-1].id, values[len(values)-1])
 		if err != nil {
