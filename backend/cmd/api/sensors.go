@@ -257,7 +257,7 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.stopSensorListener(sensorId)
 
-	err = app.models.Sensors.Delete(sensorId)
+	err = app.models.Sensors.DeleteSensorAndMeasurements(sensorId)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
