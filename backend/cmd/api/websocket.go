@@ -72,8 +72,9 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 type wsAction string
 
 const (
-	actionClose     wsAction = "CLOSE"
-	actionSubscribe wsAction = "SUBSCRIBE"
+	actionClose       wsAction = "CLOSE"
+	actionSubscribe   wsAction = "SUBSCRIBE"
+	actionUnsubscribe wsAction = "UNSUBSCRIBE"
 )
 
 type wsMsg struct {
@@ -142,6 +143,8 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 				msgCh := listener.Broker.Subscribe()
 				listeners = append(listeners, wsListener{id: action.id, msgCh: msgCh})
 				channels = append(channels, reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(msgCh)})
+			default:
+				app.logger.Debug("sendSensorUpdates", "action", action.action, "error", "unhandled")
 			}
 			continue
 		}
@@ -179,6 +182,7 @@ const (
 	authMsg        messageType = "auth"
 	serverError    messageType = "server_error"
 	subscribeMsg   messageType = "subscribe"
+	unsubscribeMsg messageType = "unsubscribe"
 	measurementMsg messageType = "measurment"
 )
 
@@ -209,6 +213,10 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 
 	if msg.Type == subscribeMsg {
 		return app.handleSubscribeMsg(conn, status, msg.Data)
+	}
+
+	if msg.Type == unsubscribeMsg {
+		return app.handleUnsubscribeMsg(conn, status, msg.Data)
 	}
 
 	return nil
@@ -298,6 +306,28 @@ func (app *App) handleSensorSubcribtion(id uuid.UUID) (map[string]interface{}, e
 	}
 
 	return map[string]interface{}{"status": "ok", "values": values}, nil
+}
+
+func (app *App) handleUnsubscribeMsg(conn *websocket.Conn, status *connStatus, input json.RawMessage) error {
+	var sensorId uuid.UUID
+	err := json.Unmarshal(input, &sensorId)
+	if err != nil {
+		var tmp string
+		err = json.Unmarshal(input, &tmp)
+		if err != nil {
+			return err
+		}
+		res := map[string]interface{}{"type": unsubscribeMsg, "error": "INVALID_UUID"}
+		return wsjson.Write(context.Background(), conn, res)
+	}
+
+	status.ch <- wsMsg{
+		action: actionUnsubscribe,
+		id:     sensorId,
+	}
+
+	res := map[string]interface{}{"type": unsubscribeMsg, "data": sensorId}
+	return wsjson.Write(context.Background(), conn, res)
 }
 
 func sensorErrorMsg(msg string) map[string]interface{} {
