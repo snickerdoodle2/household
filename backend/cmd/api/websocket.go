@@ -9,6 +9,7 @@ import (
 	"inzynierka/internal/data/validator"
 	"net/http"
 	"reflect"
+	"slices"
 	"sync"
 	"time"
 
@@ -126,6 +127,13 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 				return
 			case actionSubscribe:
 				app.logger.Debug("sendSensorUpdates", "action", "subscribe", "sensorID", action.id)
+
+				// go to next message if already subscribed
+				if slices.IndexFunc(listeners, func(e wsListener) bool { return e.id == action.id }) != -1 {
+					app.logger.Debug("sendSensorUpdates", "action", "subscribe", "sensorID", action.id, "error", "already subscribed")
+					continue
+				}
+
 				listener, ok := app.listeners[action.id] // should be in listeners
 				if !ok {
 					app.logger.Error("sendSensorUpdates", "action", "subscribe", "sensorID", action.id, "error", "listener not found")
