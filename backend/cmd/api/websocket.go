@@ -143,6 +143,19 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 				msgCh := listener.Broker.Subscribe()
 				listeners = append(listeners, wsListener{id: action.id, msgCh: msgCh})
 				channels = append(channels, reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(msgCh)})
+			case actionUnsubscribe:
+				app.logger.Debug("sendSensorUpdates", "action", "unsubscribe", "sensorID", action.id)
+
+				idx := slices.IndexFunc(listeners, func(e wsListener) bool { return e.id == action.id })
+				if idx == -1 {
+					app.logger.Debug("sendSensorUpdates", "action", "unsubscribe", "sensorID", action.id, "error", "not subscribed")
+					continue
+				}
+
+				app.listeners[listeners[i].id].Broker.Unsubscribe(listeners[i].msgCh)
+				listeners = slices.Delete(listeners, i, i+1)
+				channels = slices.Delete(channels, i+1, i+2)
+
 			default:
 				app.logger.Debug("sendSensorUpdates", "action", action.action, "error", "unhandled")
 			}
