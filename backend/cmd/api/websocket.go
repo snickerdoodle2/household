@@ -58,8 +58,10 @@ func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 			connStatus.ch <- wsMsg{
 				action: actionClose,
 			}
-			switch {
-			case websocket.CloseStatus(err) == websocket.StatusNormalClosure:
+
+			status := websocket.CloseStatus(err)
+			switch status {
+			case websocket.StatusNormalClosure, websocket.StatusGoingAway:
 				return
 			default:
 				app.logger.Error("unhandled ws error", "error", err)
