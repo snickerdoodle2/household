@@ -38,6 +38,8 @@ func (l *Listener[T]) Start() error {
 		Value T `json:"value"`
 	}
 
+	sensorEndpoint := fmt.Sprintf("http://%v/value", l.sensor.URI)
+
 	go l.Broker.Start()
 	defer l.Broker.Stop()
 
@@ -51,13 +53,18 @@ func (l *Listener[T]) Start() error {
 		delay := delayMultiplier * l.sensor.RefreshRate
 		time.Sleep(time.Duration(delay) * time.Second)
 
-		res, err := http.Get(fmt.Sprintf("http://%v/value", l.sensor.URI))
+		res, err := http.Get(sensorEndpoint)
 		if err != nil {
 			fmt.Print(err.Error())
 
 			l.Broker.Publish(nil)
 
 			delayMultiplier += 1
+			continue
+		}
+
+		if res.StatusCode >= 400 {
+			fmt.Printf("Received: %v when calling %v %v\n", res.Status, res.Request.Method, sensorEndpoint)
 			continue
 		}
 
