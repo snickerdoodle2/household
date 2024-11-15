@@ -134,7 +134,7 @@ func (app *App) startSensorListener(sensor *data.Sensor) {
 		}
 
 		if err := app.models.SensorMeasurements.Insert(&measuserment); err != nil {
-			app.logger.Error("zapisywanie odczytu do bazy", "error", err)
+			app.logger.Error("Writing measurement to DB", "error", err)
 		}
 	}
 	l := data.NewListener[float64](sensor, onNewValue)
