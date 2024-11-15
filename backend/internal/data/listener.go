@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"inzynierka/internal/broker"
 	"io"
@@ -32,6 +33,10 @@ type Listener[T any] struct {
 	Broker     *broker.Broker[[]T]
 	onNewValue func(T)
 }
+
+var (
+	ErrSensorHttpErrorResponse = errors.New("sensor value request returned HTTP Error code")
+)
 
 func (l *Listener[T]) Start() error {
 	var input struct {
@@ -65,7 +70,8 @@ func (l *Listener[T]) Start() error {
 
 		if res.StatusCode >= 400 {
 			fmt.Printf("Received: %v when calling %v %v\n", res.Status, res.Request.Method, sensorEndpoint)
-			continue
+			return ErrSensorHttpErrorResponse
+			// TODO: send notification
 		}
 
 		body, err := io.ReadAll(res.Body)
