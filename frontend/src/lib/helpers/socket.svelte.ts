@@ -41,11 +41,13 @@ const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema,
 export class SensorWebsocket {
     private toSubscribe: string[] = []
     private websocket: WebSocket
+    private subscriptionCount: Map<string, number>;
     data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
 
     constructor(toSubscribe: string[] | undefined = undefined) {
         toSubscribe ??= []
         this.toSubscribe = toSubscribe
+        this.subscriptionCount = new Map();
 
         const token = get(authToken);
         if (!token) {
@@ -114,18 +116,37 @@ export class SensorWebsocket {
     }
 
     subscribe(sensorID: string) {
-        this.websocket.send(JSON.stringify({
-            type: 'subscribe',
-            data: [sensorID]
-        }))
+        let cur = this.subscriptionCount.get(sensorID) ?? 0;
+        cur += 1;
+        this.subscriptionCount.set(sensorID, cur);
+
+        // if not subscribed already
+        if (cur <= 1) {
+            this.websocket.send(JSON.stringify({
+                type: 'subscribe',
+                data: [sensorID]
+            }))
+        }
     }
 
     unsubscribe(sensorID: string) {
-        this.websocket.send(JSON.stringify({
-            type: "unsubscribe",
-            data: sensorID
-        }))
-        this.data.delete(sensorID)
+        let cur = this.subscriptionCount.get(sensorID) ?? 0;
+
+        // return if no one is subscribed
+        if (cur <= 0) {
+            return;
+        }
+        cur -= 1;
+        this.subscriptionCount.set(sensorID, cur)
+
+        // send unsubscribe msg if no one is subscribed
+        if (cur === 0) {
+            this.websocket.send(JSON.stringify({
+                type: "unsubscribe",
+                data: sensorID
+            }))
+            this.data.delete(sensorID)
+        }
     }
 
     close() {
