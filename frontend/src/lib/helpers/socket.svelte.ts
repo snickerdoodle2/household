@@ -39,14 +39,19 @@ const measurementSchema = z.object({
 const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema, measurementSchema])
 
 export class SensorWebsocket {
-    private toSubscribe: string[] = []
     private websocket: WebSocket
     private subscriptionCount: Map<string, number>;
     data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
+    private static _instance: SensorWebsocket | null = null;
 
-    constructor(toSubscribe: string[] | undefined = undefined) {
-        toSubscribe ??= []
-        this.toSubscribe = toSubscribe
+    private constructor() {
+        if (SensorWebsocket._instance) {
+            return SensorWebsocket._instance
+        }
+
+        SensorWebsocket._instance = this;
+
+
         this.subscriptionCount = new Map();
 
         const token = get(authToken);
@@ -98,13 +103,6 @@ export class SensorWebsocket {
         if (message.message !== 'ok') {
             // TODO: do smth with it
             throw new Error('not ok');
-        }
-
-        if (this.toSubscribe.length > 0) {
-            this.websocket.send(JSON.stringify({
-                type: "subscribe",
-                data: this.toSubscribe
-            }))
         }
     }
 
