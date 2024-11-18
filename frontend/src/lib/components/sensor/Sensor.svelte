@@ -1,41 +1,40 @@
 <script lang="ts">
-    import { createBubbler, preventDefault } from 'svelte/legacy';
-
-    const bubble = createBubbler();
     import { type Sensor } from '@/types/sensor';
     import { DotsVertical } from 'svelte-radix';
-    import { socketStore } from '$lib/helpers/socket';
-    import { onDestroy } from 'svelte';
+    import { SensorWebsocket } from '@/helpers/socket.svelte';
     import Chart from './Chart.svelte';
     type Props = {
         sensor: Sensor;
     };
 
     let { sensor }: Props = $props();
+    const ws = new SensorWebsocket();
 
-    let socket = socketStore(sensor.id);
+    $effect(() => {
+        if (!ws.ready) return;
+        ws.subscribe(sensor.id);
 
-    onDestroy(() => {
-        socket.close();
+        return () => {
+            ws.unsubscribe(sensor.name);
+        };
     });
+
+    let data = $derived(ws.data.get(sensor.id));
 </script>
 
 <div class="flex flex-col gap-2 rounded-lg bg-accent px-4 py-2">
-    {#if $socket}
-        <div class="flex items-center justify-between">
-            <span class="text-xl">{sensor.name} </span>
-            <div class="flex items-center gap-2">
-                <div
-                    class={`aspect-square w-2 rounded-full ${$socket.status === 'ONLINE' ? 'bg-green-400' : 'bg-red-400'}`}
-                ></div>
-                <a
-                    href={`/details/${sensor.id}`}
-                    onclick={preventDefault(bubble('click'))}
-                    ><DotsVertical class="h-5 w-5" /></a
-                >
-            </div>
+    <div class="flex items-center justify-between">
+        <span class="text-xl">{sensor.name} </span>
+        <div class="flex items-center gap-2">
+            <div class={`aspect-square w-2 rounded-full`}></div>
+            <!-- TODO: bubble up on:click to show modal -->
+            <a href={`/details/${sensor.id}`}
+                ><DotsVertical class="h-5 w-5" /></a
+            >
         </div>
-        <Chart {socket} />
+    </div>
+    {#if data}
+        <Chart {data} />
     {:else}
         <p>Error opening socket</p>
     {/if}

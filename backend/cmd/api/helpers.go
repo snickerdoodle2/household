@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 )
 
 type envelope map[string]any
@@ -167,20 +166,4 @@ func (app *App) stopRule(ruleId uuid.UUID) {
 type SocketMsg struct {
 	Values []float64 `json:"values"`
 	Status string    `json:"status"`
-}
-
-func (app *App) sendSocketMessage(conn *websocket.Conn, data []float64) error {
-	var msg SocketMsg
-	if data == nil {
-		msg = SocketMsg{
-			Status: "OFFLINE",
-			Values: make([]float64, 0),
-		}
-	} else {
-		msg = SocketMsg{
-			Status: "ONLINE",
-			Values: data,
-		}
-	}
-	return conn.WriteJSON(msg)
 }
