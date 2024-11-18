@@ -2,6 +2,7 @@
     import { type Sensor } from '@/types/sensor';
     import { DotsVertical } from 'svelte-radix';
     import { SensorWebsocket } from '@/helpers/socket.svelte';
+    import Chart from './Chart.svelte';
     type Props = {
         sensor: Sensor;
     };
@@ -26,19 +27,14 @@
         <span class="text-xl">{sensor.name} </span>
         <div class="flex items-center gap-2">
             <div class={`aspect-square w-2 rounded-full`}></div>
+            <!-- TODO: bubble up on:click to show modal -->
             <a href={`/details/${sensor.id}`}
                 ><DotsVertical class="h-5 w-5" /></a
             >
         </div>
     </div>
     {#if data}
-        {(
-            data.values().reduce((acc, cur) => acc + cur, 0) /
-            data.values().reduce((acc) => acc + 1, 0)
-        ).toFixed(2)} ({data
-            .values()
-            .reduce((acc, cur) => acc + cur, 0)
-            .toFixed()})
+        <Chart {data} />
     {:else}
         <p>Error opening socket</p>
     {/if}
