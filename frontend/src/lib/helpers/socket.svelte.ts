@@ -41,10 +41,11 @@ const messageSchema = z.discriminatedUnion('type', [authSchema, subscribeSchema,
 export class SensorWebsocket {
     private websocket: WebSocket
     private subscriptionCount: Map<string, number>;
+    ready = $state(false);
     data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
     private static _instance: SensorWebsocket | null = null;
 
-    private constructor() {
+    constructor() {
         if (SensorWebsocket._instance) {
             return SensorWebsocket._instance
         }
@@ -92,6 +93,7 @@ export class SensorWebsocket {
                 type: 'auth',
                 data: token.token
             }))
+            this.ready = true
         })
 
         this.websocket.addEventListener('error', (error) => {
