@@ -27,7 +27,8 @@ type connStatus struct {
 func (app *App) upgradeSensorWebsocket(w http.ResponseWriter, r *http.Request) {
 	const subprotocol = "inzynierka"
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		Subprotocols: []string{subprotocol}, // TODO: better name for subprotocol
+		Subprotocols:   []string{subprotocol}, // TODO: better name for subprotocol
+		OriginPatterns: app.config.cors.trustedOrigins,
 	})
 
 	if err != nil {
