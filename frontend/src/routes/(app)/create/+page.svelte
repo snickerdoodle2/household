@@ -25,9 +25,10 @@
     let refresh_rate: string = $state();
     let uri: string = $state();
     let type: { value: string; label: string } | undefined = $state();
+    let active: boolean = $state()
     let timeout: number;
     let errors: Partial<
-        Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
+        Record<'uri' | 'name' | 'refresh_rate' | 'type' | 'active', string>
     > = $state({});
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -42,6 +43,7 @@
             refresh_rate: refresh_rate ? +refresh_rate : undefined,
             uri,
             type: type?.value,
+            active: typeof active === 'boolean' ? active : false
         });
 
         if (!success) {
@@ -56,7 +58,7 @@
     };
 
     run(() => {
-        debounce(validate, name, refresh_rate, uri, type);
+        debounce(validate, name, refresh_rate, uri, type, active);
     });
 
     const handleSubmit = async () => {
@@ -65,6 +67,7 @@
             refresh_rate: refresh_rate ? +refresh_rate : undefined,
             uri,
             type: type?.value,
+            active: typeof active === 'boolean' ? active : false
         });
 
         if (!success) return;
