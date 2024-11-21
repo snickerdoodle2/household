@@ -57,6 +57,7 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		URI         string          `json:"uri"`
 		Type        data.SensorType `json:"type"`
 		RefreshRate int             `json:"refresh_rate"`
+		Active      bool            `json:"active"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -70,6 +71,7 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		URI:         input.URI,
 		Type:        input.Type,
 		RefreshRate: input.RefreshRate,
+		Active:      input.Active,
 	}
 
 	v := validator.New()
@@ -124,6 +126,7 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 		URI         *string          `json:"uri"`
 		Type        *data.SensorType `json:"type"`
 		RefreshRate *int             `json:"refresh_rate"`
+		Active      *bool            `json:"active"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -146,6 +149,10 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	if input.RefreshRate != nil {
 		sensor.RefreshRate = *input.RefreshRate
+	}
+
+	if input.Active != nil {
+		sensor.Active = *input.Active
 	}
 
 	v := validator.New()

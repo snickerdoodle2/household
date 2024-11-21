@@ -61,8 +61,13 @@ func ValidateSensor(v *validator.Validator, sensor *Sensor) {
 	v.Check(sensor.Type != "", "type", "must be provided")
 	v.Check(validator.PermittedValue(sensor.Type, SensorTypes...), "type", "must be known")
 
-	v.Check(sensor.RefreshRate != 0, "refresh_rate", "must be provided")
-	v.Check(sensor.RefreshRate > 0, "refresh_rate", "must be a positive integer")
+	isActive := sensor.Active
+	v.Check(isActive || !isActive, "active", "must be a boolean")
+
+	if !isActive {
+		v.Check(sensor.RefreshRate != 0, "refresh_rate", "must be provided")
+		v.Check(sensor.RefreshRate > 0, "refresh_rate", "must be a positive integer")
+	}
 }
 
 type SensorModel struct {
