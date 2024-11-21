@@ -88,7 +88,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 	sensor.ID = uuid
 
-	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate}
+	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate, sensor.Active}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
