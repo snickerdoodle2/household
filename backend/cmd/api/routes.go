@@ -26,6 +26,8 @@ func (app *App) routes() http.Handler {
 
 		r.Get("/sensor/measurements", app.upgradeSensorWebsocket)
 
+		r.Post("/sensor/measurements/active", app.activeSensorHandler)
+
 		r.Route("/", func(r chi.Router) {
 			r.Use(app.requireAuthenticated)
 

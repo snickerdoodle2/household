@@ -5,6 +5,7 @@ import (
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -200,4 +201,40 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
+	uri := r.RemoteAddr
+
+	var requestBody struct {
+		MessageType string  `json:"message-type"`
+		SensorType  string  `json:"sensor-type"`
+		Value       float64 `json:"value"`
+	}
+
+	err := app.readJSON(w, r, &requestBody)
+	if err != nil {
+		// app.badRequestResponse(w, r, err)
+		app.logger.Warn("active sensor error", "request body", err.Error())
+		return
+	}
+
+	id, err := app.models.Sensors.GetIdByUriAndType(uri, requestBody.SensorType)
+
+	if err != nil {
+		app.logger.Warn("error getting active sensor ID", "error", err.Error())
+		return
+	}
+
+	measurement := data.SensorMeasurement{
+		SensorID:      id,
+		MeasuredAt:    time.Now(),
+		MeasuredValue: requestBody.Value,
+	}
+
+	err = app.models.SensorMeasurements.Insert(&measurement)
+	if err != nil {
+		app.logger.Error("Writing measurement to DB", "error", err)
+	}
+
 }

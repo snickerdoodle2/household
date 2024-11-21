@@ -24,7 +24,9 @@ func (app *App) serve() error {
 	}
 
 	for _, sensor := range sensors {
-		app.startSensorListener(sensor)
+		if !sensor.Active {
+			app.startSensorListener(sensor)
+		}
 	}
 
 	rules, err := app.models.Rules.GetAll()
