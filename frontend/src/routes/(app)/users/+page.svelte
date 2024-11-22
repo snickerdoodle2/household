@@ -87,7 +87,8 @@
                     minute: 'numeric',
                     second: 'numeric',
                     hour12: false,
-                })} - {user.created_at.toLocaleString('en-GB', {
+                })}
+                - {user.created_at.toLocaleString('en-GB', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',

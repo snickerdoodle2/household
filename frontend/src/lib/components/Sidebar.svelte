@@ -3,6 +3,9 @@
     import LightSwitch from './LightSwitch.svelte';
     import { Button } from './ui/button';
     import { authToken } from '@/auth/token';
+    import * as Dialog from '$lib/components/ui/dialog';
+    import { Bell } from 'radix-icons-svelte';
+    import Notifications from './Notifications.svelte';
     import { Avatar } from 'radix-icons-svelte';
 
     const LINKS = [
@@ -22,6 +25,9 @@
             url: '/debug',
         },
     ];
+
+    // Notification stuff
+    let notificationsOpen = false;
 </script>
 
 <nav
@@ -48,12 +54,28 @@
     </ul>
     <hr />
     <div class="flex justify-between group-hover:w-[14rem]">
-        <Button variant="outline" size="icon" class="h-11 w-11">
+        <Button
+            variant="outline"
+            size="icon"
+            class="h-11 w-11"
+            on:click={() => (notificationsOpen = true)}
+        >
+            <Bell class="scale-150" />
+        </Button>
+
+        <Button
+            variant="outline"
+            size="icon"
+            class="hidden h-11 w-11 group-hover:inline-flex"
+        >
             <a href="/users">
                 <Avatar class="scale-150" />
             </a>
         </Button>
+
         <LightSwitch />
+        <!-- TODO: move this to the settings -->
+
         {#if $authToken != undefined}
             <Button
                 variant="outline"
@@ -78,3 +100,14 @@
         {/if}
     </div>
 </nav>
+
+<Dialog.Root bind:open={notificationsOpen}>
+    <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content
+            class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
+        >
+            <Notifications />
+        </Dialog.Content>
+    </Dialog.Portal>
+</Dialog.Root>
