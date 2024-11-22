@@ -1,10 +1,9 @@
 import type { Result } from '@/types/result';
-import type { FetchFn } from '@/types/misc';
+// import type { FetchFn } from '@/types/misc';
 import { type User } from '@/types/user';
 
-export const getAllUsers = async (
-    fetch: FetchFn
-): Promise<Result<User[], string>> => {
+export const getAllUsers = async () // fetch: FetchFn
+: Promise<Result<User[], string>> => {
     // const res = await authFetch(`/api/v1/user`, {}, fetch);
     // const data = await res.json();
     // if (!res.ok) {
