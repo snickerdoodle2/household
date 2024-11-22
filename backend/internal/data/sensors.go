@@ -283,16 +283,26 @@ func (m SensorModel) Update(sensor *Sensor) error {
 	return nil
 }
 
-func (m SensorModel) Delete(id uuid.UUID) error {
-	query := `
-        DELETE FROM sensors
-        WHERE id = $1
+func (m SensorModel) DeleteSensorAndMeasurements(id uuid.UUID) error {
+	deleteMeasurementsQuery := `
+        DELETE FROM sensor_measurements
+		WHERE sensor_id = $1;
     `
+
+	deleteSensorQuery := `
+		DELETE FROM sensors
+		WHERE id = $1;
+	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	result, err := m.DB.Exec(ctx, query, id)
+	_, err := m.DB.Exec(ctx, deleteMeasurementsQuery, id)
+	if err != nil {
+		return err
+	}
+
+	result, err := m.DB.Exec(ctx, deleteSensorQuery, id)
 	if err != nil {
 		return err
 	}

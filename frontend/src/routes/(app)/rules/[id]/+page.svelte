@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import * as Card from '$lib/components/ui/card';
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
@@ -15,41 +17,52 @@
     import { goto } from '$app/navigation';
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { Sensor } from '@/types/sensor';
-    export let data: PageData;
-    let rule: RuleDetails;
-    let loading = true;
-    let errors: Record<string, string> = {};
-    let editing = false;
-    let sensors: Sensor[] = [];
-    let selectedSensor: { label: string; value: string };
-    let internal = {};
-    let payload = '';
+    type Props = {
+        data: PageData;
+    };
+
+    let { data }: Props = $props();
+    let rule: RuleDetails = $state();
+    let loading = $state(true);
+    let errors: Record<string, string> = $state({});
+    let editing = $state(false);
+    let sensors: Sensor[] = $state([]);
+    let selectedSensor: { label: string; value: string } = $state();
+    let internal = $state({});
+    let payload = $state('');
 
     // TODO: make single validation function
-    $: if (!loading) {
-        rule.on_valid.to = selectedSensor.value;
-    }
+    run(() => {
+        if (!loading) {
+            rule.on_valid.to = selectedSensor.value;
+        }
+    });
 
-    $: if (!loading) {
-        try {
-            const { data, success } = ruleInternalSchema.safeParse(internal);
-            if (success) {
-                rule.internal = data;
+    run(() => {
+        if (!loading) {
+            try {
+                const { data, success } =
+                    ruleInternalSchema.safeParse(internal);
+                if (success) {
+                    rule.internal = data;
+                }
+            } catch {
+                errors['internal'] = 'Invalid JSON';
             }
-        } catch {
-            errors['internal'] = 'Invalid JSON';
         }
-    }
+    });
 
-    $: if (!loading) {
-        try {
-            rule.on_valid.payload = JSON.parse(payload);
-            delete errors['payload'];
-            errors = errors;
-        } catch {
-            errors['payload'] = 'Not a valid JSON';
+    run(() => {
+        if (!loading) {
+            try {
+                rule.on_valid.payload = JSON.parse(payload);
+                delete errors['payload'];
+                errors = errors;
+            } catch {
+                errors['payload'] = 'Not a valid JSON';
+            }
         }
-    }
+    });
 
     const leave = () => {
         goto(`/rules/`);
