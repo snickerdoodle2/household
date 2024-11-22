@@ -143,15 +143,16 @@ func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 }
 
 type SensorSimple struct {
-	ID   uuid.UUID  `json:"id"`
-	Name string     `json:"name"`
-	Type SensorType `json:"type"`
+	ID     uuid.UUID  `json:"id"`
+	Name   string     `json:"name"`
+	Type   SensorType `json:"type"`
+	Active bool       `json:"active"`
 }
 
 func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 	// TODO: add filtering and pagination
 	query := `
-    SELECT id, name, sensor_type
+    SELECT id, name, sensor_type, active
     FROM sensors
     ORDER BY id
     `
@@ -174,6 +175,7 @@ func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 			&sensor.ID,
 			&sensor.Name,
 			&sensor.Type,
+			&sensor.Active,
 		)
 
 		if err != nil {
