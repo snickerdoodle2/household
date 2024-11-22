@@ -8,17 +8,17 @@
 
     type Props = {
         user?: {
-        id: string;
-        username: string;
-        name: string;
-    }, 
-        action: 'add' | 'edit'
-        open: boolean
-    }
+            id: string;
+            username: string;
+            name: string;
+        };
+        action: 'add' | 'edit';
+        open: boolean;
+    };
 
     let { open = $bindable(), user, action }: Props = $props();
     let selectedRole = $state({ value: 'user', label: 'User' });
-    let password: string = $state("");
+    let password: string = $state('');
     let globalError: string | undefined = $state();
     let fieldErrors: Record<string, string> = $state({});
 
