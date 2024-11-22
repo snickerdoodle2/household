@@ -1,71 +1,89 @@
 <script lang="ts">
-import type { SequenceAction } from '@/types/sequence';
-import * as Select from '../ui/select';
-import { onMount } from 'svelte';
-import Input from '../ui/input/input.svelte';
-import Label from '../ui/label/label.svelte';
+    import type { SequenceAction } from '@/types/sequence';
+    import * as Select from '../ui/select';
+    import { onMount } from 'svelte';
+    import Input from '../ui/input/input.svelte';
+    import Label from '../ui/label/label.svelte';
 
-export let action: SequenceAction;
-export let sensors: { label: string; value: string }[];
-export let editing = false;
-export let errorFields: string[] | undefined = [];
-
-let selectedSensor = { value: 'unknown', label: 'unknown' };
-let value = '0';
-let time = {
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-};
-
-$: action && syncActionValues(); // eslint-disable-line @typescript-eslint/no-unused-expressions
-$: action.value = Number(value);
-$: action.msDelay = convertTimeToMs(time);
-$: action.target = selectedSensor.value;
-
-function convertMsToTime(ms: number): {
-    hours: number;
-    minutes: number;
-    seconds: number;
-} {
-    const seconds = Math.floor(Math.max(0, ms / 1000) % 60);
-    const minutes = Math.floor(Math.max(0, ms / (1000 * 60)) % 60);
-    const hours = Math.floor(Math.max(0, ms / (1000 * 60 * 60)));
-
-    return {
-        hours,
-        minutes,
-        seconds,
+    type Props = {
+        action: SequenceAction;
+        sensors: { label: string; value: string }[];
+        editing: boolean;
+        errorFields: string[] | undefined;
     };
-}
 
-function convertTimeToMs(time: {
-    hours: number;
-    minutes: number;
-    seconds: number;
-}): number {
-    const { hours, minutes, seconds } = time;
+    let {
+        action = $bindable(),
+        sensors = $bindable(),
+        editing = $bindable(false),
+        errorFields = $bindable([]),
+    }: Props = $props();
 
-    const ms = hours * 60 * 60 * 1000 + minutes * 60 * 1000 + seconds * 1000;
+    let selectedSensor = $state({ value: 'unknown', label: 'unknown' });
+    let value = $state('0');
+    let time = $state({
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+    });
 
-    return ms;
-}
+    $effect(() => {
+        if (action) syncActionValues();
+    });
+    $effect(() => {
+        action.value = Number(value);
+    });
+    $effect(() => {
+        action.msDelay = convertTimeToMs(time);
+    });
+    $effect(() => {
+        action.target = selectedSensor.value;
+    });
 
-function syncActionValues() {
-    const initialSensor = sensors.find(
-        (sensor) => sensor.value === action.target
-    );
-    selectedSensor = {
-        label: initialSensor?.label ?? 'choose sensor',
-        value: initialSensor?.value ?? 'choose sensor',
-    };
-    time = convertMsToTime(action.msDelay);
-    value = action.value.toString();
-}
+    function convertMsToTime(ms: number): {
+        hours: number;
+        minutes: number;
+        seconds: number;
+    } {
+        const seconds = Math.floor(Math.max(0, ms / 1000) % 60);
+        const minutes = Math.floor(Math.max(0, ms / (1000 * 60)) % 60);
+        const hours = Math.floor(Math.max(0, ms / (1000 * 60 * 60)));
 
-onMount(() => {
-    syncActionValues();
-});
+        return {
+            hours,
+            minutes,
+            seconds,
+        };
+    }
+
+    function convertTimeToMs(time: {
+        hours: number;
+        minutes: number;
+        seconds: number;
+    }): number {
+        const { hours, minutes, seconds } = time;
+
+        const ms =
+            hours * 60 * 60 * 1000 + minutes * 60 * 1000 + seconds * 1000;
+
+        return ms;
+    }
+
+    function syncActionValues() {
+        const initialSensor = sensors.find(
+            (sensor) => sensor.value === action.target
+        );
+        selectedSensor = {
+            label: initialSensor?.label ?? 'choose sensor',
+            value: initialSensor?.value ?? 'choose sensor',
+        };
+        time = convertMsToTime(action.msDelay);
+        value = action.value.toString();
+    }
+
+    onMount(() => {
+        syncActionValues();
+    });
 </script>
 
 <div

@@ -2,12 +2,13 @@
     import type { User } from '@/types/user';
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
-    import Button from '@/components/ui/button/button.svelte';
     import { Trash, Pencil1 } from 'svelte-radix';
     import { authFetch } from '@/helpers/fetch';
-    export let data: PageData;
     import * as Dialog from '$lib/components/ui/dialog';
     import UserManagementForm from '@/components/user/UserManagementForm.svelte';
+    import Button from '@/components/ui/button/button.svelte';
+
+    export let data: PageData;
 
     let users: User[] = [];
 

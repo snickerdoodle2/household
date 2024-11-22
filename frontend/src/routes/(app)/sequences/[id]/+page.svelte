@@ -1,107 +1,122 @@
 <script lang="ts">
-import * as Card from '$lib/components/ui/card';
-import FormInput from '@/components/FormInput.svelte';
-import type { PageData } from './$types';
-import { onMount } from 'svelte';
-import { Button } from '@/components/ui/button';
-import { authFetch } from '@/helpers/fetch';
-import { goto } from '$app/navigation';
-import {
-    sequenceDetailsSchema,
-    type SequenceAction,
-    type SequenceDetails,
-} from '@/types/sequence';
-import Label from '@/components/ui/label/label.svelte';
-import ActionsBuilder from '@/components/sequence/ActionsBuilder.svelte';
-export let data: PageData;
-let sequence: SequenceDetails;
-let loading = true;
-let errors: Record<string, string> = {};
-let actionFieldErrors: Record<number, string[]>;
-let editing = false;
-let sensors: { label: string; value: string }[] = [];
-let actions: SequenceAction[] = [];
+    import * as Card from '$lib/components/ui/card';
+    import FormInput from '@/components/FormInput.svelte';
+    import type { PageData } from './$types';
+    import { onMount } from 'svelte';
+    import { Button } from '@/components/ui/button';
+    import { authFetch } from '@/helpers/fetch';
+    import { goto } from '$app/navigation';
+    import {
+        sequenceDetailsSchema,
+        type SequenceAction,
+        type SequenceDetails,
+    } from '@/types/sequence';
+    import Label from '@/components/ui/label/label.svelte';
+    import ActionsBuilder from '@/components/sequence/ActionsBuilder.svelte';
 
-const leave = () => {
-    goto(`/sequences/`);
-};
+    type Props = {
+        data: PageData;
+    };
 
-const resetSequence = async () => {
-    sequence = { ...(await data.sequence) };
-    actions = JSON.parse(JSON.stringify(sequence.actions)); //deep copy
-    sequence.actions = actions;
-    console.log(actions);
-};
+    let { data }: Props = $props();
 
-const handleCancel = async () => {
-    await resetSequence();
-    editing = false;
-};
-
-const handleDelete = async () => {
-    const res = await authFetch(`/api/v1/sequence/${sequence.id}`, {
-        method: 'DELETE',
+    let sequence: SequenceDetails = $state({
+        id: '',
+        name: '',
+        description: '',
+        actions: [],
+        created_at: new Date(),
     });
+    let loading = $state(true);
+    let errors: Record<string, string> = $state({});
+    let actionFieldErrors: Record<number, string[]> = $state({});
+    let editing = $state(false);
+    let sensors: { label: string; value: string }[] = $state([]);
+    let actions: SequenceAction[] = $state([]);
 
-    console.log(await res.json());
+    const leave = () => {
+        goto(`/sequences/`);
+    };
 
-    if (res.ok) {
-        leave();
-    }
-};
+    const resetSequence = async () => {
+        sequence = { ...(await data.sequence) };
+        actions = JSON.parse(JSON.stringify(sequence.actions)); //deep copy
+        sequence.actions = actions;
+        console.log(actions);
+    };
 
-const handleSubmit = async () => {
-    const { data, success, error } = sequenceDetailsSchema.safeParse({
-        ...sequence,
-    });
-    if (!success) {
-        actionFieldErrors = {};
-        errors = {};
+    const handleCancel = async () => {
+        await resetSequence();
+        editing = false;
+    };
 
-        error.issues.forEach((issue) => {
-            const fieldPath = issue.path.join('.');
-            if (fieldPath === 'name') {
-                errors['name'] = issue.message;
-            } else if (fieldPath === 'description') {
-                errors['description'] = issue.message;
-            }
-
-            if (
-                issue.path[0] === 'actions' &&
-                typeof issue.path[1] == 'number' &&
-                typeof issue.path[2] == 'string'
-            ) {
-                const errors = actionFieldErrors[issue.path[1]] ?? [];
-                actionFieldErrors[issue.path[1]] = [...errors, issue.path[2]];
-            }
+    const handleDelete = async () => {
+        const res = await authFetch(`/api/v1/sequence/${sequence.id}`, {
+            method: 'DELETE',
         });
-        console.log(error.issues);
-        return;
-    }
 
-    const { id, created_at, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
-    console.log(rest);
+        console.log(await res.json());
 
-    const res = await authFetch(`/api/v1/sequence/${sequence.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(rest),
+        if (res.ok) {
+            leave();
+        }
+    };
+
+    const handleSubmit = async () => {
+        const { data, success, error } = sequenceDetailsSchema.safeParse({
+            ...sequence,
+        });
+        if (!success) {
+            actionFieldErrors = {};
+            errors = {};
+
+            error.issues.forEach((issue) => {
+                const fieldPath = issue.path.join('.');
+                if (fieldPath === 'name') {
+                    errors['name'] = issue.message;
+                } else if (fieldPath === 'description') {
+                    errors['description'] = issue.message;
+                }
+
+                if (
+                    issue.path[0] === 'actions' &&
+                    typeof issue.path[1] == 'number' &&
+                    typeof issue.path[2] == 'string'
+                ) {
+                    const errors = actionFieldErrors[issue.path[1]] ?? [];
+                    actionFieldErrors[issue.path[1]] = [
+                        ...errors,
+                        issue.path[2],
+                    ];
+                }
+            });
+            console.log(error.issues);
+            return;
+        }
+
+        const { id, created_at, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
+        console.log(rest);
+
+        const res = await authFetch(`/api/v1/sequence/${sequence.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(rest),
+        });
+
+        if (res.ok) {
+            leave();
+        }
+
+        console.log(await res.json());
+    };
+
+    onMount(async () => {
+        sensors = (await data.sensors).map((e) => ({
+            value: e.id,
+            label: e.name,
+        }));
+        await resetSequence();
+        loading = false;
     });
-
-    if (res.ok) {
-        leave();
-    }
-
-    console.log(await res.json());
-};
-
-onMount(async () => {
-    sensors = (await data.sensors).map((e) => ({
-        value: e.id,
-        label: e.name,
-    }));
-    await resetSequence();
-    loading = false;
-});
 </script>
 
 {#if loading}
