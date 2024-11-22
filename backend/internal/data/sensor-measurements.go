@@ -101,3 +101,35 @@ func (m *SensorMeasurementModel) GetLastNMeasurements(id uuid.UUID, n int) ([]*S
 
 	return measurements, nil
 }
+
+// INFO: how to name this :(
+func (m *SensorMeasurementModel) GetMeasurementsSince(id uuid.UUID, delta time.Duration) ([]*SensorMeasurement, error) {
+	query := `
+    SELECT measured_at, measured_value from sensor_measurements
+    WHERE sensor_id = $1
+    AND now() - measured_at < $2
+    `
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query, id, delta)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	measurements := []*SensorMeasurement{}
+
+	for rows.Next() {
+		measurement := SensorMeasurement{SensorID: id}
+
+		err := rows.Scan(&measurement.MeasuredAt, &measurement.MeasuredValue)
+		if err != nil {
+			return nil, err
+		}
+
+		measurements = append(measurements, &measurement)
+	}
+
+	return measurements, nil
+}

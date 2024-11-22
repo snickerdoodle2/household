@@ -1,11 +1,12 @@
 <script lang="ts">
-    import { Home, MagicWand, Gear, Exit, Enter, Checkbox } from 'svelte-radix';
+    import { Home, MagicWand, Exit, Enter, Checkbox } from 'svelte-radix';
     import LightSwitch from './LightSwitch.svelte';
     import { Button } from './ui/button';
     import { authToken } from '@/auth/token';
     import * as Dialog from '$lib/components/ui/dialog';
     import { Bell } from 'radix-icons-svelte';
     import Notifications from './Notifications.svelte';
+    import { Avatar } from 'radix-icons-svelte';
 
     const LINKS = [
         {
@@ -74,7 +75,7 @@
                     href={link.url}
                     class="flex h-12 items-center gap-8 rounded-md px-2 hover:bg-secondary"
                 >
-                    <svelte:component this={link.icon} class="h-6 w-6" />
+                    <link.icon class="h-6 w-6" />
                     <span class="hidden pb-1 text-base group-hover:inline"
                         >{link.name}</span
                     >
@@ -90,7 +91,7 @@
             class="h-11 w-11"
             on:click={() => (notificationsOpen = true)}
         >
-            <Bell />
+            <Bell class="scale-150"/>
         </Button>
 
         <Button
@@ -98,8 +99,8 @@
             size="icon"
             class="hidden h-11 w-11 group-hover:inline-flex"
         >
-            <a href="/settings">
-                <Gear class="scale-90" />
+            <a href="/users">
+                <Avatar class="scale-150" />
             </a>
         </Button>
 
