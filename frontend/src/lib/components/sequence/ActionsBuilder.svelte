@@ -42,7 +42,7 @@
 
 <div class="w-full min-w-[40rem]">
     <ul>
-        {#each actions as action, idx}
+        {#each Array.from(actions.keys()) as idx}
             <li class="flex items-center justify-center p-1">
                 <Action
                     bind:sensors
