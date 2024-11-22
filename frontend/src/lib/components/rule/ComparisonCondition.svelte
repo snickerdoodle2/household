@@ -8,21 +8,31 @@
     import Button from '../ui/button/button.svelte';
     import { Disc, Pencil1 } from 'radix-icons-svelte';
 
-    export let internal: RuleGtType | RuleLtType;
-    export let sensors: Sensor[];
-    export let editingDisabled = false;
-
-    let editing = false;
-
-    let type: { value: 'gt' | 'lt' | 'not found'; label: string };
-    let selectedSensor: { value: string; label: string };
-    let value: number;
-    let dropDownsOpen = {
-        sensor: false,
-        type: false,
+    type Props = {
+        internal: RuleGtType | RuleLtType;
+        sensors: Sensor[];
+        editingDisabled?: boolean;
+        children?: import('svelte').Snippet;
     };
 
-    let wrappingDiv: HTMLDivElement;
+    let {
+        internal = $bindable(),
+        sensors,
+        editingDisabled = false,
+        children,
+    }: Props = $props();
+
+    let editing = $state(false);
+
+    let type: { value: 'gt' | 'lt' | 'not found'; label: string } = $state();
+    let selectedSensor: { value: string; label: string } = $state();
+    let value: number = $state();
+    let dropDownsOpen = $state({
+        sensor: false,
+        type: false,
+    });
+
+    let wrappingDiv: HTMLDivElement = $state();
 
     function toggleEditing() {
         editing = !editing;
@@ -136,5 +146,5 @@
         {/if}
     {/if}
 
-    <slot />
+    {@render children?.()}
 </div>
