@@ -104,13 +104,53 @@
                 type="text"
                 {errors}
             />
-            <NewSensorInput
-                name="refresh_rate"
-                label="Refresh rate"
-                bind:value={refresh_rate}
-                type="number"
-                {errors}
-            />
+
+            <Label
+                for={'refresh_rate'}
+                class="flex items-center justify-between text-base font-semibold"
+                >{'Refresh rate'}
+                {#if errors['refresh_rate'] && !active}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{errors['refresh_rate']}</span
+                    >
+                {/if}
+            </Label>
+
+            <div class="flex w-full flex-row items-center justify-between">
+                <Input
+                    type="number"
+                    {name}
+                    bind:value={refresh_rate}
+                    required
+                    disabled={active}
+                    class={!active && errors['refresh_rate']
+                        ? 'border-2 border-red-600'
+                        : ''}
+                />
+
+                <div class="flex flex-row items-center">
+                    <Label
+                        for="type"
+                        class="flex items-center justify-between text-base font-semibold"
+                    >
+                        Active
+                        {#if errors['active']}
+                            <span
+                                class="text-sm font-normal italic text-red-400"
+                                >{errors['active']}</span
+                            >
+                        {/if}
+                    </Label>
+                    <Input
+                        type="checkbox"
+                        class="ml-2 w-8 {errors['active']
+                            ? 'border-2 border-red-600'
+                            : ''}"
+                        bind:checked={active}
+                    />
+                </div>
+            </div>
+
             <NewSensorInput
                 name="uri"
                 label="URI"
@@ -143,24 +183,6 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
-            <Label
-                for="type"
-                class="flex items-center justify-between text-base font-semibold"
-            >
-                Active
-                {#if errors['active']}
-                    <span class="text-sm font-normal italic text-red-400"
-                        >{errors['active']}</span
-                    >
-                {/if}
-            </Label>
-            <Input
-                type="checkbox"
-                class="min-w-[4rem] {errors['active']
-                    ? 'border-2 border-red-600'
-                    : ''}"
-                bind:checked={active}
-            />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             <Button

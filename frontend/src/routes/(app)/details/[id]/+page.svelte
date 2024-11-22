@@ -141,13 +141,53 @@
                 type="text"
                 errors={fieldErrors}
             />
-            <NewSensorInput
-                name="refresh_rate"
-                label="Refresh rate"
-                bind:value={sensor.refresh_rate}
-                type="number"
-                errors={fieldErrors}
-            />
+
+            <Label
+                for={'refresh_rate'}
+                class="flex items-center justify-between text-base font-semibold"
+                >{'Refresh rate'}
+                {#if fieldErrors['refresh_rate'] && !sensor.active}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{fieldErrors['refresh_rate']}</span
+                    >
+                {/if}
+            </Label>
+
+            <div class="flex w-full flex-row items-center justify-between">
+                <Input
+                    type="number"
+                    {name}
+                    bind:value={sensor.refresh_rate}
+                    required
+                    disabled={sensor.active}
+                    class={!sensor.active && fieldErrors['refresh_rate']
+                        ? 'border-2 border-red-600'
+                        : ''}
+                />
+
+                <div class="ml-2 flex flex-row items-center">
+                    <Label
+                        for="type"
+                        class="flex items-center justify-between text-base font-semibold"
+                    >
+                        Active
+                        {#if fieldErrors['active']}
+                            <span
+                                class="text-sm font-normal italic text-red-400"
+                                >{fieldErrors['active']}</span
+                            >
+                        {/if}
+                    </Label>
+                    <Input
+                        type="checkbox"
+                        class="ml-2 w-8 {fieldErrors['active']
+                            ? 'border-2 border-red-600'
+                            : ''}"
+                        bind:checked={sensor.active}
+                    />
+                </div>
+            </div>
+
             <NewSensorInput
                 name="uri"
                 label="URI"
@@ -180,25 +220,6 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
-
-            <Label
-                for="type"
-                class="flex items-center justify-between text-base font-semibold"
-            >
-                Active
-                {#if fieldErrors['active']}
-                    <span class="text-sm font-normal italic text-red-400"
-                        >{fieldErrors['active']}</span
-                    >
-                {/if}
-            </Label>
-            <Input
-                type="checkbox"
-                class="min-w-[4rem] {fieldErrors['active']
-                    ? 'border-2 border-red-600'
-                    : ''}"
-                bind:checked={sensor.active}
-            />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             <div class="flex w-full flex-col items-center justify-center gap-4">
