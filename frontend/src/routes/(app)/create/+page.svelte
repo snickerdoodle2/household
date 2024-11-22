@@ -116,19 +116,23 @@
                 {/if}
             </Label>
 
-            <div class="flex w-full flex-row items-center justify-between">
-                <Input
-                    type="number"
-                    {name}
-                    bind:value={refresh_rate}
-                    required
-                    disabled={active}
-                    class={!active && errors['refresh_rate']
-                        ? 'border-2 border-red-600'
-                        : ''}
-                />
+            <div class="flex w-full flex-row items-center">
+                <div class="w-full">
+                    <Input
+                        type="number"
+                        {name}
+                        bind:value={refresh_rate}
+                        required
+                        disabled={active}
+                        class={`${
+                            !active && errors['refresh_rate']
+                                ? 'border-2 border-red-600'
+                                : ''
+                        }`}
+                    />
+                </div>
 
-                <div class="flex flex-row items-center">
+                <div class="ml-2 flex flex-row items-center justify-end">
                     <Label
                         for="type"
                         class="flex items-center justify-between text-base font-semibold"
