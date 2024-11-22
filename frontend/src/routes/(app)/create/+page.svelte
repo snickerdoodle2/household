@@ -8,6 +8,7 @@
     import { newSensorSchema, sensorTypeSchema } from '$lib/types/sensor';
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import { authFetch } from '@/helpers/fetch';
+    import Input from '@/components/ui/input/input.svelte';
 
     type Props = {
         open: boolean;
@@ -21,11 +22,11 @@
         label: e.replace('_', ' '),
     }));
 
-    let name: string = $state();
-    let refresh_rate: string = $state();
-    let uri: string = $state();
+    let name: string | undefined = $state(undefined);
+    let refresh_rate: string = $state('');
+    let uri: string | undefined = $state(undefined);
     let type: { value: string; label: string } | undefined = $state();
-    let active: boolean = $state()
+    let active: boolean = $state(false);
     let timeout: number;
     let errors: Partial<
         Record<'uri' | 'name' | 'refresh_rate' | 'type' | 'active', string>
@@ -43,7 +44,7 @@
             refresh_rate: refresh_rate ? +refresh_rate : undefined,
             uri,
             type: type?.value,
-            active: typeof active === 'boolean' ? active : false
+            active: typeof active === 'boolean' ? active : false,
         });
 
         if (!success) {
@@ -53,8 +54,9 @@
             return;
         }
 
-        console.log('validate', errors);
         errors = {};
+
+        console.log('validate', errors);
     };
 
     run(() => {
@@ -67,7 +69,7 @@
             refresh_rate: refresh_rate ? +refresh_rate : undefined,
             uri,
             type: type?.value,
-            active: typeof active === 'boolean' ? active : false
+            active,
         });
 
         if (!success) return;
@@ -141,6 +143,24 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Active
+                {#if errors['active']}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{errors['active']}</span
+                    >
+                {/if}
+            </Label>
+            <Input
+                type="checkbox"
+                class="min-w-[4rem] {errors['active']
+                    ? 'border-2 border-red-600'
+                    : ''}"
+                bind:checked={active}
+            />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             <Button

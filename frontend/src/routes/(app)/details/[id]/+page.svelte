@@ -12,6 +12,7 @@
     import { sensorDetailsSchema, sensorTypeSchema } from '$lib/types/sensor';
     import { z } from 'zod';
     import { authFetch } from '@/helpers/fetch';
+    import Input from '@/components/ui/input/input.svelte';
 
     type Props = {
         data: PageData;
@@ -23,14 +24,20 @@
     let editing = $state(false);
     let loading = $state(true);
     let orgSensor: SensorDetails;
-    let sensor: SensorDetails = $state();
-
-    let fieldErrors = $state();
-    run(() => {
-        fieldErrors = {} as Partial<
-            Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
-        >;
+    let sensor: SensorDetails = $state({
+        id: '',
+        name: '',
+        created_at: new Date(),
+        type: 'binary_switch',
+        active: false,
+        refresh_rate: 0,
+        uri: '',
     });
+
+    let fieldErrors: Partial<
+        Record<'uri' | 'name' | 'refresh_rate' | 'type' | 'active', string>
+    > = $state({});
+
     let globalError: string | null = $state(null);
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
@@ -39,7 +46,10 @@
         label: e.replace('_', ' '),
     }));
 
-    let selectedType: { value: string; label: string } = $state();
+    let selectedType: { value: string; label: string } = $state({
+        value: 'not_assigned',
+        label: 'not_assigned',
+    });
 
     run(() => {
         if (selectedType) {
@@ -170,6 +180,25 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
+
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Active
+                {#if fieldErrors['active']}
+                    <span class="text-sm font-normal italic text-red-400"
+                        >{fieldErrors['active']}</span
+                    >
+                {/if}
+            </Label>
+            <Input
+                type="checkbox"
+                class="min-w-[4rem] {fieldErrors['active']
+                    ? 'border-2 border-red-600'
+                    : ''}"
+                bind:checked={sensor.active}
+            />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
             <div class="flex w-full flex-col items-center justify-center gap-4">

@@ -22,7 +22,7 @@ export const sensorSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
     type: sensorTypeSchema,
-    active: z.boolean()
+    active: z.boolean(),
 });
 
 export type Sensor = z.infer<typeof sensorSchema>;
@@ -32,7 +32,7 @@ export const newSensorSchema = z.object({
     refresh_rate: z.number(),
     type: sensorTypeSchema,
     uri: z.string(),
-    active: z.boolean()
+    active: z.boolean(),
 });
 
 export type NewSensor = z.infer<typeof newSensorSchema>;
