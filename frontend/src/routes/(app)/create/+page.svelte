@@ -1,88 +1,89 @@
 <script lang="ts">
-import { run, preventDefault } from 'svelte/legacy';
+    import { run, preventDefault } from 'svelte/legacy';
 
-import * as Card from '$lib/components/ui/card';
-import { Button } from '$lib/components/ui/button';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
-import { newSensorSchema, sensorTypeSchema } from '$lib/types/sensor';
-import NewSensorInput from '$lib/components/FormInput.svelte';
-import { authFetch } from '@/helpers/fetch';
+    import * as Card from '$lib/components/ui/card';
+    import { Button } from '$lib/components/ui/button';
+    import { Label } from '$lib/components/ui/label';
+    import * as Select from '$lib/components/ui/select';
+    import { newSensorSchema, sensorTypeSchema } from '$lib/types/sensor';
+    import NewSensorInput from '$lib/components/FormInput.svelte';
+    import { authFetch } from '@/helpers/fetch';
 
-type Props = {
-    open: boolean;
-};
+    type Props = {
+        open: boolean;
+    };
 
-let { open = $bindable() }: Props = $props();
+    let { open = $bindable() }: Props = $props();
 
-const sensorTypes = sensorTypeSchema.options.map((e) => ({
-    value: e,
-    // TODO: Add capitalization or full lables
-    label: e.replace('_', ' '),
-}));
+    const sensorTypes = sensorTypeSchema.options.map((e) => ({
+        value: e,
+        // TODO: Add capitalization or full lables
+        label: e.replace('_', ' '),
+    }));
 
-let name: string = $state();
-let refresh_rate: string = $state();
-let uri: string = $state();
-let type: { value: string; label: string } | undefined = $state();
-let timeout: number;
-let errors: Partial<Record<'uri' | 'name' | 'refresh_rate' | 'type', string>> =
-    $state({});
+    let name: string = $state();
+    let refresh_rate: string = $state();
+    let uri: string = $state();
+    let type: { value: string; label: string } | undefined = $state();
+    let timeout: number;
+    let errors: Partial<
+        Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
+    > = $state({});
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-const debounce = (callback: Function, ...args: unknown[]) => {
-    clearTimeout(timeout);
-    timeout = window.setTimeout(() => callback(args), 300);
-};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    const debounce = (callback: Function, ...args: unknown[]) => {
+        clearTimeout(timeout);
+        timeout = window.setTimeout(() => callback(args), 300);
+    };
 
-const validate = () => {
-    const { success, error } = newSensorSchema.safeParse({
-        name,
-        refresh_rate: refresh_rate ? +refresh_rate : undefined,
-        uri,
-        type: type?.value,
+    const validate = () => {
+        const { success, error } = newSensorSchema.safeParse({
+            name,
+            refresh_rate: refresh_rate ? +refresh_rate : undefined,
+            uri,
+            type: type?.value,
+        });
+
+        if (!success) {
+            errors = Object.fromEntries(
+                error.issues.map((e) => [e.path[0], e.message])
+            );
+            return;
+        }
+
+        console.log('validate', errors);
+        errors = {};
+    };
+
+    run(() => {
+        debounce(validate, name, refresh_rate, uri, type);
     });
 
-    if (!success) {
-        errors = Object.fromEntries(
-            error.issues.map((e) => [e.path[0], e.message])
+    const handleSubmit = async () => {
+        const { success, data } = newSensorSchema.safeParse({
+            name,
+            refresh_rate: refresh_rate ? +refresh_rate : undefined,
+            uri,
+            type: type?.value,
+        });
+
+        if (!success) return;
+
+        const res = await authFetch(
+            '/api/v1/sensor',
+            { method: 'POST', body: JSON.stringify(data) },
+            fetch
         );
-        return;
-    }
 
-    console.log('validate', errors);
-    errors = {};
-};
+        const resJson = await res.json();
+        console.log(resJson);
 
-run(() => {
-    debounce(validate, name, refresh_rate, uri, type);
-});
-
-const handleSubmit = async () => {
-    const { success, data } = newSensorSchema.safeParse({
-        name,
-        refresh_rate: refresh_rate ? +refresh_rate : undefined,
-        uri,
-        type: type?.value,
-    });
-
-    if (!success) return;
-
-    const res = await authFetch(
-        '/api/v1/sensor',
-        { method: 'POST', body: JSON.stringify(data) },
-        fetch
-    );
-
-    const resJson = await res.json();
-    console.log(resJson);
-
-    if (!res.ok) {
-        errors = resJson.error;
-    } else {
-        open = false;
-    }
-};
+        if (!res.ok) {
+            errors = resJson.error;
+        } else {
+            open = false;
+        }
+    };
 </script>
 
 <Card.Root class="w-[600px] border-none shadow-none">
@@ -96,21 +97,21 @@ const handleSubmit = async () => {
                 label="Name"
                 bind:value={name}
                 type="text"
-                errors={errors}
+                {errors}
             />
             <NewSensorInput
                 name="refresh_rate"
                 label="Refresh rate"
                 bind:value={refresh_rate}
                 type="number"
-                errors={errors}
+                {errors}
             />
             <NewSensorInput
                 name="uri"
                 label="URI"
                 bind:value={uri}
                 type="string"
-                errors={errors}
+                {errors}
             />
             <Label
                 for="type"

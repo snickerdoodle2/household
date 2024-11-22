@@ -1,46 +1,46 @@
 <script lang="ts">
-import type { User } from '@/types/user';
-import type { PageData } from './$types';
-import { onMount } from 'svelte';
-import Button from '@/components/ui/button/button.svelte';
-import { Trash, Pencil1 } from 'svelte-radix';
-import { authFetch } from '@/helpers/fetch';
-export let data: PageData;
-import * as Dialog from '$lib/components/ui/dialog';
-import UserManagementForm from '@/components/user/UserManagementForm.svelte';
+    import type { User } from '@/types/user';
+    import type { PageData } from './$types';
+    import { onMount } from 'svelte';
+    import Button from '@/components/ui/button/button.svelte';
+    import { Trash, Pencil1 } from 'svelte-radix';
+    import { authFetch } from '@/helpers/fetch';
+    export let data: PageData;
+    import * as Dialog from '$lib/components/ui/dialog';
+    import UserManagementForm from '@/components/user/UserManagementForm.svelte';
 
-let users: User[] = [];
+    let users: User[] = [];
 
-let modalOpen = false;
-let modalData: User | null = null;
+    let modalOpen = false;
+    let modalData: User | null = null;
 
-onMount(async () => {
-    users = await data.users;
-});
-
-const handleUserAdd = () => {
-    modalData = null;
-    modalOpen = true;
-};
-
-const handleUserEdit = (user: User) => {
-    modalData = user;
-    modalOpen = true;
-};
-
-const handleDelete = async (username: string) => {
-    // TODO: ask for confirmation!!!
-    const res = await authFetch(`/api/v1/user/${username}`, {
-        method: 'DELETE',
+    onMount(async () => {
+        users = await data.users;
     });
 
-    if (res.ok) {
-        console.log(await res.json());
-    } else {
-        const resJson = await res.json();
-        console.log(resJson);
-    }
-};
+    const handleUserAdd = () => {
+        modalData = null;
+        modalOpen = true;
+    };
+
+    const handleUserEdit = (user: User) => {
+        modalData = user;
+        modalOpen = true;
+    };
+
+    const handleDelete = async (username: string) => {
+        // TODO: ask for confirmation!!!
+        const res = await authFetch(`/api/v1/user/${username}`, {
+            method: 'DELETE',
+        });
+
+        if (res.ok) {
+            console.log(await res.json());
+        } else {
+            const resJson = await res.json();
+            console.log(resJson);
+        }
+    };
 </script>
 
 <div class="flex h-full w-full flex-col justify-start p-8">

@@ -1,15 +1,15 @@
 <script lang="ts">
-import type { PageData } from './$types';
-import * as Card from '$lib/components/ui/card/index.js';
-import Button from '@/components/ui/button/button.svelte';
-import { Plus } from 'radix-icons-svelte';
-import { goto } from '$app/navigation';
+    import type { PageData } from './$types';
+    import * as Card from '$lib/components/ui/card/index.js';
+    import Button from '@/components/ui/button/button.svelte';
+    import { Plus } from 'radix-icons-svelte';
+    import { goto } from '$app/navigation';
 
-type Props = {
-    data: PageData;
-};
+    type Props = {
+        data: PageData;
+    };
 
-let { data }: Props = $props();
+    let { data }: Props = $props();
 </script>
 
 <div class="flex h-full items-start">

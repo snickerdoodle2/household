@@ -1,26 +1,26 @@
 <script lang="ts">
-import * as Select from '@/components/ui/select';
-import { SensorWebsocket } from '@/helpers/socket.svelte';
-import type { PageData } from './$types';
-import { Button } from '@/components/ui/button';
-import { untrack } from 'svelte';
-import { X } from 'lucide-svelte';
-let ws = new SensorWebsocket();
+    import * as Select from '@/components/ui/select';
+    import { SensorWebsocket } from '@/helpers/socket.svelte';
+    import type { PageData } from './$types';
+    import { Button } from '@/components/ui/button';
+    import { untrack } from 'svelte';
+    import { X } from 'lucide-svelte';
+    let ws = new SensorWebsocket();
 
-let selected = $state('');
+    let selected = $state('');
 
-let updates = $state(0);
+    let updates = $state(0);
 
-$effect(() => {
-    console.log(ws.data.forEach((e) => e.forEach((x) => x + 1)));
-    untrack(() => (updates += 1));
-});
+    $effect(() => {
+        console.log(ws.data.forEach((e) => e.forEach((x) => x + 1)));
+        untrack(() => (updates += 1));
+    });
 
-type Props = {
-    data: PageData;
-};
+    type Props = {
+        data: PageData;
+    };
 
-let { data }: Props = $props();
+    let { data }: Props = $props();
 </script>
 
 <div class="flex w-[1024px] flex-col items-center justify-center gap-2">
@@ -47,8 +47,7 @@ let { data }: Props = $props();
                 disabled={selected.length <= 0}
                 onclick={() => {
                     ws.subscribe(selected);
-                }}
-                >Subscribe</Button
+                }}>Subscribe</Button
             >
         </div>
         <div>

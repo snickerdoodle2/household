@@ -1,85 +1,85 @@
 <script lang="ts">
-import { Input } from '@/components/ui/input';
-import type { RuleGtType, RuleLtType } from '@/types/rule';
-import type { Sensor } from '@/types/sensor';
-import * as Select from '$lib/components/ui/select';
-import { onMount } from 'svelte';
-import { Label } from '$lib/components/ui/label';
-import Button from '../ui/button/button.svelte';
-import { Disc, Pencil1 } from 'radix-icons-svelte';
+    import { Input } from '@/components/ui/input';
+    import type { RuleGtType, RuleLtType } from '@/types/rule';
+    import type { Sensor } from '@/types/sensor';
+    import * as Select from '$lib/components/ui/select';
+    import { onMount } from 'svelte';
+    import { Label } from '$lib/components/ui/label';
+    import Button from '../ui/button/button.svelte';
+    import { Disc, Pencil1 } from 'radix-icons-svelte';
 
-type Props = {
-    internal: RuleGtType | RuleLtType;
-    sensors: Sensor[];
-    editingDisabled?: boolean;
-    children?: import('svelte').Snippet;
-};
-
-let {
-    internal = $bindable(),
-    sensors,
-    editingDisabled = false,
-    children,
-}: Props = $props();
-
-let editing = $state(false);
-
-let type: { value: 'gt' | 'lt' | 'not found'; label: string } = $state();
-let selectedSensor: { value: string; label: string } = $state();
-let value: number = $state();
-let dropDownsOpen = $state({
-    sensor: false,
-    type: false,
-});
-
-let wrappingDiv: HTMLDivElement = $state();
-
-function toggleEditing() {
-    editing = !editing;
-}
-
-function save() {
-    if (type.value === 'not found') return;
-    internal.type = type.value;
-    internal.value = +value;
-    internal.sensor_id = selectedSensor.value;
-}
-
-function syncInternalValues() {
-    type = {
-        value: internal.type,
-        label: internal.type === 'gt' ? 'Greater than' : 'Lower than',
+    type Props = {
+        internal: RuleGtType | RuleLtType;
+        sensors: Sensor[];
+        editingDisabled?: boolean;
+        children?: import('svelte').Snippet;
     };
-    const initialSensor = sensors.find(
-        (sensor) => sensor.id === internal.sensor_id
-    );
-    selectedSensor = {
-        value: initialSensor?.id ?? 'not found',
-        label: initialSensor?.name ?? 'not found',
-    };
-    value = +internal.value;
-}
 
-function handleClick(event: MouseEvent) {
-    if (
-        wrappingDiv &&
-        !wrappingDiv.contains(event.target as Node) &&
-        !event.defaultPrevented &&
-        !Object.values(dropDownsOpen).some((open) => open)
-    ) {
-        editing = false;
-        syncInternalValues();
-        console.log(dropDownsOpen, open);
+    let {
+        internal = $bindable(),
+        sensors,
+        editingDisabled = false,
+        children,
+    }: Props = $props();
+
+    let editing = $state(false);
+
+    let type: { value: 'gt' | 'lt' | 'not found'; label: string } = $state();
+    let selectedSensor: { value: string; label: string } = $state();
+    let value: number = $state();
+    let dropDownsOpen = $state({
+        sensor: false,
+        type: false,
+    });
+
+    let wrappingDiv: HTMLDivElement = $state();
+
+    function toggleEditing() {
+        editing = !editing;
     }
-}
 
-onMount(() => {
-    // initialize values
-    syncInternalValues();
+    function save() {
+        if (type.value === 'not found') return;
+        internal.type = type.value;
+        internal.value = +value;
+        internal.sensor_id = selectedSensor.value;
+    }
 
-    // Capture phase to ensure clicks inside are checked before propagation finishes
-    document.addEventListener('pointerdown', handleClick, true);
-});
+    function syncInternalValues() {
+        type = {
+            value: internal.type,
+            label: internal.type === 'gt' ? 'Greater than' : 'Lower than',
+        };
+        const initialSensor = sensors.find(
+            (sensor) => sensor.id === internal.sensor_id
+        );
+        selectedSensor = {
+            value: initialSensor?.id ?? 'not found',
+            label: initialSensor?.name ?? 'not found',
+        };
+        value = +internal.value;
+    }
+
+    function handleClick(event: MouseEvent) {
+        if (
+            wrappingDiv &&
+            !wrappingDiv.contains(event.target as Node) &&
+            !event.defaultPrevented &&
+            !Object.values(dropDownsOpen).some((open) => open)
+        ) {
+            editing = false;
+            syncInternalValues();
+            console.log(dropDownsOpen, open);
+        }
+    }
+
+    onMount(() => {
+        // initialize values
+        syncInternalValues();
+
+        // Capture phase to ensure clicks inside are checked before propagation finishes
+        document.addEventListener('pointerdown', handleClick, true);
+    });
 </script>
 
 <div
@@ -125,7 +125,7 @@ onMount(() => {
         </Select.Root>
     </div>
 
-    <Input type="number" bind:value={value} disabled={!editing} />
+    <Input type="number" bind:value disabled={!editing} />
 
     {#if !editingDisabled}
         {#if editing}

@@ -1,10 +1,10 @@
 <script lang="ts">
-import Sidebar from '@/components/Sidebar.svelte';
-type Props = {
-    children?: import('svelte').Snippet;
-};
+    import Sidebar from '@/components/Sidebar.svelte';
+    type Props = {
+        children?: import('svelte').Snippet;
+    };
 
-let { children }: Props = $props();
+    let { children }: Props = $props();
 </script>
 
 <div class="flex min-h-screen">

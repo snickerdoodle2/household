@@ -1,33 +1,33 @@
 <script lang="ts">
-import { Home, MagicWand, Exit, Enter, Checkbox } from 'svelte-radix';
-import LightSwitch from './LightSwitch.svelte';
-import { Button } from './ui/button';
-import { authToken } from '@/auth/token';
-import * as Dialog from '$lib/components/ui/dialog';
-import { Bell } from 'radix-icons-svelte';
-import Notifications from './Notifications.svelte';
-import { Avatar } from 'radix-icons-svelte';
+    import { Home, MagicWand, Exit, Enter, Checkbox } from 'svelte-radix';
+    import LightSwitch from './LightSwitch.svelte';
+    import { Button } from './ui/button';
+    import { authToken } from '@/auth/token';
+    import * as Dialog from '$lib/components/ui/dialog';
+    import { Bell } from 'radix-icons-svelte';
+    import Notifications from './Notifications.svelte';
+    import { Avatar } from 'radix-icons-svelte';
 
-const LINKS = [
-    {
-        icon: Home,
-        name: 'Home',
-        url: '/',
-    },
-    {
-        icon: Checkbox,
-        name: 'Rules',
-        url: '/rules',
-    },
-    {
-        icon: MagicWand,
-        name: 'Debug',
-        url: '/debug',
-    },
-];
+    const LINKS = [
+        {
+            icon: Home,
+            name: 'Home',
+            url: '/',
+        },
+        {
+            icon: Checkbox,
+            name: 'Rules',
+            url: '/rules',
+        },
+        {
+            icon: MagicWand,
+            name: 'Debug',
+            url: '/debug',
+        },
+    ];
 
-// Notification stuff
-let notificationsOpen = false;
+    // Notification stuff
+    let notificationsOpen = false;
 </script>
 
 <nav
