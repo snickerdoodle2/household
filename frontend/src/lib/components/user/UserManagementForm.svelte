@@ -1,47 +1,46 @@
 <script lang="ts">
-    import { newUserSchema } from "@/types/user";
+    import { newUserSchema } from '@/types/user';
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import Label from '../ui/label/label.svelte';
     import * as Select from '$lib/components/ui/select';
-    import Button from "../ui/button/button.svelte";
-    import { authFetch } from "@/helpers/fetch";
-    
+    import Button from '../ui/button/button.svelte';
+    import { authFetch } from '@/helpers/fetch';
+
     export let user: {
-        id: string,
-        username: string,
-        name: string,
+        id: string;
+        username: string;
+        name: string;
     } = {
-        id:"new",
-        username: "new_username",
-    name: "new_name"
-    }
-    ;
-    export let action: "add" | "edit";
+        id: 'new',
+        username: 'new_username',
+        name: 'new_name',
+    };
+    export let action: 'add' | 'edit';
     export let open: boolean;
-    
-    let selectedRole = {value: "user", label:"User"};
+
+    let selectedRole = { value: 'user', label: 'User' };
     let password: string;
     let globalError: string | undefined = undefined;
 
-    let fieldErrors: Record<string, string> = {}
+    let fieldErrors: Record<string, string> = {};
 
     async function handleSubmit() {
         const { data, success, error } = newUserSchema.safeParse({
             ...user,
-            password
+            password,
         });
 
         if (!success) {
             console.log(error.issues);
             fieldErrors = {};
-            for(const issue of error.issues){
-                fieldErrors[issue.path[0]] = issue.message
+            for (const issue of error.issues) {
+                fieldErrors[issue.path[0]] = issue.message;
             }
             return;
         }
 
         const res = await authFetch(`/api/v1/user/${data.username}`, {
-            method: action === "add" ? 'POST' : 'PUT',
+            method: action === 'add' ? 'POST' : 'PUT',
             body: JSON.stringify(data),
         });
 
@@ -60,25 +59,24 @@
     }
 </script>
 
-
 {#if user}
     <div>
-        <h3 class="text-3xl"> {action === "add" ? "Add User" : "Edit User"} </h3>
+        <h3 class="text-3xl">{action === 'add' ? 'Add User' : 'Edit User'}</h3>
         <div class="grid grid-cols-2 gap-2 p-4 pb-2">
             <NewSensorInput
-                    name="name"
-                    label="Name"
-                    bind:value={user.name}
-                    type="text"
-                    errors={fieldErrors}
-                />
+                name="name"
+                label="Name"
+                bind:value={user.name}
+                type="text"
+                errors={fieldErrors}
+            />
             <NewSensorInput
-                    name="username"
-                    label="Username"
-                    bind:value={user.username}
-                    type="text"
-                    errors={fieldErrors}
-                />
+                name="username"
+                label="Username"
+                bind:value={user.username}
+                type="text"
+                errors={fieldErrors}
+            />
             <Label
                 for="type"
                 class="flex items-center justify-between text-base font-semibold"
@@ -97,26 +95,24 @@
                     <Select.Value />
                 </Select.Trigger>
                 <Select.Content>
-                    <Select.Item value={"user"}>User</Select.Item>
-                    <Select.Item value={"admin"}>Admin</Select.Item>
+                    <Select.Item value={'user'}>User</Select.Item>
+                    <Select.Item value={'admin'}>Admin</Select.Item>
                 </Select.Content>
             </Select.Root>
             <NewSensorInput
-                    name="password"
-                    label="Password"
-                    bind:value={password}
-                    type="text"
-                    errors={fieldErrors}
-                />
+                name="password"
+                label="Password"
+                bind:value={password}
+                type="text"
+                errors={fieldErrors}
+            />
         </div>
 
         {#if globalError}
-            <p class="mb-1 text-sm text-red-500 text-center">{globalError}</p>
+            <p class="mb-1 text-center text-sm text-red-500">{globalError}</p>
         {/if}
-        <div class ="p-2 flex justify-end w-full">
+        <div class="flex w-full justify-end p-2">
             <Button size="bold" on:click={handleSubmit}>Submit</Button>
         </div>
-    </div>    
+    </div>
 {/if}
-
-

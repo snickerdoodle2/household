@@ -50,7 +50,7 @@
     <div class="flex justify-between group-hover:w-[14rem]">
         <Button variant="outline" size="icon" class="h-11 w-11">
             <a href="/users">
-                <Avatar class="scale-150"/>
+                <Avatar class="scale-150" />
             </a>
         </Button>
         <LightSwitch />
