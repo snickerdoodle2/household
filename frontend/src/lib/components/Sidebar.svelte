@@ -1,8 +1,9 @@
 <script lang="ts">
-    import { Home, MagicWand, Gear, Exit, Enter, Checkbox } from 'svelte-radix';
+    import { Home, MagicWand, Exit, Enter, Checkbox } from 'svelte-radix';
     import LightSwitch from './LightSwitch.svelte';
     import { Button } from './ui/button';
     import { authToken } from '@/auth/token';
+    import { Avatar } from 'radix-icons-svelte';
 
     const LINKS = [
         {
@@ -48,8 +49,8 @@
     <hr />
     <div class="flex justify-between group-hover:w-[14rem]">
         <Button variant="outline" size="icon" class="h-11 w-11">
-            <a href="/settings">
-                <Gear class="scale-90" />
+            <a href="/users">
+                <Avatar class="scale-150" />
             </a>
         </Button>
         <LightSwitch />
