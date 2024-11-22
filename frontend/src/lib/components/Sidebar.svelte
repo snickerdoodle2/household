@@ -3,6 +3,7 @@
     import LightSwitch from './LightSwitch.svelte';
     import { Button } from './ui/button';
     import { authToken } from '@/auth/token';
+    import { Reader } from 'radix-icons-svelte';
     import * as Dialog from '$lib/components/ui/dialog';
     import { Bell } from 'radix-icons-svelte';
     import Notifications from './Notifications.svelte';
@@ -18,6 +19,11 @@
             icon: Checkbox,
             name: 'Rules',
             url: '/rules',
+        },
+        {
+            icon: Reader,
+            name: 'Sequences',
+            url: '/sequences',
         },
         {
             icon: MagicWand,

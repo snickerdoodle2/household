@@ -2,34 +2,37 @@
     import { createBubbler, passive } from 'svelte/legacy';
 
     const bubble = createBubbler();
-import type { HTMLInputAttributes } from "svelte/elements";
-import type { InputEvents } from "./index.js";
-import { cn } from "$lib/utils.js";
+    import type { HTMLInputAttributes } from 'svelte/elements';
+    import type { InputEvents } from './index.js';
+    import { cn } from '$lib/utils.js';
 
-type $$Props = HTMLInputAttributes & {
-	errorMessage?: string;
-};
-type $$Events = InputEvents;
+    type $$Props = HTMLInputAttributes & {
+        errorMessage?: string;
+    };
+    type $$Events = InputEvents;
 
-
-
-// Workaround for https://github.com/sveltejs/svelte/issues/9305
+    // Workaround for https://github.com/sveltejs/svelte/issues/9305
 
     interface Props {
-        class?: $$Props["class"];
-        value?: $$Props["value"];
+        class?: $$Props['class'];
+        value?: $$Props['value'];
         // Fixed in Svelte 5, but not backported to 4.x.
-        readonly?: $$Props["readonly"];
-        [key: string]: any
+        readonly?: $$Props['readonly'];
+        [key: string]: any;
     }
 
-    let { class: className = undefined, value = $bindable(undefined), readonly = undefined, ...rest }: Props = $props();
+    let {
+        class: className = undefined,
+        value = $bindable(undefined),
+        readonly = undefined,
+        ...rest
+    }: Props = $props();
 </script>
 
 <div class="flex flex-col">
     <input
         class={cn(
-            "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+            'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
             className
         )}
         bind:value
