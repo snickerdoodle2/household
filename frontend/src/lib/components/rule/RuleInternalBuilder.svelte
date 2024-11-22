@@ -1,146 +1,136 @@
 <script lang="ts">
-    import type {
-        NewRule,
-        RuleAndType,
-        RuleDetails,
-        RuleInternal,
-        RuleNotType,
-        RuleOrType,
-    } from '@/types/rule';
-    import RuleInternalBuilder from './RuleInternalBuilder.svelte';
-    import { Button } from '$lib/components/ui/button';
-    import type { Sensor } from '@/types/sensor';
-    import ComparisonRule from './ComparisonCondition.svelte';
-    import { Symbol } from 'radix-icons-svelte';
-    import { Trash, Plus, Slash } from 'svelte-radix';
-    import ConditionBuilder from './ConditionBuilder.svelte';
+import type {
+    NewRule,
+    RuleAndType,
+    RuleDetails,
+    RuleInternal,
+    RuleNotType,
+    RuleOrType,
+} from '@/types/rule';
+import RuleInternalBuilder from './RuleInternalBuilder.svelte';
+import { Button } from '$lib/components/ui/button';
+import type { Sensor } from '@/types/sensor';
+import ComparisonRule from './ComparisonCondition.svelte';
+import { Symbol } from 'radix-icons-svelte';
+import { Trash, Plus, Slash } from 'svelte-radix';
+import ConditionBuilder from './ConditionBuilder.svelte';
 
-    type Parent =
-        | RuleDetails
-        | NewRule
-        | RuleNotType
-        | RuleAndType
-        | RuleOrType;
+type Parent = RuleDetails | NewRule | RuleNotType | RuleAndType | RuleOrType;
 
-    type Props = {
-        expanded?: boolean;
-        internal: RuleInternal | object;
-        parent: Parent;
-        secondParent: Parent | undefined;
-        sensors: Sensor[];
-        editingDisabled?: boolean;
-    };
+type Props = {
+    expanded?: boolean;
+    internal: RuleInternal | object;
+    parent: Parent;
+    secondParent: Parent | undefined;
+    sensors: Sensor[];
+    editingDisabled?: boolean;
+};
 
-    let {
-        expanded = $bindable(false),
-        internal = $bindable(),
-        parent = $bindable(),
-        secondParent = $bindable(),
-        sensors,
-        editingDisabled = $bindable(false),
-    }: Props = $props();
+let {
+    expanded = $bindable(false),
+    internal = $bindable(),
+    parent = $bindable(),
+    secondParent = $bindable(),
+    sensors,
+    editingDisabled = $bindable(false),
+}: Props = $props();
 
-    let adding = $state(false);
+let adding = $state(false);
 
-    let isFirstRule = isRootRule(parent);
+let isFirstRule = isRootRule(parent);
 
-    function toggleExpand() {
-        expanded = !expanded;
+function toggleExpand() {
+    expanded = !expanded;
+}
+
+function isRootRule(
+    parentInput: RuleInternal | RuleDetails | NewRule
+): parentInput is RuleDetails | NewRule {
+    return Object.hasOwn(parentInput, 'description');
+}
+
+function isRule(internal: RuleInternal | object): internal is RuleInternal {
+    return Object.keys(internal).length !== 0;
+}
+
+function deleteRule() {
+    if (!isRule(internal)) return;
+
+    if (isRootRule(parent)) {
+        internal = {};
+        return;
     }
 
-    function isRootRule(
-        parentInput: RuleInternal | RuleDetails | NewRule
-    ): parentInput is RuleDetails | NewRule {
-        return Object.hasOwn(parentInput, 'description');
-    }
-
-    function isRule(internal: RuleInternal | object): internal is RuleInternal {
-        return Object.keys(internal).length !== 0;
-    }
-
-    function deleteRule() {
-        if (!isRule(internal)) return;
-
+    if (internal.type == 'not') {
         if (isRootRule(parent)) {
-            internal = {};
+            parent.internal = internal.wrapped;
             return;
-        }
-
-        if (internal.type == 'not') {
-            if (isRootRule(parent)) {
-                parent.internal = internal.wrapped;
-                return;
-            } else if (parent.type === 'or' || parent.type === 'and') {
-                parent.children = parent.children.filter((child) => {
-                    return child != internal;
-                });
-                parent.children.push(internal.wrapped);
-                return;
-            } else if (parent.type === 'not') {
-                parent.wrapped = internal.wrapped;
-                return;
-            }
-        }
-
-        if (parent.type === 'or' || parent.type === 'and') {
+        } else if (parent.type === 'or' || parent.type === 'and') {
             parent.children = parent.children.filter((child) => {
                 return child != internal;
             });
-        }
-
-        if (parent.type === 'not') {
-            if (!secondParent) return;
-            else if (isRootRule(secondParent)) {
-                secondParent.internal = internal;
-                return;
-            } else if (
-                secondParent.type === 'or' ||
-                secondParent.type === 'and'
-            ) {
-                secondParent.children = secondParent.children.filter(
-                    (child) => {
-                        return child != internal;
-                    }
-                );
-                secondParent.children.push(internal);
-                return;
-            } else if (secondParent.type === 'not') {
-                secondParent.wrapped = internal;
-                return;
-            }
-        }
-    }
-
-    function addRule() {
-        adding = true;
-    }
-
-    function negateRule() {
-        if (!isRule(internal)) return;
-
-        if (isRootRule(parent)) {
-            parent.internal = {
-                type: 'not',
-                wrapped: parent.internal,
-            };
+            parent.children.push(internal.wrapped);
+            return;
+        } else if (parent.type === 'not') {
+            parent.wrapped = internal.wrapped;
             return;
         }
+    }
 
-        if (parent.type === 'or' || parent.type === 'and') {
-            parent.children = parent.children.filter((child) => {
+    if (parent.type === 'or' || parent.type === 'and') {
+        parent.children = parent.children.filter((child) => {
+            return child != internal;
+        });
+    }
+
+    if (parent.type === 'not') {
+        if (!secondParent) return;
+        else if (isRootRule(secondParent)) {
+            secondParent.internal = internal;
+            return;
+        } else if (secondParent.type === 'or' || secondParent.type === 'and') {
+            secondParent.children = secondParent.children.filter((child) => {
                 return child != internal;
             });
-            parent.children.push({
-                type: 'not',
-                wrapped: internal,
-            });
+            secondParent.children.push(internal);
+            return;
+        } else if (secondParent.type === 'not') {
+            secondParent.wrapped = internal;
+            return;
         }
     }
-    let background = $derived(
-        isRule(internal) && (internal.type === 'lt' || internal.type === 'gt')
-            ? ''
-            : 'bg-foreground'
-    );
+}
+
+function addRule() {
+    adding = true;
+}
+
+function negateRule() {
+    if (!isRule(internal)) return;
+
+    if (isRootRule(parent)) {
+        parent.internal = {
+            type: 'not',
+            wrapped: parent.internal,
+        };
+        return;
+    }
+
+    if (parent.type === 'or' || parent.type === 'and') {
+        parent.children = parent.children.filter((child) => {
+            return child != internal;
+        });
+        parent.children.push({
+            type: 'not',
+            wrapped: internal,
+        });
+    }
+}
+let background = $derived(
+    isRule(internal) && (internal.type === 'lt' || internal.type === 'gt')
+        ? ''
+        : 'bg-foreground'
+);
 </script>
 
 <div class="w-full min-w-[35rem]">
@@ -148,7 +138,11 @@
         <!-- Main view (AND, OR, ...) -->
         <div class="flex inline-flex {background} rounded">
             {#if internal.type === 'lt' || internal.type === 'gt'}
-                <ComparisonRule {internal} {sensors} bind:editingDisabled>
+                <ComparisonRule
+                    internal={internal}
+                    sensors={sensors}
+                    bind:editingDisabled={editingDisabled}
+                >
                     {#if !editingDisabled}
                         <Button
                             on:click={negateRule}
@@ -214,8 +208,8 @@
                                 bind:internal={internal.children[childIdx]}
                                 bind:parent={internal}
                                 bind:secondParent={parent}
-                                {sensors}
-                                bind:editingDisabled
+                                sensors={sensors}
+                                bind:editingDisabled={editingDisabled}
                             />
                         </li>
                     {/each}
@@ -223,7 +217,7 @@
                     {#if adding}
                         <ConditionBuilder
                             bind:open={adding}
-                            {sensors}
+                            sensors={sensors}
                             bind:parent={internal}
                         />
                     {:else if !editingDisabled}
@@ -245,8 +239,8 @@
                             bind:internal={internal.wrapped}
                             bind:parent={internal}
                             bind:secondParent={parent}
-                            {sensors}
-                            bind:editingDisabled
+                            sensors={sensors}
+                            bind:editingDisabled={editingDisabled}
                         />
                     </li>
                 </ul>
@@ -256,7 +250,11 @@
         <!-- The internal is empty (first rule) -->
     {:else if !editingDisabled}
         {#if adding}
-            <ConditionBuilder bind:open={adding} {sensors} bind:parent />
+            <ConditionBuilder
+                bind:open={adding}
+                sensors={sensors}
+                bind:parent={parent}
+            />
         {:else}
             <Button on:click={addRule} variant="outline" size="sm">
                 <Plus class="w-4" />
@@ -266,14 +264,14 @@
 </div>
 
 <style>
-    ul {
-        margin: 0.6em 0 0.8em 0;
-        padding: 0em 0 0 2em;
-        list-style: none;
-        border-left: 1px solid rgba(128, 128, 128, 0.4);
-    }
+ul {
+    margin: 0.6em 0 0.8em 0;
+    padding: 0em 0 0 2em;
+    list-style: none;
+    border-left: 1px solid rgba(128, 128, 128, 0.4);
+}
 
-    li {
-        padding: 0.2em 0;
-    }
+li {
+    padding: 0.2em 0;
+}
 </style>

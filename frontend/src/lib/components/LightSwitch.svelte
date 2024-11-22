@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { Button } from '$lib/components/ui/button/index.js';
-    import { toggleMode } from 'mode-watcher';
-    import { Sun } from 'radix-icons-svelte';
-    import { Moon } from 'radix-icons-svelte';
+import { Button } from '$lib/components/ui/button/index.js';
+import { toggleMode } from 'mode-watcher';
+import { Sun } from 'radix-icons-svelte';
+import { Moon } from 'radix-icons-svelte';
 </script>
 
 <Button

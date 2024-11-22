@@ -1,13 +1,13 @@
 <script lang="ts">
-    import { authToken } from '@/auth/token';
-    import type { LayoutData } from '../$types';
-    import { Button } from '@/components/ui/button';
+import { authToken } from '@/auth/token';
+import type { LayoutData } from '../$types';
+import { Button } from '@/components/ui/button';
 
-    type Props = {
-        data: LayoutData;
-    };
+type Props = {
+    data: LayoutData;
+};
 
-    let { data }: Props = $props();
+let { data }: Props = $props();
 </script>
 
 <div class="flex flex-col">

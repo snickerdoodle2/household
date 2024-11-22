@@ -1,64 +1,33 @@
 <script lang="ts">
-    import { Home, MagicWand, Exit, Enter, Checkbox } from 'svelte-radix';
-    import LightSwitch from './LightSwitch.svelte';
-    import { Button } from './ui/button';
-    import { authToken } from '@/auth/token';
-    import * as Dialog from '$lib/components/ui/dialog';
-    import { Bell } from 'radix-icons-svelte';
-    import Notifications from './Notifications.svelte';
-    import { Avatar } from 'radix-icons-svelte';
+import { Home, MagicWand, Exit, Enter, Checkbox } from 'svelte-radix';
+import LightSwitch from './LightSwitch.svelte';
+import { Button } from './ui/button';
+import { authToken } from '@/auth/token';
+import * as Dialog from '$lib/components/ui/dialog';
+import { Bell } from 'radix-icons-svelte';
+import Notifications from './Notifications.svelte';
+import { Avatar } from 'radix-icons-svelte';
 
-    const LINKS = [
-        {
-            icon: Home,
-            name: 'Home',
-            url: '/',
-        },
-        {
-            icon: Checkbox,
-            name: 'Rules',
-            url: '/rules',
-        },
-        {
-            icon: MagicWand,
-            name: 'Debug',
-            url: '/debug',
-        },
-    ];
+const LINKS = [
+    {
+        icon: Home,
+        name: 'Home',
+        url: '/',
+    },
+    {
+        icon: Checkbox,
+        name: 'Rules',
+        url: '/rules',
+    },
+    {
+        icon: MagicWand,
+        name: 'Debug',
+        url: '/debug',
+    },
+];
 
-    // Notification stuff
-    let notificationsOpen = false;
-    // let notificationSocket = initializeNotificationSocket()
-
-    // function initializeNotificationSocket() {
-    //     const token = get(authToken);
-    //     if (!token) throw new Error('auth token is required');
-
-    //     const { set, subscribe } = writable<NotificationSocketMessage | null>();
-
-    //     const url = new URL(`/api/v1/notifications`, window.location.href);
-    //     url.protocol = url.protocol.replace('http', 'ws');
-    //     url.searchParams.set('token', token.token);
-
-    //     const socket = new WebSocket(url.toString());
-
-    //     socket.addEventListener('message', (message) => {
-    //         const { data, success } = notificationSocketMessageSchema.safeParse(
-    //             JSON.parse(message.data)
-    //         );
-    //         if (!success) return;
-
-    //         set(data.sort((n1, n2) => n2.date.getTime() - n1.date.getTime()););
-    //     });
-
-    //     return {
-    //         subscribe,
-    //         close: () => {
-    //             socket.close();
-    //         },
-    //     };
-    // };
-
+// Notification stuff
+let notificationsOpen = false;
 </script>
 
 <nav
@@ -91,7 +60,7 @@
             class="h-11 w-11"
             on:click={() => (notificationsOpen = true)}
         >
-            <Bell class="scale-150"/>
+            <Bell class="scale-150" />
         </Button>
 
         <Button

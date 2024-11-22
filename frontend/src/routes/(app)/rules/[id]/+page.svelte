@@ -1,146 +1,145 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
+import { run } from 'svelte/legacy';
 
-    import * as Card from '$lib/components/ui/card';
-    import { Label } from '$lib/components/ui/label';
-    import * as Select from '$lib/components/ui/select';
-    import FormInput from '@/components/FormInput.svelte';
-    import {
-        type RuleDetails,
-        ruleDetailsSchema,
-        ruleInternalSchema,
-    } from '@/types/rule';
-    import type { PageData } from './$types';
-    import { onMount } from 'svelte';
-    import { Button } from '@/components/ui/button';
-    import { authFetch } from '@/helpers/fetch';
-    import { goto } from '$app/navigation';
-    import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
-    import type { Sensor } from '@/types/sensor';
-    type Props = {
-        data: PageData;
-    };
+import * as Card from '$lib/components/ui/card';
+import { Label } from '$lib/components/ui/label';
+import * as Select from '$lib/components/ui/select';
+import FormInput from '@/components/FormInput.svelte';
+import {
+    type RuleDetails,
+    ruleDetailsSchema,
+    ruleInternalSchema,
+} from '@/types/rule';
+import type { PageData } from './$types';
+import { onMount } from 'svelte';
+import { Button } from '@/components/ui/button';
+import { authFetch } from '@/helpers/fetch';
+import { goto } from '$app/navigation';
+import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
+import type { Sensor } from '@/types/sensor';
+type Props = {
+    data: PageData;
+};
 
-    let { data }: Props = $props();
-    let rule: RuleDetails = $state();
-    let loading = $state(true);
-    let errors: Record<string, string> = $state({});
-    let editing = $state(false);
-    let sensors: Sensor[] = $state([]);
-    let selectedSensor: { label: string; value: string } = $state();
-    let internal = $state({});
-    let payload = $state('');
+let { data }: Props = $props();
+let rule: RuleDetails = $state();
+let loading = $state(true);
+let errors: Record<string, string> = $state({});
+let editing = $state(false);
+let sensors: Sensor[] = $state([]);
+let selectedSensor: { label: string; value: string } = $state();
+let internal = $state({});
+let payload = $state('');
 
-    // TODO: make single validation function
-    run(() => {
-        if (!loading) {
-            rule.on_valid.to = selectedSensor.value;
-        }
-    });
+// TODO: make single validation function
+run(() => {
+    if (!loading) {
+        rule.on_valid.to = selectedSensor.value;
+    }
+});
 
-    run(() => {
-        if (!loading) {
-            try {
-                const { data, success } =
-                    ruleInternalSchema.safeParse(internal);
-                if (success) {
-                    rule.internal = data;
-                }
-            } catch {
-                errors['internal'] = 'Invalid JSON';
+run(() => {
+    if (!loading) {
+        try {
+            const { data, success } = ruleInternalSchema.safeParse(internal);
+            if (success) {
+                rule.internal = data;
             }
+        } catch {
+            errors['internal'] = 'Invalid JSON';
         }
+    }
+});
+
+run(() => {
+    if (!loading) {
+        try {
+            rule.on_valid.payload = JSON.parse(payload);
+            delete errors['payload'];
+            errors = errors;
+        } catch {
+            errors['payload'] = 'Not a valid JSON';
+        }
+    }
+});
+
+const leave = () => {
+    goto(`/rules/`);
+};
+
+const resetRule = async () => {
+    rule = { ...(await data.rule) };
+    const sensor = sensors.find((e) => e.id === rule.on_valid.to);
+    if (sensor) {
+        selectedSensor = { value: sensor.id, label: sensor.name };
+    }
+    payload = JSON.stringify(rule.on_valid.payload);
+    internal = JSON.stringify(rule.internal);
+};
+
+const handleCancel = async () => {
+    await resetRule();
+    editing = false;
+};
+
+const handleDelete = async () => {
+    // TODO: ask for confirmation!!!
+    const res = await authFetch(`/api/v1/rule/${rule.id}`, {
+        method: 'DELETE',
     });
 
-    run(() => {
-        if (!loading) {
-            try {
-                rule.on_valid.payload = JSON.parse(payload);
-                delete errors['payload'];
-                errors = errors;
-            } catch {
-                errors['payload'] = 'Not a valid JSON';
-            }
-        }
+    console.log(await res.json());
+
+    if (res.ok) {
+        leave();
+    }
+};
+
+const handleSubmit = async () => {
+    const { data, success, error } = ruleDetailsSchema.safeParse({
+        ...rule,
     });
-
-    const leave = () => {
-        goto(`/rules/`);
-    };
-
-    const resetRule = async () => {
-        rule = { ...(await data.rule) };
-        const sensor = sensors.find((e) => e.id === rule.on_valid.to);
-        if (sensor) {
-            selectedSensor = { value: sensor.id, label: sensor.name };
-        }
-        payload = JSON.stringify(rule.on_valid.payload);
-        internal = JSON.stringify(rule.internal);
-    };
-
-    const handleCancel = async () => {
-        await resetRule();
-        editing = false;
-    };
-
-    const handleDelete = async () => {
-        // TODO: ask for confirmation!!!
-        const res = await authFetch(`/api/v1/rule/${rule.id}`, {
-            method: 'DELETE',
-        });
-
-        console.log(await res.json());
-
-        if (res.ok) {
-            leave();
-        }
-    };
-
-    const handleSubmit = async () => {
-        const { data, success, error } = ruleDetailsSchema.safeParse({
-            ...rule,
-        });
+    if (!success) {
         if (!success) {
-            if (!success) {
-                error.issues.forEach((issue) => {
-                    const fieldPath = issue.path.join('.');
-                    if (fieldPath === 'name') {
-                        errors['name'] = issue.message;
-                    } else if (fieldPath === 'description') {
-                        errors['description'] = issue.message;
-                    } else if (fieldPath === 'on_valid.to') {
-                        errors['type'] = issue.message;
-                    } else if (fieldPath === 'on_valid.payload') {
-                        errors['payload'] = issue.message;
-                    } else if (fieldPath === 'internal') {
-                        errors['internal'] = issue.message;
-                    }
-                });
-                return;
-            }
+            error.issues.forEach((issue) => {
+                const fieldPath = issue.path.join('.');
+                if (fieldPath === 'name') {
+                    errors['name'] = issue.message;
+                } else if (fieldPath === 'description') {
+                    errors['description'] = issue.message;
+                } else if (fieldPath === 'on_valid.to') {
+                    errors['type'] = issue.message;
+                } else if (fieldPath === 'on_valid.payload') {
+                    errors['payload'] = issue.message;
+                } else if (fieldPath === 'internal') {
+                    errors['internal'] = issue.message;
+                }
+            });
             return;
         }
+        return;
+    }
 
-        const { id, created_at, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
-        console.log(rest);
+    const { id, created_at, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
+    console.log(rest);
 
-        const res = await authFetch(`/api/v1/rule/${rule.id}`, {
-            method: 'PUT',
-            body: JSON.stringify(rest),
-        });
-
-        if (res.ok) {
-            leave();
-        }
-
-        console.log(await res.json());
-    };
-
-    onMount(async () => {
-        sensors = await data.sensors;
-        await resetRule();
-        loading = false;
+    const res = await authFetch(`/api/v1/rule/${rule.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(rest),
     });
+
+    if (res.ok) {
+        leave();
+    }
+
+    console.log(await res.json());
+};
+
+onMount(async () => {
+    sensors = await data.sensors;
+    await resetRule();
+    loading = false;
+});
 </script>
 
 {#if loading}
@@ -155,7 +154,7 @@
                 name="name"
                 type="text"
                 label="Name"
-                {errors}
+                errors={errors}
                 bind:value={rule.name}
                 disabled={!editing}
             />
@@ -163,7 +162,7 @@
                 name="description"
                 type="text"
                 label="Description"
-                {errors}
+                errors={errors}
                 bind:value={rule.description}
                 disabled={!editing}
             />
@@ -201,7 +200,7 @@
                 name="payload"
                 type="text"
                 label="Payload"
-                {errors}
+                errors={errors}
                 bind:value={payload}
                 disabled={!editing}
             />
@@ -213,7 +212,7 @@
             </Label>
             <RuleInternalBuilder
                 bind:internal={rule.internal}
-                {sensors}
+                sensors={sensors}
                 bind:parent={rule}
                 secondParent={undefined}
                 editingDisabled={!editing}
