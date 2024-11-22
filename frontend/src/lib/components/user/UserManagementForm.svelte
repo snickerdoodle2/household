@@ -6,23 +6,21 @@
     import Button from '../ui/button/button.svelte';
     import { authFetch } from '@/helpers/fetch';
 
-    export let user: {
+    type Props = {
+        user?: {
         id: string;
         username: string;
         name: string;
-    } = {
-        id: 'new',
-        username: 'new_username',
-        name: 'new_name',
-    };
-    export let action: 'add' | 'edit';
-    export let open: boolean;
+    }, 
+        action: 'add' | 'edit'
+        open: boolean
+    }
 
-    let selectedRole = { value: 'user', label: 'User' };
-    let password: string;
-    let globalError: string | undefined = undefined;
-
-    let fieldErrors: Record<string, string> = {};
+    let { open = $bindable(), user, action }: Props = $props();
+    let selectedRole = $state({ value: 'user', label: 'User' });
+    let password: string = $state("");
+    let globalError: string | undefined = $state();
+    let fieldErrors: Record<string, string> = $state({});
 
     async function handleSubmit() {
         const { data, success, error } = newUserSchema.safeParse({
