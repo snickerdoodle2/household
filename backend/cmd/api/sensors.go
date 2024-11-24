@@ -93,7 +93,10 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.startSensorListener(sensor)
+	listener := app.createAndAddSensorListener(sensor)
+	if !sensor.Active {
+		listener.Start()
+	}
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"data": sensor}, nil)
 	if err != nil {
@@ -173,8 +176,11 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.stopSensorListener(sensorId)
-	app.startSensorListener(sensor)
+	app.stopAndDeleteSensorListener(sensorId)
+	listener := app.createAndAddSensorListener(sensor)
+	if !sensor.Active {
+		listener.Start()
+	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"sensor": sensor}, nil)
 	if err != nil {
@@ -191,7 +197,7 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.stopSensorListener(sensorId)
+	app.stopAndDeleteSensorListener(sensorId)
 
 	err = app.models.Sensors.DeleteSensorAndMeasurements(sensorId)
 	if err != nil {
@@ -211,7 +217,9 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: different sensor identification - address:port impossible
 	uri := r.RemoteAddr
+	app.logger.Info("received actove sensor measurement", "uri", uri)
 
 	var requestBody struct {
 		MessageType string  `json:"message-type"`
@@ -221,10 +229,10 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := app.readJSON(w, r, &requestBody)
 	if err != nil {
-		// app.badRequestResponse(w, r, err)
 		app.logger.Warn("active sensor error", "request body", err.Error())
 		return
 	}
+	r.Body.Close()
 
 	id, err := app.models.Sensors.GetIdByUriAndType(uri, requestBody.SensorType)
 
@@ -232,6 +240,8 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 		app.logger.Warn("error getting active sensor ID", "error", err.Error())
 		return
 	}
+
+	app.listeners[id].Broker.Publish([]float64{requestBody.Value})
 
 	measurement := data.SensorMeasurement{
 		SensorID:      id,
@@ -244,4 +254,5 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 		app.logger.Error("Writing measurement to DB", "error", err)
 	}
 
+	w.WriteHeader(http.StatusAccepted)
 }

@@ -24,8 +24,9 @@ func (app *App) serve() error {
 	}
 
 	for _, sensor := range sensors {
+		listener := app.createAndAddSensorListener(sensor)
 		if !sensor.Active {
-			app.startSensorListener(sensor)
+			go listener.Start()
 		}
 	}
 
