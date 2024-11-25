@@ -1,6 +1,5 @@
 <script lang="ts">
     import { run, preventDefault } from 'svelte/legacy';
-
     import * as Card from '$lib/components/ui/card';
     import { Button } from '$lib/components/ui/button';
     import { Label } from '$lib/components/ui/label';
