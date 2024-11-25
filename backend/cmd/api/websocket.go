@@ -311,7 +311,7 @@ func (app *App) handleSubscribeMsg(conn *websocket.Conn, status *connStatus, inp
 }
 
 func (app *App) handleSensorSubcribtion(id uuid.UUID) (map[string]interface{}, error) {
-	measurements, err := app.models.SensorMeasurements.GetMeasurementsSince(id, 5*time.Hour)
+	measurements, err := app.models.SensorMeasurements.GetLastNMeasurements(id, app.settings.MeasurementsAmount)
 	if err != nil {
 		return nil, err
 	}
