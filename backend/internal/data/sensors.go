@@ -15,6 +15,7 @@ import (
 )
 
 type SensorType string
+type SensorInitBuffer map[uuid.UUID]Sensor
 
 var (
 	ErrDuplicateUri = errors.New("duplicate uri")
@@ -49,6 +50,7 @@ type Sensor struct {
 	CreatedAt   time.Time  `json:"created_at"`
 	Version     int        `json:"version"`
 	Active      bool       `json:"active"`
+	IdToken     uuid.UUID  `json:"idToken"`
 }
 
 func ValidateSensor(v *validator.Validator, sensor *Sensor) {

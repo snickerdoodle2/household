@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
@@ -81,27 +84,76 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.models.Sensors.Insert(sensor)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrDuplicateUri):
-			v.AddError("uri", "a sensor with this URI already exists")
-			app.failedValidationResponse(w, r, v.Errors)
-		default:
+	if sensor.Active {
+		initSensor(app, *sensor)
+	} else {
+		err = app.models.Sensors.Insert(sensor)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrDuplicateUri):
+				v.AddError("uri", "a sensor with this URI already exists")
+				app.failedValidationResponse(w, r, v.Errors)
+			default:
+				app.serverErrorResponse(w, r, err)
+			}
+			return
+		}
+
+		listener := app.createAndAddSensorListener(sensor)
+		listener.Start()
+
+		err = app.writeJSON(w, http.StatusCreated, envelope{"data": sensor}, nil)
+		if err != nil {
 			app.serverErrorResponse(w, r, err)
 		}
-		return
+	}
+}
+
+// function to initialize active (for now) sensor.
+// Sends init request to the sensor and adds it to initBuffer.
+// Sensor should send init-ack request to init-ack endpoint to be removed from initBuffer and further processed
+func initSensor(app *App, sensor data.Sensor) error {
+	sensorEndpoint := fmt.Sprintf("http://%v/init", sensor.URI)
+	idToken, err := uuid.NewRandom()
+	app.initBuffer[idToken] = sensor
+
+	var requestBody struct {
+		IdToken   uuid.UUID `json:"id-token"`
+		ServerUri string    `json:"server-uri"`
 	}
 
-	listener := app.createAndAddSensorListener(sensor)
-	if !sensor.Active {
-		listener.Start()
-	}
+	requestBody.IdToken = idToken
+	requestBody.ServerUri = fmt.Sprintf("%s:%d", app.config.host, app.config.port)
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"data": sensor}, nil)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		return err
 	}
+
+	client := &http.Client{}
+	client.Timeout = 5 * time.Second
+
+	body := new(bytes.Buffer)
+	err = json.NewEncoder(body).Encode(requestBody)
+	if err != nil {
+		app.logger.Error("sendInitRequest marshall", "error", err.Error())
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, sensorEndpoint, body)
+	if err != nil {
+		app.logger.Error("handleRuleRequests request creation", "error", err.Error())
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	_, err = client.Do(req)
+	if err != nil {
+		app.logger.Error("handleInitRequest request", "error", err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
@@ -255,4 +307,8 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: remove sensor from init buffers
 }

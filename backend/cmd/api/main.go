@@ -26,11 +26,12 @@ type Config struct {
 }
 
 type App struct {
-	config    Config
-	logger    *log.Logger
-	models    data.Models
-	listeners data.SensorListeners
-	rules     struct {
+	config     Config
+	logger     *log.Logger
+	models     data.Models
+	listeners  data.SensorListeners
+	initBuffer data.SensorInitBuffer
+	rules      struct {
 		channel      chan data.ValidRuleAction
 		stopChannels map[uuid.UUID]chan struct{}
 	}
