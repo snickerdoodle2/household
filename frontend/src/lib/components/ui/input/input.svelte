@@ -65,7 +65,6 @@ type $$Events = InputEvents;
             )}
             bind:value
             {readonly}
-            disabled
             onblur={bubble('blur')}
             onchange={bubble('change')}
             onclick={bubble('click')}
