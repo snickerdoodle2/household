@@ -143,7 +143,7 @@
     );
 </script>
 
-<div class="w-full min-w-[35rem]">
+<div class="w-full">
     {#if isRule(internal)}
         <!-- Main view (AND, OR, ...) -->
         <div class="flex inline-flex {background} rounded">

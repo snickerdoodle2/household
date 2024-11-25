@@ -98,7 +98,7 @@
 </script>
 
 {#if open}
-    <div class="flex min-w-[35rem] items-center gap-3">
+    <div class="flex items-center gap-3">
         <Label>Type:</Label>
 
         <Select.Root bind:selected={selectedType}>

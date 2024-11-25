@@ -83,7 +83,7 @@
 </script>
 
 <div
-    class="flex w-full min-w-[35rem] flex-row items-center gap-2 whitespace-nowrap"
+    class="flex w-full flex-row items-center gap-2 whitespace-nowrap"
     bind:this={wrappingDiv}
 >
     <Label>Value of</Label>

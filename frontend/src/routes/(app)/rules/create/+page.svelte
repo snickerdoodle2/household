@@ -1,6 +1,6 @@
 <script lang="ts">
     import { run } from 'svelte/legacy';
-
+    import * as Dialog from '$lib/components/ui/dialog';
     import * as Card from '$lib/components/ui/card';
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
@@ -18,6 +18,7 @@
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { Sensor } from '@/types/sensor';
     import { RULE_URL } from '@/helpers/rule';
+    import Input from '@/components/ui/input/input.svelte';
 
     type Props = {
         data: PageData;
@@ -27,7 +28,10 @@
 
     let loading = $state(true);
     let sensors: Sensor[] = $state([]);
-    let selectedSensor: { label: string; value: string } = $state({label: "", value: ""});
+    let selectedSensor: { label: string; value: string } = $state({
+        label: '',
+        value: '',
+    });
     let rule: NewRule = $state({
         name: '',
         description: '',
@@ -35,27 +39,20 @@
             to: '',
             payload: {},
         },
-        internal: {} as NewRule["internal"],
+        internal: {} as NewRule['internal'],
     });
     let errors: Record<string, string> = $state({});
-    let internal = {};
-    let payload = $state('');
+    let internal = $state({});
+    let payload: string = $state('');
 
     run(() => {
         if (!loading && selectedSensor) {
             rule.on_valid.to = selectedSensor.value;
         }
     });
-
     run(() => {
-        if (!loading) {
-            try {
-                rule.on_valid.payload = JSON.parse(payload);
-                delete errors['payload'];
-                errors = errors;
-            } catch {
-                errors['payload'] = 'Not a valid JSON';
-            }
+        if (!loading && payload) {
+            rule.on_valid.payload = { value: Number(payload) };
         }
     });
 
@@ -79,6 +76,7 @@
     });
 
     const handleSubmit = async () => {
+        console.log(rule);
         const { success, data, error } = newRuleSchema.safeParse(rule);
 
         if (!success) {
@@ -89,9 +87,9 @@
                 } else if (fieldPath === 'description') {
                     errors['description'] = issue.message;
                 } else if (fieldPath === 'on_valid.to') {
-                    errors['type'] = issue.message;
+                    errors['on_valid.to'] = issue.message;
                 } else if (fieldPath === 'on_valid.payload') {
-                    errors['payload'] = issue.message;
+                    errors['on_valid.payload'] = issue.message;
                 } else if (fieldPath === 'internal') {
                     errors['internal'] = issue.message;
                 }
@@ -112,7 +110,7 @@
             console.log('error');
         } else {
             await invalidate(RULE_URL);
-            leave();
+            close();
         }
     };
 
@@ -121,80 +119,119 @@
         loading = false;
     });
 
-    const leave = () => {
+    const close = () => {
         goto(`/rules/`);
     };
 </script>
 
-{#if loading}
-    <p>loading</p>
-{:else}
-    <Card.Root class="w-[600px] border-none shadow-none">
-        <Card.Header class="text-3xl">
-            <Card.Title>New Rule</Card.Title>
-        </Card.Header>
-        <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
-            <FormInput
-                name="name"
-                type="text"
-                label="Name"
-                {errors}
-                bind:value={rule.name}
-            />
-            <FormInput
-                name="description"
-                type="text"
-                label="Description"
-                {errors}
-                bind:value={rule.description}
-            />
-            <Label
-                for="type"
-                class="flex items-center justify-between text-base font-semibold"
-            >
-                To
-                {#if errors['type']}
-                    <span class="text-sm font-normal italic text-red-400"
-                        >{errors['type']}</span
+<Dialog.Root
+    open={true}
+    onOpenChange={(opened) => {
+        if (!opened) close();
+    }}
+>
+    <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content
+            class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
+        >
+            {#if loading}
+                <p>loading</p>
+            {:else}
+                <Card.Root class="w-[700px] border-none shadow-none">
+                    <Card.Header class="text-3xl">
+                        <Card.Title>New Rule</Card.Title>
+                    </Card.Header>
+                    <Card.Content
+                        class="grid grid-cols-[1fr_3fr] items-center gap-3"
                     >
-                {/if}
-            </Label>
-            <Select.Root bind:selected={selectedSensor} required name="type">
-                <Select.Trigger
-                    class={errors['type'] ? 'border-2 border-red-600' : ''}
-                >
-                    <Select.Value />
-                </Select.Trigger>
-                <Select.Content>
-                    {#each sensors as type}
-                        <Select.Item value={type.id}>{type.name}</Select.Item>
-                    {/each}
-                </Select.Content>
-            </Select.Root>
-            <FormInput
-                name="payload"
-                type="text"
-                label="Payload"
-                {errors}
-                bind:value={payload}
-            />
+                        <FormInput
+                            name="name"
+                            type="text"
+                            label="Name"
+                            {errors}
+                            bind:value={rule.name}
+                        />
+                        <FormInput
+                            name="description"
+                            type="text"
+                            label="Description"
+                            {errors}
+                            bind:value={rule.description}
+                        />
 
-            <Label
-                for="type"
-                class="flex items-center justify-between text-base font-semibold"
-            >
-                Internal:
-            </Label>
-            <RuleInternalBuilder
-                bind:internal={rule.internal}
-                {sensors}
-                bind:parent={rule}
-                secondParent={undefined}
-            />
-        </Card.Content>
-        <Card.Footer class="flex justify-end gap-3">
-            <Button size="bold" on:click={leave}>Cancel</Button>
-            <Button size="bold" on:click={handleSubmit}>Create</Button>
-        </Card.Footer>
-    </Card.Root>
-{/if}
+                        <Label
+                            name="on_valid.to"
+                            class="pr-3 flex items-center justify-between text-base font-semibold"
+                        >
+                            Payload
+                        </Label>
+                        <div
+                            class="flex grid-cols-3 gap-3 justify-center items-center"
+                        >
+                            <Input
+                                type={'number'}
+                                bind:value={payload}
+                                required
+                                class={`w-full ${errors['on_valid.payload'] ? 'border-2 border-red-600' : ''}`}
+                            />
+
+                            <div class="flex items-center justify-center">
+                                <Label
+                                    for="type"
+                                    class="flex items-center text-base font-semibold"
+                                >
+                                    to
+                                    {#if errors['on_valid.to']}
+                                        <span
+                                            class="text-sm font-normal italic text-red-400"
+                                            >{errors['type']}</span
+                                        >
+                                    {/if}
+                                </Label>
+                            </div>
+
+                            <Select.Root
+                                bind:selected={selectedSensor}
+                                required
+                                name="on_valid.to"
+                            >
+                                <Select.Trigger
+                                    class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                                >
+                                    <Select.Value />
+                                </Select.Trigger>
+                                <Select.Content>
+                                    {#each sensors as type}
+                                        <Select.Item value={type.id}
+                                            >{type.name}</Select.Item
+                                        >
+                                    {/each}
+                                </Select.Content>
+                            </Select.Root>
+                        </div>
+
+                        <Label
+                            for="type"
+                            class="flex items-center justify-between text-base font-semibold"
+                        >
+                            Internal:
+                        </Label>
+                        <RuleInternalBuilder
+                            bind:internal={rule.internal}
+                            {sensors}
+                            bind:parent={rule}
+                            secondParent={undefined}
+                        />
+                    </Card.Content>
+                    <Card.Footer class="flex justify-end gap-3">
+                        <Button size="bold" on:click={close}>Cancel</Button>
+                        <Button size="bold" on:click={handleSubmit}
+                            >Create</Button
+                        >
+                    </Card.Footer>
+                </Card.Root>
+            {/if}
+        </Dialog.Content>
+    </Dialog.Portal>
+</Dialog.Root>
