@@ -24,6 +24,10 @@ type Config struct {
 	}
 }
 
+type Settings struct {
+	MeasurementsAmount int
+}
+
 type App struct {
 	config    Config
 	logger    *log.Logger
@@ -33,6 +37,7 @@ type App struct {
 		channel      chan data.ValidRuleAction
 		stopChannels map[uuid.UUID]chan struct{}
 	}
+	settings Settings
 }
 
 func main() {
@@ -50,6 +55,7 @@ func main() {
 
 	logger := log.NewWithOptions(os.Stdout, log.Options{
 		ReportTimestamp: true,
+		Level:           log.DebugLevel,
 	})
 
 	db, err := openDB(cfg)
@@ -74,6 +80,12 @@ func main() {
 			channel:      make(chan data.ValidRuleAction, 1),
 			stopChannels: make(map[uuid.UUID]chan struct{}),
 		},
+	}
+
+	err = app.parseSettings()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
 	err = app.serve()

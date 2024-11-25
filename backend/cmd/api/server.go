@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+func (app *App) parseSettings() error {
+	// TODO: ADD PARSING
+	app.settings.MeasurementsAmount = 32
+	return nil
+}
+
 func (app *App) serve() error {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.port),
