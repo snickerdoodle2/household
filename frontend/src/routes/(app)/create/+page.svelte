@@ -8,7 +8,8 @@
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import { authFetch } from '@/helpers/fetch';
     import * as Dialog from '$lib/components/ui/dialog';
-    import { goto } from '$app/navigation';
+    import { goto, invalidate } from '$app/navigation';
+    import { SENSOR_URL } from '@/helpers/sensor';
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -76,6 +77,7 @@
         if (!res.ok) {
             errors = resJson.error;
         } else {
+            await invalidate(SENSOR_URL);
             close();
         }
     };
