@@ -108,9 +108,12 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 
 	defer (func() {
 		for _, tmp := range listeners {
-			listener := app.listeners[tmp.id]
-			listener.Broker.Unsubscribe(tmp.msgCh)
-			app.logger.Debug("sendSensorUpdates", "action", "cleanup", "sensorID", tmp.id)
+			if listener, ok := app.listeners[tmp.id]; ok {
+				listener.Broker.Unsubscribe(tmp.msgCh)
+				app.logger.Debug("sendSensorUpdates", "action", "cleanup", "sensorID", tmp.id)
+			} else {
+				app.logger.Debug("sendSensorUpdates", "action", "cleanup", "note", "listener already closed", "sensorID", tmp.id)
+			}
 		}
 	})()
 
