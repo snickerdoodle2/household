@@ -75,7 +75,6 @@
         ) {
             editing = false;
             syncInternalValues();
-            console.log(dropDownsOpen, open);
         }
     }
 

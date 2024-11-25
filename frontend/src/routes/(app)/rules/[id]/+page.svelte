@@ -140,19 +140,21 @@
         }
 
         const { id, created_at, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
-        console.log(rest);
 
+        console.log("Submitted rule modification:", rest, "(sent)")
         const res = await authFetch(`/api/v1/rule/${rule.id}`, {
             method: 'PUT',
             body: JSON.stringify(rest),
         });
 
         if (res.ok) {
+            console.log("Rule modified:", await res.json(), "(recieved)")
             await invalidate(RULE_URL);
             close();
+        } else {
+            console.error(await res.json());
         }
 
-        console.log(await res.json());
     };
 
     onMount(async () => {
