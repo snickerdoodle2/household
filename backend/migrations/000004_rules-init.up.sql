@@ -5,6 +5,6 @@ CREATE TABLE IF NOT EXISTS rules (
     internal json NOT NULL,
     valid_sensor_id uuid NOT NULL REFERENCES sensors(id),
     valid_payload json NOT NULL,
-    created_at timestamptz(0) NOT NULL DEFAULT now(),
+    created_at timestamp(0) NOT NULL DEFAULT now(),
     version integer NOT NULL DEFAULT 1
 );

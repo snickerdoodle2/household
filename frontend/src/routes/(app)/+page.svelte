@@ -10,7 +10,7 @@
     import { Plus } from 'svelte-radix';
     import { Button } from '@/components/ui/button';
 
-    let modalOpen = $state(false);
+    let modalOpen = false;
 
     const handleDetails = async (e: Event) => {
         const { href } = e.currentTarget as HTMLAnchorElement;
@@ -34,11 +34,7 @@
         });
     };
 
-    type Props = {
-        data: LayoutData;
-    };
-
-    let { data }: Props = $props();
+    export let data: LayoutData;
 </script>
 
 <div class="flex h-full items-start gap-4 md:py-20">

@@ -11,9 +11,9 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type envelope map[string]any
@@ -125,18 +125,7 @@ func (app *App) readInt(qs url.Values, key string, defaulValue int, v *validator
 }
 
 func (app *App) startSensorListener(sensor *data.Sensor) {
-	onNewValue := func(value float64) {
-		measuserment := data.SensorMeasurement{
-			SensorID:      sensor.ID,
-			MeasuredAt:    time.Now(),
-			MeasuredValue: value,
-		}
-
-		if err := app.models.SensorMeasurements.Insert(&measuserment); err != nil {
-			app.logger.Error("Writing measurement to DB", "error", err)
-		}
-	}
-	l := data.NewListener[float64](sensor, onNewValue)
+	l := data.NewListener[float64](sensor)
 	go l.Start()
 	app.listeners[sensor.ID] = l
 }
@@ -166,4 +155,20 @@ func (app *App) stopRule(ruleId uuid.UUID) {
 type SocketMsg struct {
 	Values []float64 `json:"values"`
 	Status string    `json:"status"`
+}
+
+func (app *App) sendSocketMessage(conn *websocket.Conn, data []float64) error {
+	var msg SocketMsg
+	if data == nil {
+		msg = SocketMsg{
+			Status: "OFFLINE",
+			Values: make([]float64, 0),
+		}
+	} else {
+		msg = SocketMsg{
+			Status: "ONLINE",
+			Values: data,
+		}
+	}
+	return conn.WriteJSON(msg)
 }

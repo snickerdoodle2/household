@@ -1,2 +1,0 @@
-# ESP8266 with relay and active switch
-Połączenie dwóch urządzeń na jednej płytce. Na płytce działają dwa serwery, jeden na porcie `80`, drugi na `8008`. Płytka łączy funkcjonalność przełącznika i kontaktronu - praktycznym zastosowaniem może być czujnik otwarcia bramy garażowej i przełącznik nią sterujący. Dokładny opis każdego z urządzeń w ich osobnych implementacjach.

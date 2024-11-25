@@ -1,72 +1,46 @@
 <script lang="ts">
     import { Chart } from 'chart.js/auto';
-    import { onMount } from 'svelte';
-    import type { SvelteMap } from 'svelte/reactivity';
-    const MAX_RECORDS = 32;
-
-    let ctx: HTMLCanvasElement;
+    import { onDestroy, onMount } from 'svelte';
+    import { type SocketStore } from '$lib/helpers/socket';
+    import { get } from 'svelte/store';
+    export let socket: SocketStore;
+    let chartEl: HTMLCanvasElement;
     let chart: Chart;
-    let mounted = $state(false);
 
-    type Props = {
-        data: SvelteMap<Date, number>;
-    };
-    let { data }: Props = $props();
+    const unsubscribe = socket.subscribe((data) => {
+        if (!chart) return;
+        if (!data) return;
+        if (!chart.data.labels) return;
+        chart.data.labels.push((chart.data.labels.at(-1) as number) + 1);
+        chart.data.datasets[0].data.push(data.values.at(-1) as number);
 
-    let filteredData = $derived.by(() => {
-        const transformed = data
-            .entries()
-            .map(([k, v]) => {
-                return { date: k, value: v };
-            })
-            .toArray();
-
-        transformed.sort((a, b) => (a.date > b.date ? 1 : -1));
-        return transformed.slice(-MAX_RECORDS, transformed.length);
-    });
-
-    $effect(() => {
-        if (!mounted) return;
-        // TODO: yikes + do not shift if there is less than MAX_RECORDS
-        const newData = filteredData.pop();
-        chart.data?.labels?.shift();
-        chart.data?.labels?.push(newData?.date.toUTCString());
-        chart.data?.datasets[0].data.shift();
-        chart.data?.datasets[0].data.push(newData?.value ?? 0);
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
         chart.update();
     });
 
+    onDestroy(() => {
+        unsubscribe();
+    });
+
     onMount(() => {
-        chart = new Chart(ctx, {
+        if (!$socket) return;
+        const data = get(socket);
+        if (!data) return;
+
+        chart = new Chart(chartEl, {
             type: 'line',
-            options: {
-                plugins: {
-                    legend: {
-                        display: false,
-                    },
-                    tooltip: {},
-                },
-                scales: {
-                    x: {
-                        ticks: {
-                            display: false,
-                        },
-                    },
-                },
-            },
             data: {
-                labels: filteredData.map((e) => e.date.toUTCString()),
+                labels: data.values.map((_, i) => i),
                 datasets: [
                     {
-                        label: '',
-                        data: filteredData.map((e) => e.value),
+                        label: 'lol',
+                        data: data.values,
                     },
                 ],
             },
         });
-
-        mounted = true;
     });
 </script>
 
-<canvas bind:this={ctx}></canvas>
+<canvas bind:this={chartEl} />

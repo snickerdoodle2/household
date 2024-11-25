@@ -5,11 +5,7 @@
     import { Plus } from 'radix-icons-svelte';
     import { goto } from '$app/navigation';
 
-    type Props = {
-        data: PageData;
-    };
-
-    let { data }: Props = $props();
+    export let data: PageData;
 </script>
 
 <div class="flex h-full items-start">

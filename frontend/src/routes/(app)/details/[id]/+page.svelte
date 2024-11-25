@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
-
     import * as Card from '$lib/components/ui/card';
     import * as Select from '$lib/components/ui/select';
     import NewSensorInput from '$lib/components/FormInput.svelte';
@@ -13,25 +11,18 @@
     import { z } from 'zod';
     import { authFetch } from '@/helpers/fetch';
 
-    type Props = {
-        data: PageData;
-        open: boolean;
-    };
+    export let data: PageData;
+    export let open: boolean;
 
-    let { data, open = $bindable() }: Props = $props();
-
-    let editing = $state(false);
-    let loading = $state(true);
+    let editing = false;
+    let loading = true;
     let orgSensor: SensorDetails;
-    let sensor: SensorDetails = $state();
+    let sensor: SensorDetails;
 
-    let fieldErrors = $state();
-    run(() => {
-        fieldErrors = {} as Partial<
-            Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
-        >;
-    });
-    let globalError: string | null = $state(null);
+    $: fieldErrors = {} as Partial<
+        Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
+    >;
+    let globalError: string | null = null;
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -39,15 +30,15 @@
         label: e.replace('_', ' '),
     }));
 
-    let selectedType: { value: string; label: string } = $state();
+    let selectedType: { value: string; label: string };
 
-    run(() => {
+    $: {
         if (selectedType) {
             sensor.type = selectedType.value as z.infer<
                 typeof sensorTypeSchema
             >;
         }
-    });
+    }
 
     const handleCancel = () => {
         sensor = structuredClone(orgSensor);

@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { run, preventDefault } from 'svelte/legacy';
     import * as Card from '$lib/components/ui/card';
     import { Button } from '$lib/components/ui/button';
     import { Label } from '$lib/components/ui/label';
@@ -8,11 +7,7 @@
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import { authFetch } from '@/helpers/fetch';
 
-    type Props = {
-        open: boolean;
-    };
-
-    let { open = $bindable() }: Props = $props();
+    export let open: boolean;
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
         value: e,
@@ -20,14 +15,14 @@
         label: e.replace('_', ' '),
     }));
 
-    let name: string = $state();
-    let refresh_rate: string = $state();
-    let uri: string = $state();
-    let type: { value: string; label: string } | undefined = $state();
+    let name: string;
+    let refresh_rate: string;
+    let uri: string;
+    let type: { value: string; label: string } | undefined;
     let timeout: number;
     let errors: Partial<
         Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
-    > = $state({});
+    > = {};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const debounce = (callback: Function, ...args: unknown[]) => {
@@ -54,9 +49,7 @@
         errors = {};
     };
 
-    run(() => {
-        debounce(validate, name, refresh_rate, uri, type);
-    });
+    $: debounce(validate, name, refresh_rate, uri, type);
 
     const handleSubmit = async () => {
         const { success, data } = newSensorSchema.safeParse({
@@ -89,7 +82,7 @@
     <Card.Header class="text-3xl">
         <Card.Title>Create Sensor</Card.Title>
     </Card.Header>
-    <form onsubmit={preventDefault(handleSubmit)}>
+    <form on:submit|preventDefault={handleSubmit}>
         <Card.Content class="grid grid-cols-[3fr_4fr] items-center gap-3">
             <NewSensorInput
                 name="name"

@@ -8,9 +8,3 @@ export const userSchema = z.object({
 });
 
 export type User = z.infer<typeof userSchema>;
-
-export const newUserSchema = z.object({
-    username: z.string(),
-    name: z.string(),
-    password: z.string().max(32),
-});

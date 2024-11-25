@@ -50,6 +50,78 @@ func (app *App) getSensorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *App) getSensorValueHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	token := r.URL.Query().Get("token")
+
+	v := validator.New()
+	if data.ValidateTokenPlaintext(v, token); !v.Valid() {
+		app.invalidAuthenticationTokenResponse(w, r)
+		return
+	}
+
+	_, err = app.models.Users.GetForToken(token)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.invalidAuthenticationTokenResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	listener, ok := app.listeners[id]
+	if !ok {
+		app.notFoundResponse(w, r)
+	}
+
+	conn, err := app.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	defer conn.Close()
+
+	endCh := make(chan struct{})
+	go func() {
+		// TODO: Handle closing ws from server (this function never ends)
+		// + closing on listener terminating
+		for {
+			_, _, err := conn.ReadMessage()
+			if err != nil {
+				endCh <- struct{}{}
+				return
+			}
+		}
+	}()
+
+	msgCh := listener.GetBroker().Subscribe()
+	defer listener.GetBroker().Unsubscribe(msgCh)
+
+	initValue := listener.GetCurrentValue()
+	err = app.sendSocketMessage(conn, initValue)
+
+	if err != nil {
+		app.logError(r, err)
+		return
+	}
+
+	for msg := range msgCh {
+		err = app.sendSocketMessage(conn, msg)
+		if err != nil {
+			app.logError(r, err)
+			return
+		}
+	}
+}
+
 func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Name        string          `json:"name"`
@@ -185,7 +257,7 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.stopSensorListener(sensorId)
 
-	err = app.models.Sensors.DeleteSensorAndMeasurements(sensorId)
+	err = app.models.Sensors.Delete(sensorId)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):

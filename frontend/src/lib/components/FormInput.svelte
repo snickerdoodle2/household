@@ -3,24 +3,12 @@
     import { Input } from '$lib/components/ui/input';
     import type { HTMLInputTypeAttribute } from 'svelte/elements';
 
-    type Props = {
-        name: string;
-        label: string;
-        type: HTMLInputTypeAttribute;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        value: any;
-        errors: Record<string, string>;
-        disabled?: boolean;
-    };
-
-    let {
-        name,
-        label,
-        type,
-        value = $bindable(),
-        errors,
-        disabled = false,
-    }: Props = $props();
+    export let name: string;
+    export let label: string;
+    export let type: HTMLInputTypeAttribute;
+    export let value: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    export let errors: Record<string, string>;
+    export let disabled = false;
 </script>
 
 <Label

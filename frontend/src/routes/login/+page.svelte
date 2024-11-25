@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { run, preventDefault } from 'svelte/legacy';
-
     import { Input } from '$lib/components/ui/input';
     import { Button } from '$lib/components/ui/button';
     import { loginSchema } from '@/types/login';
@@ -26,13 +24,13 @@
     };
 
     let timeout: number;
-    let username = $state('');
-    let password = $state('');
+    let username = '';
+    let password = '';
     let errors: Record<string, string> = {};
 
-    run(() => {
+    $: {
         debounce(validate, username, password);
-    });
+    }
 
     const handleLogin = async () => {
         const { data, success } = loginSchema.safeParse({ username, password });
@@ -47,7 +45,7 @@
 </script>
 
 <main class="flex h-svh items-center justify-center">
-    <form class="flex flex-col gap-3" onsubmit={preventDefault(handleLogin)}>
+    <form class="flex flex-col gap-3" on:submit|preventDefault={handleLogin}>
         <Input placeholder="Username" name="username" bind:value={username} />
         <Input
             placeholder="Password"
