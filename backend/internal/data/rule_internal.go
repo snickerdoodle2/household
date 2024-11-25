@@ -118,7 +118,12 @@ func UnmarshalInternalRuleJSON(data map[string]interface{}) (RuleInternal, error
 			return nil, ErrParseInvalidType
 		}
 
-		return UnmarshalInternalRuleJSON(wrapped)
+		child, err := UnmarshalInternalRuleJSON(wrapped)
+		if err != nil {
+			return nil, err
+		}
+
+		return &RuleNot{Wrapped: child}, nil
 	case "gt":
 		sensorID, value, err := unmarshalSimple(data)
 		if err != nil {

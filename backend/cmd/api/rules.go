@@ -18,8 +18,6 @@ func (app *App) createRuleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.logger.Info("rule from request", rule)
-
 	v := validator.New()
 
 	if data.ValidateRule(v, &rule); !v.Valid() {
