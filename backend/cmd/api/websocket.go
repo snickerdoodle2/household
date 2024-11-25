@@ -380,7 +380,7 @@ func (app *App) handleMeasurementReqMsg(conn *websocket.Conn, input json.RawMess
 		values[measurement.MeasuredAt.Format(time.RFC3339)] = measurement.MeasuredValue
 	}
 
-	return wsjson.Write(context.Background(), conn, map[string]interface{}{"id": data.ID, "values": values})
+	return wsjson.Write(context.Background(), conn, map[string]interface{}{"type": measurmentsReq, "id": data.ID, "values": values})
 }
 
 func sensorErrorMsg(msg string) map[string]interface{} {
