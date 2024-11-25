@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"fmt"
 	"inzynierka/internal/data/validator"
 	"slices"
 	"time"
@@ -212,7 +213,7 @@ func (r *RuleOr) Validate(v *validator.Validator) {
 type Duration time.Duration
 
 func (d Duration) MarshalJSON() ([]byte, error) {
-	return []byte(time.Duration(d).String()), nil
+	return []byte(fmt.Sprintf("\"%s\"", time.Duration(d).String())), nil
 }
 
 type RulePerc struct {
