@@ -12,6 +12,7 @@ import (
 )
 
 type Config struct {
+	host string
 	port int
 	db   struct {
 		dsn          string
@@ -37,6 +38,7 @@ type App struct {
 
 func main() {
 	var cfg Config
+	flag.StringVar(&cfg.host, "host", "localhost", "API Server host")
 	flag.IntVar(&cfg.port, "port", 8080, "API Server port")
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "Database DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
