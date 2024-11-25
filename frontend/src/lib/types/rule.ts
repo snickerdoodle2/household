@@ -19,6 +19,9 @@ export type RuleLtType = z.infer<typeof RuleLT>;
 const RulePerc = z.object({
     type: z.literal('perc'),
     sensor_id: z.string().uuid(),
+    duration: z
+        .string()
+        .regex(/^-?(?:\d+(?:\.\d+)?(?:h|m|s|(?:ms)|(?:µs)|(?:us)|(?:ns)))+$/),
     perc: z.number().gt(0).lte(100),
 });
 
