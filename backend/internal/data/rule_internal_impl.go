@@ -2,8 +2,10 @@ package data
 
 import (
 	"encoding/json"
+	"fmt"
 	"inzynierka/internal/data/validator"
 	"slices"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -24,9 +26,9 @@ func (r RuleAnd) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleAnd) Process(data RuleData) (bool, error) {
+func (r *RuleAnd) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
 	for _, child := range r.Children {
-		ret, err := child.Process(data)
+		ret, err := child.Process(data, m)
 		if err != nil {
 			return false, err
 		}
@@ -77,7 +79,7 @@ func (r RuleGT) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleGT) Process(data RuleData) (bool, error) {
+func (r *RuleGT) Process(data RuleData, _ *SensorMeasurementModel) (bool, error) {
 	val, ok := data[r.SensorID]
 
 	if !ok {
@@ -111,7 +113,7 @@ func (r RuleLT) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleLT) Process(data RuleData) (bool, error) {
+func (r *RuleLT) Process(data RuleData, _ *SensorMeasurementModel) (bool, error) {
 	val, ok := data[r.SensorID]
 
 	if !ok {
@@ -144,8 +146,8 @@ func (r RuleNot) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleNot) Process(data RuleData) (bool, error) {
-	val, err := r.Wrapped.Process(data)
+func (r *RuleNot) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
+	val, err := r.Wrapped.Process(data, m)
 	return !val, err
 }
 
@@ -172,9 +174,9 @@ func (r RuleOr) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleOr) Process(data RuleData) (bool, error) {
+func (r *RuleOr) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
 	for _, child := range r.Children {
-		ret, err := child.Process(data)
+		ret, err := child.Process(data, m)
 		if err != nil {
 			return false, err
 		}
@@ -206,4 +208,52 @@ func (r *RuleOr) Validate(v *validator.Validator) {
 	for _, child := range r.Children {
 		child.Validate(v)
 	}
+}
+
+type Duration time.Duration
+
+func (d Duration) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%s\"", time.Duration(d).String())), nil
+}
+
+type RulePerc struct {
+	SensorID   uuid.UUID `json:"sensor_id"`
+	Percentile int       `json:"perc"`
+	Delta      Duration  `json:"duration"`
+}
+
+type FakePerc RulePerc
+
+func (r RulePerc) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		FakePerc
+		Type string `json:"type"`
+	}{
+		FakePerc: FakePerc(r),
+		Type:     "perc",
+	})
+}
+
+func (r *RulePerc) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
+	val, ok := data[r.SensorID]
+
+	if !ok {
+		return false, ErrMissingVal
+	}
+
+	perc, err := m.GetPercentile(r.SensorID, time.Duration(r.Delta), r.Percentile)
+	if err != nil {
+		return false, err
+	}
+	return val >= perc, nil
+}
+
+func (r *RulePerc) Dependencies() []uuid.UUID {
+	return []uuid.UUID{r.SensorID}
+}
+
+func (r *RulePerc) Validate(v *validator.Validator) {
+	v.Check(r.Percentile > 0, "rulePerc", "Percentile should be larger than 0")
+	v.Check(r.Percentile <= 0, "rulePerc", "Percentile smaller or equal 100")
+	v.Check(r.Delta > 0, "rulePerc", "Duration should be larger than 0")
 }

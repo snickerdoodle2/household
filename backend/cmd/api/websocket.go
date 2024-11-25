@@ -108,9 +108,12 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 
 	defer (func() {
 		for _, tmp := range listeners {
-			listener := app.listeners[tmp.id]
-			listener.Broker.Unsubscribe(tmp.msgCh)
-			app.logger.Debug("sendSensorUpdates", "action", "cleanup", "sensorID", tmp.id)
+			if listener, ok := app.listeners[tmp.id]; ok {
+				listener.Broker.Unsubscribe(tmp.msgCh)
+				app.logger.Debug("sendSensorUpdates", "action", "cleanup", "sensorID", tmp.id)
+			} else {
+				app.logger.Debug("sendSensorUpdates", "action", "cleanup", "note", "listener already closed", "sensorID", tmp.id)
+			}
 		}
 	})()
 
@@ -200,6 +203,7 @@ const (
 	subscribeMsg   messageType = "subscribe"
 	unsubscribeMsg messageType = "unsubscribe"
 	measurementMsg messageType = "measurment"
+	measurmentsReq messageType = "measurement_req"
 )
 
 type websocketMsg struct {
@@ -233,6 +237,10 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 
 	if msg.Type == unsubscribeMsg {
 		return app.handleUnsubscribeMsg(conn, status, msg.Data)
+	}
+
+	if msg.Type == measurmentsReq {
+		return app.handleMeasurementReqMsg(conn, msg.Data)
 	}
 
 	return nil
@@ -311,7 +319,7 @@ func (app *App) handleSubscribeMsg(conn *websocket.Conn, status *connStatus, inp
 }
 
 func (app *App) handleSensorSubcribtion(id uuid.UUID) (map[string]interface{}, error) {
-	measurements, err := app.models.SensorMeasurements.GetMeasurementsSince(id, 5*time.Hour)
+	measurements, err := app.models.SensorMeasurements.GetLastNMeasurements(id, app.settings.MeasurementsAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -344,6 +352,38 @@ func (app *App) handleUnsubscribeMsg(conn *websocket.Conn, status *connStatus, i
 
 	res := map[string]interface{}{"type": unsubscribeMsg, "data": sensorId}
 	return wsjson.Write(context.Background(), conn, res)
+}
+
+func (app *App) handleMeasurementReqMsg(conn *websocket.Conn, input json.RawMessage) error {
+	var data struct {
+		ID       uuid.UUID `json:"id"`
+		Duration string    `json:"duration"`
+	}
+	err := json.Unmarshal(input, &data)
+	if err != nil {
+		app.logger.Error("handleMeasurementReqMsg", "error", err)
+		res := map[string]string{"type": "error", "msg": "invalid_data"}
+		return wsjson.Write(context.Background(), conn, res)
+	}
+
+	duration, err := time.ParseDuration(data.Duration)
+	if err != nil {
+		app.logger.Error("handleMeasurementReqMsg", "error", err)
+		res := map[string]string{"type": "error", "msg": "invalid_data"}
+		return wsjson.Write(context.Background(), conn, res)
+	}
+
+	measurements, err := app.models.SensorMeasurements.GetMeasurementsSince(data.ID, duration)
+	if err != nil {
+		return serverErrorResponse(conn)
+	}
+
+	values := make(map[string]float64)
+	for _, measurement := range measurements {
+		values[measurement.MeasuredAt.Format(time.RFC3339)] = measurement.MeasuredValue
+	}
+
+	return wsjson.Write(context.Background(), conn, map[string]interface{}{"type": measurmentsReq, "id": data.ID, "values": values})
 }
 
 func sensorErrorMsg(msg string) map[string]interface{} {

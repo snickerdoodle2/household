@@ -50,7 +50,7 @@ func TestRuleGTProcess(t *testing.T) {
 			sensorId: test.in,
 		}
 
-		got, err := rule.Process(data)
+		got, err := rule.Process(data, nil)
 		if err != nil {
 			t.Errorf("test case %f returned error", test.in)
 			continue
@@ -73,7 +73,7 @@ func TestRuleGTProcessError(t *testing.T) {
 
 	json := make(map[uuid.UUID]float64)
 
-	if _, err := rulegt.Process(json); !errors.Is(err, data.ErrMissingVal) {
+	if _, err := rulegt.Process(json, nil); !errors.Is(err, data.ErrMissingVal) {
 		t.Errorf("wanted error, got %s", err.Error())
 	}
 
@@ -120,7 +120,7 @@ func TestRuleLTProcess(t *testing.T) {
 			sensorId: test.in,
 		}
 
-		got, err := rule.Process(data)
+		got, err := rule.Process(data, nil)
 		if err != nil {
 			t.Errorf("test case %f returned error", test.in)
 			continue
@@ -143,7 +143,7 @@ func TestRuleLTProcessError(t *testing.T) {
 
 	json := make(map[uuid.UUID]float64)
 
-	if _, err := rulegt.Process(json); !errors.Is(err, data.ErrMissingVal) {
+	if _, err := rulegt.Process(json, nil); !errors.Is(err, data.ErrMissingVal) {
 		t.Errorf("wanted error, got %s", err.Error())
 	}
 
@@ -208,11 +208,9 @@ func TestRuleAndProcess(t *testing.T) {
 			sensorId2: test.in[1],
 		}
 
-		got, err := ruleAnd.Process(data)
+		got, err := ruleAnd.Process(data, nil)
 		if err != nil {
-			if err != nil {
-				t.Errorf("test case %v returned error", test.in)
-			}
+			t.Errorf("test case %v returned error", test.in)
 		}
 
 		if got != test.out {
@@ -282,11 +280,9 @@ func TestRuleOrProcess(t *testing.T) {
 			sensorId2: test.in[1],
 		}
 
-		got, err := ruleAnd.Process(data)
+		got, err := ruleAnd.Process(data, nil)
 		if err != nil {
-			if err != nil {
-				t.Errorf("test case %v returned error", test.in)
-			}
+			t.Errorf("test case %v returned error", test.in)
 		}
 
 		if got != test.out {

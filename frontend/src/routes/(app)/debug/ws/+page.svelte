@@ -4,7 +4,7 @@
     import type { PageData } from './$types';
     import { Button } from '@/components/ui/button';
     import { untrack } from 'svelte';
-    import { X } from 'lucide-svelte';
+    import { X, History } from 'lucide-svelte';
     let ws = new SensorWebsocket();
 
     let selected = $state('');
@@ -69,6 +69,9 @@
                                 .reduce((acc, cur) => acc + cur, 0)
                                 .toFixed()})
                         </div>
+                        <button onclick={() => ws.requestSince(key, '24h')}
+                            ><History /></button
+                        >
                         <button onclick={() => ws.unsubscribe(key)}
                             ><X /></button
                         >
