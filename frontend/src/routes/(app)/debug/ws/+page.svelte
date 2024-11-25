@@ -63,7 +63,8 @@
                                     .values()
                                     .reduce((acc, cur) => acc + cur, 0) /
                                 value.values().reduce((acc) => acc + 1, 0)
-                            ).toFixed(2)} ({value
+                            ).toFixed(2)}
+                            ({value
                                 .values()
                                 .reduce((acc, cur) => acc + cur, 0)
                                 .toFixed()})

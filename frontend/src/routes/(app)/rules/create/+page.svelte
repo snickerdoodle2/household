@@ -130,7 +130,7 @@
 {:else}
     <Card.Root class="w-[600px] border-none shadow-none">
         <Card.Header class="text-3xl">
-            <Card.Title>Rule Details</Card.Title>
+            <Card.Title>New Rule</Card.Title>
         </Card.Header>
         <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
             <FormInput
