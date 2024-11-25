@@ -1,0 +1,60 @@
+{
+    "weather-server": {
+        "host": "127.0.0.1",
+        "port": 9001
+    },
+    "household-server": {
+        "host": "172.30.227.16",
+        "port": 8080,
+        "username": "admin",
+        "password": "admin000"
+    },
+    "sensors": [
+        {
+            "name": "cloud-cover",
+            "refresh_rate": 900,
+            "processing": "current",
+            "params": {
+                "latitude": 50.3,
+                "longitude": 19.28,
+                "current": "cloud_cover"
+            }
+        },
+        {
+            "name": "rain sum next 24 hours",
+            "refresh_rate": 60,
+            "processing": "sum_future",
+            "number_of_hours": 24,
+            "params": {
+                "latitude": 50.3,
+                "longitude": 19.28,
+                "hourly": "rain",
+                "forecast_days": 3
+            }
+        },
+        {
+            "name": "min cloud cover next 48 hours",
+            "refresh_rate": 60,
+            "processing": "min_future",
+            "number_of_hours": 48,
+            "params": {
+                "latitude": 50.3,
+                "longitude": 19.28,
+                "hourly": "cloud_cover",
+                "forecast_days": 3
+            }
+        },
+        {
+            "name": "max cloud cover next 48 hours",
+            "refresh_rate": 60,
+            "processing": "max_future",
+            "number_of_hours": 48,
+            "params": {
+                "latitude": 50.3,
+                "longitude": 19.28,
+                "hourly": "cloud_cover",
+                "forecast_days": 3
+            }
+        }
+    ]
+}

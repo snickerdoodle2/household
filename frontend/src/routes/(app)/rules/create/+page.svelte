@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import * as Card from '$lib/components/ui/card';
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
@@ -13,13 +15,19 @@
     import type { PageData } from './$types';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
+    import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
+    import type { Sensor } from '@/types/sensor';
 
-    export let data: PageData;
+    type Props = {
+        data: PageData;
+    };
 
-    let loading = true;
-    let sensors: { label: string; value: string }[] = [];
-    let selectedSensor: { label: string; value: string };
-    let rule: NewRule = {
+    let { data }: Props = $props();
+
+    let loading = $state(true);
+    let sensors: Sensor[] = $state([]);
+    let selectedSensor: { label: string; value: string } = $state();
+    let rule: NewRule = $state({
         name: '',
         description: '',
         on_valid: {
@@ -28,42 +36,47 @@
         },
         // @ts-expect-error nah dont wanna do this
         internal: {},
-    };
-    let errors: Record<string, string> = {};
-    let internal = '';
-    let payload = '';
+    });
+    let errors: Record<string, string> = $state({});
+    let internal = {};
+    let payload = $state('');
 
-    $: if (!loading && selectedSensor) {
-        rule.on_valid.to = selectedSensor.value;
-    }
-
-    $: if (!loading) {
-        try {
-            rule.on_valid.payload = JSON.parse(payload);
-            delete errors['payload'];
-            errors = errors;
-        } catch {
-            errors['payload'] = 'Not a valid JSON';
+    run(() => {
+        if (!loading && selectedSensor) {
+            rule.on_valid.to = selectedSensor.value;
         }
-    }
+    });
 
-    $: if (!loading) {
-        try {
-            const { data, success, error } = ruleInternalSchema.safeParse(
-                JSON.parse(internal)
-            );
-
-            if (success) {
-                delete errors['internal'];
+    run(() => {
+        if (!loading) {
+            try {
+                rule.on_valid.payload = JSON.parse(payload);
+                delete errors['payload'];
                 errors = errors;
-                rule.internal = data;
-            } else {
-                console.log('tbhjasr', error.issues);
+            } catch {
+                errors['payload'] = 'Not a valid JSON';
             }
-        } catch {
-            errors['internal'] = 'Not a valid JSON';
         }
-    }
+    });
+
+    run(() => {
+        if (!loading) {
+            try {
+                const { data, success, error } =
+                    ruleInternalSchema.safeParse(internal);
+
+                if (success) {
+                    delete errors['internal'];
+                    errors = errors;
+                    rule.internal = data;
+                } else {
+                    console.log('tbhjasr', error.issues);
+                }
+            } catch {
+                errors['internal'] = 'Not a valid JSON';
+            }
+        }
+    });
 
     const handleSubmit = async () => {
         const { success, data, error } = newRuleSchema.safeParse(rule);
@@ -103,10 +116,7 @@
     };
 
     onMount(async () => {
-        sensors = (await data.sensors).map((e) => ({
-            value: e.id,
-            label: e.name,
-        }));
+        sensors = await data.sensors;
         loading = false;
     });
 
@@ -120,7 +130,7 @@
 {:else}
     <Card.Root class="w-[600px] border-none shadow-none">
         <Card.Header class="text-3xl">
-            <Card.Title>Rule Details</Card.Title>
+            <Card.Title>New Rule</Card.Title>
         </Card.Header>
         <Card.Content class="grid grid-cols-[1fr_2fr] items-center gap-3">
             <FormInput
@@ -156,9 +166,7 @@
                 </Select.Trigger>
                 <Select.Content>
                     {#each sensors as type}
-                        <Select.Item value={type.value}
-                            >{type.label}</Select.Item
-                        >
+                        <Select.Item value={type.id}>{type.name}</Select.Item>
                     {/each}
                 </Select.Content>
             </Select.Root>
@@ -169,12 +177,18 @@
                 {errors}
                 bind:value={payload}
             />
-            <FormInput
-                name="internal"
-                type="text"
-                label="Internal FIXME"
-                {errors}
-                bind:value={internal}
+
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Internal:
+            </Label>
+            <RuleInternalBuilder
+                bind:internal={rule.internal}
+                {sensors}
+                bind:parent={rule}
+                secondParent={undefined}
             />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">

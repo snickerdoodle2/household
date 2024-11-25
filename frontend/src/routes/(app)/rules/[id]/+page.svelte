@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import * as Card from '$lib/components/ui/card';
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
@@ -13,43 +15,54 @@
     import { Button } from '@/components/ui/button';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
-    export let data: PageData;
-    let rule: RuleDetails;
-    let loading = true;
-    let errors: Record<string, string> = {};
-    let editing = false;
-    let sensors: { label: string; value: string }[] = [];
-    let selectedSensor: { label: string; value: string };
-    let internal = '';
-    let payload = '';
+    import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
+    import type { Sensor } from '@/types/sensor';
+    type Props = {
+        data: PageData;
+    };
+
+    let { data }: Props = $props();
+    let rule: RuleDetails = $state();
+    let loading = $state(true);
+    let errors: Record<string, string> = $state({});
+    let editing = $state(false);
+    let sensors: Sensor[] = $state([]);
+    let selectedSensor: { label: string; value: string } = $state();
+    let internal = $state({});
+    let payload = $state('');
 
     // TODO: make single validation function
-    $: if (!loading) {
-        rule.on_valid.to = selectedSensor.value;
-    }
+    run(() => {
+        if (!loading) {
+            rule.on_valid.to = selectedSensor.value;
+        }
+    });
 
-    $: if (!loading) {
-        try {
-            const { data, success } = ruleInternalSchema.safeParse(
-                JSON.parse(internal)
-            );
-            if (success) {
-                rule.internal = data;
+    run(() => {
+        if (!loading) {
+            try {
+                const { data, success } =
+                    ruleInternalSchema.safeParse(internal);
+                if (success) {
+                    rule.internal = data;
+                }
+            } catch {
+                errors['internal'] = 'Invalid JSON';
             }
-        } catch {
-            errors['internal'] = 'Invalid JSON';
         }
-    }
+    });
 
-    $: if (!loading) {
-        try {
-            rule.on_valid.payload = JSON.parse(payload);
-            delete errors['payload'];
-            errors = errors;
-        } catch {
-            errors['payload'] = 'Not a valid JSON';
+    run(() => {
+        if (!loading) {
+            try {
+                rule.on_valid.payload = JSON.parse(payload);
+                delete errors['payload'];
+                errors = errors;
+            } catch {
+                errors['payload'] = 'Not a valid JSON';
+            }
         }
-    }
+    });
 
     const leave = () => {
         goto(`/rules/`);
@@ -57,9 +70,9 @@
 
     const resetRule = async () => {
         rule = { ...(await data.rule) };
-        const tmp = sensors.find((e) => e.value === rule.on_valid.to);
-        if (tmp) {
-            selectedSensor = tmp;
+        const sensor = sensors.find((e) => e.id === rule.on_valid.to);
+        if (sensor) {
+            selectedSensor = { value: sensor.id, label: sensor.name };
         }
         payload = JSON.stringify(rule.on_valid.payload);
         internal = JSON.stringify(rule.internal);
@@ -88,7 +101,6 @@
             ...rule,
         });
         if (!success) {
-            console.log(error.issues);
             if (!success) {
                 error.issues.forEach((issue) => {
                     const fieldPath = issue.path.join('.');
@@ -104,7 +116,6 @@
                         errors['internal'] = issue.message;
                     }
                 });
-                console.log(error.issues);
                 return;
             }
             return;
@@ -126,10 +137,7 @@
     };
 
     onMount(async () => {
-        sensors = (await data.sensors).map((e) => ({
-            value: e.id,
-            label: e.name,
-        }));
+        sensors = await data.sensors;
         await resetRule();
         loading = false;
     });
@@ -182,9 +190,9 @@
                     <Select.Value />
                 </Select.Trigger>
                 <Select.Content>
-                    {#each sensors as type}
-                        <Select.Item value={type.value}
-                            >{type.label}</Select.Item
+                    {#each sensors as sensor}
+                        <Select.Item value={sensor.id}
+                            >{sensor.name}</Select.Item
                         >
                     {/each}
                 </Select.Content>
@@ -197,13 +205,18 @@
                 bind:value={payload}
                 disabled={!editing}
             />
-            <FormInput
-                name="internal"
-                type="text"
-                label="Internal FIXME"
-                {errors}
-                bind:value={internal}
-                disabled={!editing}
+            <Label
+                for="type"
+                class="flex items-center justify-between text-base font-semibold"
+            >
+                Internal:
+            </Label>
+            <RuleInternalBuilder
+                bind:internal={rule.internal}
+                {sensors}
+                bind:parent={rule}
+                secondParent={undefined}
+                editingDisabled={!editing}
             />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">

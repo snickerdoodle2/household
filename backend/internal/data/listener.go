@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"inzynierka/internal/broker"
 	"io"
@@ -9,12 +10,13 @@ import (
 	"time"
 )
 
-func NewListener[T any](sensor *Sensor) *Listener[T] {
+func NewListener[T any](sensor *Sensor, onNewValue func(T)) *Listener[T] {
 	return &Listener[T]{
-		sensor: sensor,
-		values: make([]T, 0),
-		StopCh: make(chan struct{}, 2),
-		Broker: broker.NewBroker[[]T](),
+		sensor:     sensor,
+		values:     make([]T, 0),
+		StopCh:     make(chan struct{}, 2),
+		Broker:     broker.NewBroker[[]T](),
+		onNewValue: onNewValue,
 	}
 }
 
@@ -25,16 +27,23 @@ type Response[T any] struct {
 }
 
 type Listener[T any] struct {
-	sensor *Sensor
-	values []T
-	StopCh chan struct{}
-	Broker *broker.Broker[[]T]
+	sensor     *Sensor
+	values     []T
+	StopCh     chan struct{}
+	Broker     *broker.Broker[[]T]
+	onNewValue func(T)
 }
+
+var (
+	ErrSensorHttpErrorResponse = errors.New("sensor value request returned HTTP Error code")
+)
 
 func (l *Listener[T]) Start() error {
 	var input struct {
 		Value T `json:"value"`
 	}
+
+	sensorEndpoint := fmt.Sprintf("http://%v/value", l.sensor.URI)
 
 	go l.Broker.Start()
 	defer l.Broker.Stop()
@@ -49,14 +58,20 @@ func (l *Listener[T]) Start() error {
 		delay := delayMultiplier * l.sensor.RefreshRate
 		time.Sleep(time.Duration(delay) * time.Second)
 
-		res, err := http.Get(fmt.Sprintf("http://%v/value", l.sensor.URI))
+		res, err := http.Get(sensorEndpoint)
 		if err != nil {
-			fmt.Printf(err.Error())
+			fmt.Print(err.Error())
 
 			l.Broker.Publish(nil)
 
 			delayMultiplier += 1
 			continue
+		}
+
+		if res.StatusCode >= 400 {
+			fmt.Printf("Received: %v when calling %v %v\n", res.Status, res.Request.Method, sensorEndpoint)
+			return ErrSensorHttpErrorResponse
+			// TODO: send notification
 		}
 
 		body, err := io.ReadAll(res.Body)
@@ -69,10 +84,13 @@ func (l *Listener[T]) Start() error {
 			return err
 		}
 
+		// TODO: wyrzucic do konfigu
 		l.values = append(l.values, input.Value)
 		if len(l.values) > 5 {
 			l.values = l.values[1:]
 		}
+
+		l.onNewValue(input.Value)
 
 		l.Broker.Publish(l.values)
 

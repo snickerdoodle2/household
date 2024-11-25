@@ -7,7 +7,7 @@ const config = {
     tabWidth: 4,
     semi: true,
     singleQuote: true,
-    plugins: ['prettier-plugin-svelte', 'prettier-plugin-tailwindcss'],
+    plugins: ['prettier-plugin-tailwindcss', 'prettier-plugin-svelte'],
     tailwindConfig: './tailwind.config.js',
     overrides: [
         {
