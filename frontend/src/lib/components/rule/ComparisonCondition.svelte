@@ -18,7 +18,7 @@
     let {
         internal = $bindable(),
         sensors,
-        editingDisabled = false,
+        editingDisabled = $bindable(false),
         children,
     }: Props = $props();
 
