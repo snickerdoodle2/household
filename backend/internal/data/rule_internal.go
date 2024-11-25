@@ -25,7 +25,7 @@ var (
 type RuleData map[uuid.UUID]float64
 
 type RuleInternal interface {
-	Process(data RuleData) (bool, error)
+	Process(data RuleData, model *SensorMeasurementModel) (bool, error)
 	// NOTE: map[uuid.UUID]struct{} (hashset) -> better perf
 	// should be called only once per rule lifetime
 	Dependencies() []uuid.UUID

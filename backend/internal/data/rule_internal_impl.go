@@ -24,9 +24,9 @@ func (r RuleAnd) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleAnd) Process(data RuleData) (bool, error) {
+func (r *RuleAnd) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
 	for _, child := range r.Children {
-		ret, err := child.Process(data)
+		ret, err := child.Process(data, m)
 		if err != nil {
 			return false, err
 		}
@@ -77,7 +77,7 @@ func (r RuleGT) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleGT) Process(data RuleData) (bool, error) {
+func (r *RuleGT) Process(data RuleData, _ *SensorMeasurementModel) (bool, error) {
 	val, ok := data[r.SensorID]
 
 	if !ok {
@@ -111,7 +111,7 @@ func (r RuleLT) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleLT) Process(data RuleData) (bool, error) {
+func (r *RuleLT) Process(data RuleData, _ *SensorMeasurementModel) (bool, error) {
 	val, ok := data[r.SensorID]
 
 	if !ok {
@@ -144,8 +144,8 @@ func (r RuleNot) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleNot) Process(data RuleData) (bool, error) {
-	val, err := r.Wrapped.Process(data)
+func (r *RuleNot) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
+	val, err := r.Wrapped.Process(data, m)
 	return !val, err
 }
 
@@ -172,9 +172,9 @@ func (r RuleOr) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *RuleOr) Process(data RuleData) (bool, error) {
+func (r *RuleOr) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
 	for _, child := range r.Children {
-		ret, err := child.Process(data)
+		ret, err := child.Process(data, m)
 		if err != nil {
 			return false, err
 		}
