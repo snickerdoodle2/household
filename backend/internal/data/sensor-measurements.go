@@ -133,3 +133,24 @@ func (m *SensorMeasurementModel) GetMeasurementsSince(id uuid.UUID, delta time.D
 
 	return measurements, nil
 }
+
+func (m *SensorMeasurementModel) GetPercentile(id uuid.UUID, delta time.Duration, percentile int) (float64, error) {
+	query := `
+    SELECT percentile_disc($1) WITHIN GROUP ( ORDER BY measured_value ) FROM sensor_measurements
+    WHERE sensor_id = $2 AND now() - measured_at < $3
+    `
+
+	percentileFraction := float64(percentile) / 100
+	var result float64
+
+	args := []any{percentileFraction, id, delta}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := m.DB.QueryRow(ctx, query, args...).Scan(&result)
+	if err != nil {
+		return 0, err
+	}
+
+	return result, nil
+}

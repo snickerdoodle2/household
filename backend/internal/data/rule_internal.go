@@ -3,7 +3,9 @@ package data
 import (
 	"errors"
 	"inzynierka/internal/data/validator"
+	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
 )
 
@@ -25,7 +27,7 @@ var (
 type RuleData map[uuid.UUID]float64
 
 type RuleInternal interface {
-	Process(data RuleData) (bool, error)
+	Process(data RuleData, model *SensorMeasurementModel) (bool, error)
 	// NOTE: map[uuid.UUID]struct{} (hashset) -> better perf
 	// should be called only once per rule lifetime
 	Dependencies() []uuid.UUID
@@ -85,6 +87,48 @@ func unmarshalSimple(data map[string]interface{}) (uuid.UUID, float64, error) {
 	return sensorID, value, nil
 }
 
+func unmarshalPerc(data map[string]interface{}) (*RulePerc, error) {
+	idData, ok := data["sensor_id"]
+	if !ok {
+		return nil, ErrParseMissingSensorID
+	}
+	idStr, ok := idData.(string)
+	if !ok {
+		log.Error("idStr")
+		return nil, ErrParseInvalidType
+	}
+	sensorID, err := uuid.Parse(idStr)
+	if err != nil {
+		return nil, err
+	}
+
+	dur, ok := data["duration"]
+	if !ok {
+		return nil, ErrMissingVal
+	}
+	durStr, ok := dur.(string)
+	if !ok {
+		log.Error("durStr")
+		return nil, ErrParseInvalidType
+	}
+	duration, err := time.ParseDuration(durStr)
+	if err != nil {
+		return nil, err
+	}
+
+	percData, ok := data["perc"]
+	if !ok {
+		return nil, ErrMissingVal
+	}
+	perc, ok := percData.(float64)
+	if !ok {
+		log.Errorf("perc type is %T", percData)
+		return nil, ErrParseInvalidType
+	}
+
+	return &RulePerc{SensorID: sensorID, Delta: Duration(duration), Percentile: int(perc)}, nil
+}
+
 func UnmarshalInternalRuleJSON(data map[string]interface{}) (RuleInternal, error) {
 	nodeType, ok := data["type"]
 
@@ -138,6 +182,8 @@ func UnmarshalInternalRuleJSON(data map[string]interface{}) (RuleInternal, error
 		}
 
 		return &RuleLT{SensorID: sensorID, Value: value}, nil
+	case "perc":
+		return unmarshalPerc(data)
 	default:
 		return nil, ErrParseUnknownType
 	}

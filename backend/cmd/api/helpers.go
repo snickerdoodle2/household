@@ -152,7 +152,7 @@ func (app *App) stopSensorListener(sensorId uuid.UUID) {
 func (app *App) startRule(rule *data.Rule) {
 	ch := make(chan struct{}, 2)
 	app.rules.stopChannels[rule.ID] = ch
-	go rule.Run(app.listeners, app.rules.channel, ch)
+	go rule.Run(app.listeners, app.rules.channel, ch, &app.models.SensorMeasurements)
 }
 
 func (app *App) stopRule(ruleId uuid.UUID) {
