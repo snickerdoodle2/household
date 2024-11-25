@@ -22,7 +22,7 @@ const RulePerc = z.object({
     duration: z
         .string()
         .regex(/^-?(?:\d+(?:\.\d+)?(?:h|m|s|(?:ms)|(?:µs)|(?:us)|(?:ns)))+$/),
-    perc: z.number().gt(0).lte(100),
+    perc: z.number().int().min(0).max(100),
 });
 
 export type RulePercType = z.infer<typeof RulePerc>;
