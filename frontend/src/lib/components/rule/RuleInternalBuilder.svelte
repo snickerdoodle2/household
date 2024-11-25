@@ -32,7 +32,7 @@
     };
 
     let {
-        expanded = $bindable(false),
+        expanded = $bindable(true),
         internal = $bindable(),
         parent = $bindable(),
         secondParent = $bindable(),
@@ -54,12 +54,14 @@
         return Object.hasOwn(parentInput, 'description');
     }
 
-    function isRule(internal: RuleInternal | object): internal is RuleInternal {
+    function isNotEmptyRule(
+        internal: RuleInternal | object
+    ): internal is RuleInternal {
         return Object.keys(internal).length !== 0;
     }
 
     function deleteRule() {
-        if (!isRule(internal)) return;
+        if (!isNotEmptyRule(internal)) return;
 
         if (isRootRule(parent)) {
             internal = {};
@@ -71,10 +73,10 @@
                 parent.internal = internal.wrapped;
                 return;
             } else if (parent.type === 'or' || parent.type === 'and') {
+                parent.children.push(internal.wrapped);
                 parent.children = parent.children.filter((child) => {
                     return child != internal;
                 });
-                parent.children.push(internal.wrapped);
                 return;
             } else if (parent.type === 'not') {
                 parent.wrapped = internal.wrapped;
@@ -99,10 +101,9 @@
             ) {
                 secondParent.children = secondParent.children.filter(
                     (child) => {
-                        return child != internal;
+                        return child.type != 'not' || child.wrapped != internal;
                     }
                 );
-                secondParent.children.push(internal);
                 return;
             } else if (secondParent.type === 'not') {
                 secondParent.wrapped = internal;
@@ -116,7 +117,7 @@
     }
 
     function negateRule() {
-        if (!isRule(internal)) return;
+        if (!isNotEmptyRule(internal)) return;
 
         if (isRootRule(parent)) {
             parent.internal = {
@@ -127,24 +128,26 @@
         }
 
         if (parent.type === 'or' || parent.type === 'and') {
-            parent.children = parent.children.filter((child) => {
-                return child != internal;
-            });
             parent.children.push({
                 type: 'not',
                 wrapped: internal,
             });
+            parent.children = parent.children.filter((child) => {
+                return child != internal;
+            });
         }
     }
+
     let background = $derived(
-        isRule(internal) && (internal.type === 'lt' || internal.type === 'gt')
+        isNotEmptyRule(internal) &&
+            (internal.type === 'lt' || internal.type === 'gt')
             ? ''
             : 'bg-foreground'
     );
 </script>
 
 <div class="w-full">
-    {#if isRule(internal)}
+    {#if isNotEmptyRule(internal)}
         <!-- Main view (AND, OR, ...) -->
         <div class="flex inline-flex {background} rounded">
             {#if internal.type === 'lt' || internal.type === 'gt'}
@@ -175,7 +178,7 @@
                         {#if !editingDisabled}
                             <Button
                                 on:click={() => {
-                                    if (!isRule(internal)) return;
+                                    if (!isNotEmptyRule(internal)) return;
                                     internal.type =
                                         internal.type === 'and' ? 'or' : 'and';
                                 }}

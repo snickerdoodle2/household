@@ -41,8 +41,11 @@
         { value: 'or', label: 'Or' },
     ];
 
-    let selectedSensor: { value: string; label: string } = $state();
-    let value: number = $state();
+    let selectedSensor: { value: string; label: string } = $state({
+        value: '',
+        label: '',
+    });
+    let value: number = $state(0);
     let errors = $state({ value: false, sensor: false });
 
     function constructRule(): RuleInternal | undefined {

@@ -176,7 +176,7 @@
             {#if loading}
                 <p>Loading...</p>
             {:else}
-                <Card.Root class="w-[700px] border-none shadow-none">
+                <Card.Root class="min-w-[700px] border-none shadow-none">
                     <Card.Header class="text-3xl">
                         <Card.Title>Rule Details</Card.Title>
                     </Card.Header>

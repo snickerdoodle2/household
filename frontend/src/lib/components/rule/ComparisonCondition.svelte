@@ -24,15 +24,21 @@
 
     let editing = $state(false);
 
-    let type: { value: 'gt' | 'lt' | 'not found'; label: string } = $state();
-    let selectedSensor: { value: string; label: string } = $state();
-    let value: number = $state();
+    let type: { value: 'gt' | 'lt' | 'not found'; label: string } = $state({
+        value: 'gt',
+        label: '',
+    });
+    let selectedSensor: { value: string; label: string } = $state({
+        value: '',
+        label: '',
+    });
+    let value: number = $state(1);
     let dropDownsOpen = $state({
         sensor: false,
         type: false,
     });
 
-    let wrappingDiv: HTMLDivElement = $state();
+    let wrappingDiv: HTMLDivElement | undefined = $state();
 
     function toggleEditing() {
         editing = !editing;
