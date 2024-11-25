@@ -14,9 +14,10 @@
     } from '$lib/types/rule';
     import type { PageData } from './$types';
     import { authFetch } from '@/helpers/fetch';
-    import { goto } from '$app/navigation';
+    import { goto, invalidate } from '$app/navigation';
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { Sensor } from '@/types/sensor';
+    import { RULE_URL } from '@/helpers/rule';
 
     type Props = {
         data: PageData;
@@ -26,7 +27,7 @@
 
     let loading = $state(true);
     let sensors: Sensor[] = $state([]);
-    let selectedSensor: { label: string; value: string } = $state();
+    let selectedSensor: { label: string; value: string } = $state({label: "", value: ""});
     let rule: NewRule = $state({
         name: '',
         description: '',
@@ -34,8 +35,7 @@
             to: '',
             payload: {},
         },
-        // @ts-expect-error nah dont wanna do this
-        internal: {},
+        internal: {} as NewRule["internal"],
     });
     let errors: Record<string, string> = $state({});
     let internal = {};
@@ -111,6 +111,7 @@
             // TODO: direct errors to proper fields
             console.log('error');
         } else {
+            await invalidate(RULE_URL);
             leave();
         }
     };

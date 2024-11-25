@@ -14,20 +14,31 @@
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
     import { authFetch } from '@/helpers/fetch';
-    import { goto } from '$app/navigation';
+    import { goto, invalidate } from '$app/navigation';
     import RuleInternalBuilder from '@/components/rule/RuleInternalBuilder.svelte';
     import type { Sensor } from '@/types/sensor';
+    import { RULE_URL } from '@/helpers/rule';
     type Props = {
         data: PageData;
     };
 
     let { data }: Props = $props();
-    let rule: RuleDetails = $state();
+    let rule: RuleDetails = $state({
+        id: "",
+        name: "",
+        created_at: new Date(),
+        description: "",
+        on_valid: {
+            to: "",
+            payload: {},
+        },
+        internal: {} as RuleDetails['internal'],
+    });
     let loading = $state(true);
     let errors: Record<string, string> = $state({});
     let editing = $state(false);
     let sensors: Sensor[] = $state([]);
-    let selectedSensor: { label: string; value: string } = $state();
+    let selectedSensor: { label: string; value: string } = $state({label: "", value: ""});
     let internal = $state({});
     let payload = $state('');
 
@@ -92,6 +103,7 @@
         console.log(await res.json());
 
         if (res.ok) {
+            await invalidate(RULE_URL);
             leave();
         }
     };
@@ -130,6 +142,7 @@
         });
 
         if (res.ok) {
+            await invalidate(RULE_URL);
             leave();
         }
 
