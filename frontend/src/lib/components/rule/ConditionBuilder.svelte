@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
-
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import { Button } from '$lib/components/ui/button';
@@ -115,14 +113,7 @@
             return;
         }
     }
-
-    let timeout: number;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    const debounce = (callback: Function, ...args: unknown[]) => {
-        clearTimeout(timeout);
-        timeout = window.setTimeout(() => callback(args), 300);
-    };
-
+    
     $effect(() => {
         errors.value = typeof value === 'undefined';
         errors.sensor = !selectedSensor;
