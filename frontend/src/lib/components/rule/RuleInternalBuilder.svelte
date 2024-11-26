@@ -14,6 +14,7 @@
     import { Symbol } from 'radix-icons-svelte';
     import { Trash, Plus, Slash } from 'svelte-radix';
     import ConditionBuilder from './ConditionBuilder.svelte';
+    import PercentileCondition from './PercentileCondition.svelte';
 
     type Parent =
         | RuleDetails
@@ -140,7 +141,9 @@
 
     let background = $derived(
         isNotEmptyRule(internal) &&
-            (internal.type === 'lt' || internal.type === 'gt')
+            (internal.type === 'lt' ||
+                internal.type === 'gt' ||
+                internal.type === 'perc')
             ? ''
             : 'bg-foreground'
     );
@@ -169,6 +172,25 @@
                         </Button>
                     {/if}
                 </ComparisonRule>
+            {:else if internal.type === 'perc'}
+                <PercentileCondition {internal} {sensors} bind:editingDisabled>
+                    {#if !editingDisabled}
+                        <Button
+                            on:click={negateRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Slash class="w-4" />
+                        </Button>
+                        <Button
+                            on:click={deleteRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Trash class="w-4" />
+                        </Button>
+                    {/if}
+                </PercentileCondition>
             {:else}
                 {#if internal.type === 'and' || internal.type === 'or'}
                     <div class="flex">
