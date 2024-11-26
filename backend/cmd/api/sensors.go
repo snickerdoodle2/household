@@ -116,8 +116,8 @@ func (app *App) insertAndHandleListener(sensor *data.Sensor, w http.ResponseWrit
 func (app *App) initSensor(sensor data.Sensor) error {
 	app.logger.Info("init sensor", "sensor", sensor.Name)
 	sensorEndpoint := fmt.Sprintf("http://%v/init", sensor.URI)
-	initAckEndpoint := "/api/v1/sensor/measurements" // TODO: find a way to get this from the app
-	measurementsEndpoint := "/api/v1/sensor/init-ack"
+	measurementsEndpoint := "/api/v1/sensor/measurements" // TODO: find a way to get this from the app
+	initAckEndpoint := "/api/v1/sensor/init-ack"
 	idToken, err := uuid.NewRandom()
 	if err != nil {
 		app.logger.Error("init sensor id token generation", "error", err.Error())
