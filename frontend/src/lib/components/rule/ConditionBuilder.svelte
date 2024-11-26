@@ -113,7 +113,7 @@
             return;
         }
     }
-    
+
     $effect(() => {
         errors.value = typeof value === 'undefined';
         errors.sensor = !selectedSensor;
