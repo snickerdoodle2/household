@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"inzynierka/internal/data/validator"
 	"reflect"
 	"strings"
@@ -64,14 +63,14 @@ func (r *Rule) Run(listeners SensorListeners, validCh chan ValidRuleAction, stop
 
 	r.update(values, validCh, m)
 
-	for true {
+	for {
 		i, sliceV, ok := reflect.Select(channels)
 		if !ok {
 			break
 		}
 
 		if i == len(deps) { // STOP CHANNEL
-			fmt.Println("Stopping")
+			logger.Debug("stopping rule")
 			break
 		}
 		slice := sliceV.Interface().([]float64)
