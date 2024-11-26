@@ -14,17 +14,20 @@
     import Label from '@/components/ui/label/label.svelte';
     import ActionsBuilder from '@/components/sequence/ActionsBuilder.svelte';
 
-    export let data: PageData;
+    type Props = {
+        data: PageData;
+    };
+    let { data }: Props = $props();
 
-    let loading = true;
-    let sensors: { label: string; value: string }[] = [];
-    let sequence: NewSequence = {
+    let loading = $state(true);
+    let sensors: { label: string; value: string }[] = $state([]);
+    let sequence: NewSequence = $state({
         name: '',
         description: '',
         actions: [] as SequenceAction[],
-    };
-    let errors: Record<string, string> = {};
-    let actionFieldErrors: Record<number, string[]>;
+    });
+    let errors: Record<string, string> = $state({});
+    let actionFieldErrors: Record<number, string[]> = $state({});
 
     const handleSubmit = async () => {
         const { success, data, error } = newSequenceSchema.safeParse(sequence);
@@ -114,7 +117,8 @@
             <ActionsBuilder
                 bind:sensors
                 bind:actions={sequence.actions}
-                bind:fieldErrors={actionFieldErrors}
+                fieldErrors={actionFieldErrors}
+                editing={true}
             />
         </Card.Content>
         <Card.Footer class="flex justify-end gap-3">
