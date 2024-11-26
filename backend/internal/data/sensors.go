@@ -78,8 +78,8 @@ type SensorModel struct {
 
 func (m SensorModel) Insert(sensor *Sensor) error {
 	query := `
-    INSERT INTO sensors (id, name, uri, sensor_type, refresh_rate, active)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO sensors (id, name, uri, sensor_type, refresh_rate, active, id_token)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING created_at, version
     `
 
@@ -90,7 +90,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 	sensor.ID = uuid
 
-	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate, sensor.Active}
+	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate, sensor.Active, sensor.IdToken}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -112,7 +112,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 	query := `
-    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active
+    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active, id_token
     FROM sensors
     WHERE id = $1
     `
@@ -130,6 +130,7 @@ func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 		&sensor.CreatedAt,
 		&sensor.Version,
 		&sensor.Active,
+		&sensor.IdToken,
 	)
 
 	if err != nil {
@@ -196,7 +197,7 @@ func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 
 func (m SensorModel) GetAll() ([]*Sensor, error) {
 	query := `
-    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active
+    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active, id_token
     FROM sensors
     ORDER BY id
     `
@@ -224,6 +225,7 @@ func (m SensorModel) GetAll() ([]*Sensor, error) {
 			&sensor.CreatedAt,
 			&sensor.Version,
 			&sensor.Active,
+			&sensor.IdToken,
 		)
 
 		if err != nil {

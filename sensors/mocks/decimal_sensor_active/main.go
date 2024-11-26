@@ -26,11 +26,13 @@ type Measurement struct {
 }
 
 var (
-	cfg       Config
-	serverUri string
-	idToken   string
-	initWg    sync.WaitGroup
-	interval  *int
+	cfg                        Config
+	serverUri                  string
+	serverMeasurementsEndpoint string
+	serverInitAckEndpoint      string
+	idToken                    string
+	initWg                     sync.WaitGroup
+	interval                   *int
 )
 
 func main() {
@@ -86,7 +88,7 @@ func activeLoop() {
 		// Ensure proper URL construction
 		url := serverUri
 		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-			url = "http://" + url
+			url = "http://" + url + serverMeasurementsEndpoint
 		}
 
 		resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
@@ -122,14 +124,17 @@ func valueHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func initHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Init request received")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var input struct {
-		ServerUri string `json:"server-uri"`
-		IDToken   string `json:"id-token"`
+		IdToken              string `json:"id-token"`
+		ServerUri            string `json:"server-uri"`
+		InitAckEndpoint      string `json:"init-ack-endpoint"`
+		MeasurementsEndpoint string `json:"measurements-endpoint"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -138,8 +143,32 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serverUri = input.ServerUri
-	idToken = input.IDToken
-	initWg.Done()
+	idToken = input.IdToken
+	serverMeasurementsEndpoint = input.MeasurementsEndpoint
+	serverInitAckEndpoint = input.InitAckEndpoint
 
 	w.WriteHeader(http.StatusOK)
+
+	url := serverUri
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "http://" + url + serverInitAckEndpoint
+	}
+
+	jsonData, err := json.Marshal(input)
+	if err != nil {
+		log.Printf("Error marshaling JSON: %v", err)
+		return
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("Error sending request: %v", err)
+		return
+	}
+
+	if resp.StatusCode < 300 {
+		resp.Body.Close()
+		initWg.Done()
+	}
+
 }

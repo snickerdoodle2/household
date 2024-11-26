@@ -58,7 +58,8 @@ func main() {
 
 	logger := log.NewWithOptions(os.Stdout, log.Options{
 		ReportTimestamp: true,
-		Level:           log.DebugLevel,
+		Level:           log.InfoLevel,
+		ReportCaller:    true,
 	})
 
 	db, err := openDB(cfg)
@@ -72,10 +73,11 @@ func main() {
 	logger.Info("DB connection established")
 
 	app := App{
-		logger:    logger,
-		config:    cfg,
-		models:    data.NewModels(db),
-		listeners: make(data.SensorListeners),
+		logger:     logger,
+		config:     cfg,
+		models:     data.NewModels(db),
+		listeners:  make(data.SensorListeners),
+		initBuffer: make(data.SensorInitBuffer),
 		rules: struct {
 			channel      chan data.ValidRuleAction
 			stopChannels map[uuid.UUID]chan struct{}

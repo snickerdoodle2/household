@@ -77,6 +77,14 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		Active:      input.Active,
 	}
 
+	if sensor.Active {
+		app.initSensor(*sensor)
+	} else {
+		app.insertAndHandleListener(sensor, w, r)
+	}
+}
+
+func (app *App) insertAndHandleListener(sensor *data.Sensor, w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 
 	if data.ValidateSensor(v, sensor); !v.Valid() {
@@ -84,46 +92,45 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if sensor.Active {
-		initSensor(app, *sensor)
-	} else {
-		err = app.models.Sensors.Insert(sensor)
-		if err != nil {
-			switch {
-			case errors.Is(err, data.ErrDuplicateUri):
-				v.AddError("uri", "a sensor with this URI already exists")
-				app.failedValidationResponse(w, r, v.Errors)
-			default:
-				app.serverErrorResponse(w, r, err)
-			}
-			return
-		}
-
-		listener := app.createAndAddSensorListener(sensor)
-		listener.Start()
-
-		err = app.writeJSON(w, http.StatusCreated, envelope{"data": sensor}, nil)
-		if err != nil {
+	err := app.models.Sensors.Insert(sensor)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrDuplicateUri):
+			v.AddError("uri", "a sensor with this URI already exists")
+			app.failedValidationResponse(w, r, v.Errors)
+		default:
 			app.serverErrorResponse(w, r, err)
 		}
+		return
+	}
+
+	listener := app.createAndAddSensorListener(sensor)
+	if !sensor.Active {
+		listener.Start()
 	}
 }
 
 // function to initialize active (for now) sensor.
 // Sends init request to the sensor and adds it to initBuffer.
 // Sensor should send init-ack request to init-ack endpoint to be removed from initBuffer and further processed
-func initSensor(app *App, sensor data.Sensor) error {
+func (app *App) initSensor(sensor data.Sensor) error {
 	sensorEndpoint := fmt.Sprintf("http://%v/init", sensor.URI)
+	initAckEndpoint := "/api/v1/sensor/measurements" // TODO: find a way to get this from the app
+	measurementsEndpoint := "/api/v1/sensor/init-ack"
 	idToken, err := uuid.NewRandom()
 	app.initBuffer[idToken] = sensor
 
 	var requestBody struct {
-		IdToken   uuid.UUID `json:"id-token"`
-		ServerUri string    `json:"server-uri"`
+		IdToken              uuid.UUID `json:"id-token"`
+		ServerUri            string    `json:"server-uri"`
+		InitAckEndpoint      string    `json:"init-ack-endpoint"`
+		MeasurementsEndpoint string    `json:"measurements-endpoint"`
 	}
 
 	requestBody.IdToken = idToken
 	requestBody.ServerUri = fmt.Sprintf("%s:%d", app.config.host, app.config.port)
+	requestBody.InitAckEndpoint = initAckEndpoint
+	requestBody.MeasurementsEndpoint = measurementsEndpoint
 
 	if err != nil {
 		return err
@@ -271,7 +278,7 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: different sensor identification - address:port impossible
 	uri := r.RemoteAddr
-	app.logger.Info("received actove sensor measurement", "uri", uri)
+	app.logger.Info("received active sensor measurement", "uri", uri)
 
 	var requestBody struct {
 		MessageType string  `json:"message-type"`
@@ -310,5 +317,30 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: remove sensor from init buffers
+	app.logger.Debug("init-ack received")
+	var requestBodyData struct {
+		IdToken              uuid.UUID `json:"id-token"`
+		ServerUri            string    `json:"server-uri"`
+		InitAckEndpoint      string    `json:"init-ack-endpoint"`
+		MeasurementsEndpoint string    `json:"measurements-endpoint"`
+	}
+
+	err := app.readJSON(w, r, &requestBodyData)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	sensor, ok := app.initBuffer[requestBodyData.IdToken]
+	if !ok {
+		app.logger.Warn("init-ack received for unknown sensor", "id-token", requestBodyData.IdToken)
+		return
+	}
+
+	sensor.IdToken = requestBodyData.IdToken
+
+	app.insertAndHandleListener(&sensor, w, r)
+
+	delete(app.initBuffer, requestBodyData.IdToken)
+
 }

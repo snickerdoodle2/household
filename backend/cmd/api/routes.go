@@ -25,8 +25,8 @@ func (app *App) routes() http.Handler {
 		r.Get("/healthcheck", app.healthcheckHandler)
 
 		r.Get("/sensor/measurements", app.upgradeSensorWebsocket)
-
 		r.Post("/sensor/measurements", app.activeSensorHandler)
+
 		r.Put("/sensors/init-ack", app.initAckHandler)
 
 		r.Route("/", func(r chi.Router) {
