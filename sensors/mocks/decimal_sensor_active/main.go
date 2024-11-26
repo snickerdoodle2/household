@@ -124,7 +124,6 @@ func valueHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func initHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Init request received")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -146,6 +145,7 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 	idToken = input.IdToken
 	serverMeasurementsEndpoint = input.MeasurementsEndpoint
 	serverInitAckEndpoint = input.InitAckEndpoint
+	log.Printf("Init request received: %+v", input)
 
 	w.WriteHeader(http.StatusOK)
 

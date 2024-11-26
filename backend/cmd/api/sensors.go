@@ -114,10 +114,15 @@ func (app *App) insertAndHandleListener(sensor *data.Sensor, w http.ResponseWrit
 // Sends init request to the sensor and adds it to initBuffer.
 // Sensor should send init-ack request to init-ack endpoint to be removed from initBuffer and further processed
 func (app *App) initSensor(sensor data.Sensor) error {
+	app.logger.Info("init sensor", "sensor", sensor.Name)
 	sensorEndpoint := fmt.Sprintf("http://%v/init", sensor.URI)
 	initAckEndpoint := "/api/v1/sensor/measurements" // TODO: find a way to get this from the app
 	measurementsEndpoint := "/api/v1/sensor/init-ack"
 	idToken, err := uuid.NewRandom()
+	if err != nil {
+		app.logger.Error("init sensor id token generation", "error", err.Error())
+		return err
+	}
 	app.initBuffer[idToken] = sensor
 
 	var requestBody struct {
@@ -132,9 +137,7 @@ func (app *App) initSensor(sensor data.Sensor) error {
 	requestBody.InitAckEndpoint = initAckEndpoint
 	requestBody.MeasurementsEndpoint = measurementsEndpoint
 
-	if err != nil {
-		return err
-	}
+	app.logger.Debug("init request body", "body", requestBody)
 
 	client := &http.Client{}
 	client.Timeout = 5 * time.Second
@@ -146,7 +149,7 @@ func (app *App) initSensor(sensor data.Sensor) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, sensorEndpoint, body)
+	req, err := http.NewRequest(http.MethodPost, sensorEndpoint, body)
 	if err != nil {
 		app.logger.Error("handleRuleRequests request creation", "error", err.Error())
 		return err
@@ -154,7 +157,9 @@ func (app *App) initSensor(sensor data.Sensor) error {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	_, err = client.Do(req)
+	resp, err := client.Do(req)
+	app.logger.Debug("init response code", "code", resp.StatusCode)
+
 	if err != nil {
 		app.logger.Error("handleInitRequest request", "error", err.Error())
 		return err

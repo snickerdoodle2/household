@@ -58,7 +58,7 @@ func main() {
 
 	logger := log.NewWithOptions(os.Stdout, log.Options{
 		ReportTimestamp: true,
-		Level:           log.InfoLevel,
+		Level:           log.DebugLevel,
 		ReportCaller:    true,
 	})
 
