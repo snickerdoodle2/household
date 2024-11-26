@@ -13,6 +13,7 @@
     } from '@/types/sequence';
     import Label from '@/components/ui/label/label.svelte';
     import ActionsBuilder from '@/components/sequence/ActionsBuilder.svelte';
+    import * as Dialog from '$lib/components/ui/dialog';
 
     type Props = {
         data: PageData;
@@ -85,45 +86,63 @@
     };
 </script>
 
-{#if loading}
-    <p>loading</p>
-{:else}
-    <Card.Root class="w-[1000px] border-none shadow-none">
-        <Card.Header class="text-3xl">
-            <Card.Title>New Sequence</Card.Title>
-        </Card.Header>
-        <Card.Content class="grid grid-cols-[1fr_10fr] items-center gap-3">
-            <FormInput
-                name="name"
-                type="text"
-                label="Name"
-                {errors}
-                bind:value={sequence.name}
-            />
-            <FormInput
-                name="description"
-                type="text"
-                label="Description"
-                {errors}
-                bind:value={sequence.description}
-            />
+<Dialog.Root
+    open={true}
+    onOpenChange={(opened) => {
+        if (!opened) close();
+    }}
+>
+    <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content
+            class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
+        >
+            {#if loading}
+                <p>loading</p>
+            {:else}
+                <Card.Root class="w-[1000px] border-none shadow-none">
+                    <Card.Header class="text-3xl">
+                        <Card.Title>New Sequence</Card.Title>
+                    </Card.Header>
+                    <Card.Content
+                        class="grid grid-cols-[1fr_10fr] items-center gap-3"
+                    >
+                        <FormInput
+                            name="name"
+                            type="text"
+                            label="Name"
+                            {errors}
+                            bind:value={sequence.name}
+                        />
+                        <FormInput
+                            name="description"
+                            type="text"
+                            label="Description"
+                            {errors}
+                            bind:value={sequence.description}
+                        />
 
-            <Label
-                for="type"
-                class="flex items-center justify-between text-base font-semibold"
-            >
-                Actions:
-            </Label>
-            <ActionsBuilder
-                bind:sensors
-                bind:actions={sequence.actions}
-                fieldErrors={actionFieldErrors}
-                editing={true}
-            />
-        </Card.Content>
-        <Card.Footer class="flex justify-end gap-3">
-            <Button size="bold" on:click={leave}>Cancel</Button>
-            <Button size="bold" on:click={handleSubmit}>Create</Button>
-        </Card.Footer>
-    </Card.Root>
-{/if}
+                        <Label
+                            for="type"
+                            class="flex items-center justify-between text-base font-semibold"
+                        >
+                            Actions:
+                        </Label>
+                        <ActionsBuilder
+                            bind:sensors
+                            bind:actions={sequence.actions}
+                            fieldErrors={actionFieldErrors}
+                            editing={true}
+                        />
+                    </Card.Content>
+                    <Card.Footer class="flex justify-end gap-3">
+                        <Button size="bold" on:click={leave}>Cancel</Button>
+                        <Button size="bold" on:click={handleSubmit}
+                            >Create</Button
+                        >
+                    </Card.Footer>
+                </Card.Root>
+            {/if}
+        </Dialog.Content>
+    </Dialog.Portal>
+</Dialog.Root>

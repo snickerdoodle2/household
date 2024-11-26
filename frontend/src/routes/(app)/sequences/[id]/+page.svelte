@@ -13,6 +13,7 @@
     } from '@/types/sequence';
     import Label from '@/components/ui/label/label.svelte';
     import ActionsBuilder from '@/components/sequence/ActionsBuilder.svelte';
+    import * as Dialog from '$lib/components/ui/dialog';
 
     type Props = {
         data: PageData;
@@ -34,7 +35,7 @@
     let sensors: { label: string; value: string }[] = $state([]);
     let actions: SequenceAction[] = $state([]);
 
-    const leave = () => {
+    const close = () => {
         goto(`/sequences/`);
     };
 
@@ -58,7 +59,7 @@
         console.log(await res.json());
 
         if (res.ok) {
-            leave();
+            close();
         }
     };
 
@@ -103,7 +104,7 @@
         });
 
         if (res.ok) {
-            leave();
+            close();
         }
 
         console.log(await res.json());
@@ -119,63 +120,83 @@
     });
 </script>
 
-{#if loading}
-    <p>Loading...</p>
-{:else}
-    <Card.Root class="w-[1000px] border-none shadow-none">
-        <Card.Header class="text-3xl">
-            <Card.Title>Sequence Details</Card.Title>
-        </Card.Header>
-        <Card.Content class="grid grid-cols-[1fr_10fr] items-center gap-3">
-            <FormInput
-                name="name"
-                type="text"
-                label="Name"
-                {errors}
-                bind:value={sequence.name}
-                disabled={!editing}
-            />
-            <FormInput
-                name="description"
-                type="text"
-                label="Description"
-                {errors}
-                bind:value={sequence.description}
-                disabled={!editing}
-            />
-            <Label
-                for="type"
-                class="flex items-center justify-between text-base font-semibold"
-            >
-                Actions:
-            </Label>
-            <ActionsBuilder
-                bind:sensors
-                bind:actions
-                bind:editing
-                bind:fieldErrors={actionFieldErrors}
-            />
-        </Card.Content>
-        <Card.Footer class="flex justify-end gap-3">
-            {#if editing}
-                <Button
-                    variant="destructive"
-                    size="bold"
-                    on:click={handleDelete}>Delete</Button
-                >
-                <Button variant="outline" size="bold" on:click={handleCancel}
-                    >Cancel</Button
-                >
-                <Button size="bold" on:click={handleSubmit}>Submit</Button>
+<Dialog.Root
+    open={true}
+    onOpenChange={(opened) => {
+        if (!opened) close();
+    }}
+>
+    <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content
+            class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
+        >
+            {#if loading}
+                <p>Loading...</p>
             {:else}
-                <Button on:click={leave} size="bold">Cancel</Button>
-                <Button
-                    on:click={() => {
-                        editing = true;
-                    }}
-                    size="bold">Edit</Button
-                >
+                <Card.Root class="w-[1000px] border-none shadow-none">
+                    <Card.Header class="text-3xl">
+                        <Card.Title>Sequence Details</Card.Title>
+                    </Card.Header>
+                    <Card.Content
+                        class="grid grid-cols-[1fr_10fr] items-center gap-3"
+                    >
+                        <FormInput
+                            name="name"
+                            type="text"
+                            label="Name"
+                            {errors}
+                            bind:value={sequence.name}
+                            disabled={!editing}
+                        />
+                        <FormInput
+                            name="description"
+                            type="text"
+                            label="Description"
+                            {errors}
+                            bind:value={sequence.description}
+                            disabled={!editing}
+                        />
+                        <Label
+                            for="type"
+                            class="flex items-center justify-between text-base font-semibold"
+                        >
+                            Actions:
+                        </Label>
+                        <ActionsBuilder
+                            bind:sensors
+                            bind:actions
+                            bind:editing
+                            bind:fieldErrors={actionFieldErrors}
+                        />
+                    </Card.Content>
+                    <Card.Footer class="flex justify-end gap-3">
+                        {#if editing}
+                            <Button
+                                variant="destructive"
+                                size="bold"
+                                on:click={handleDelete}>Delete</Button
+                            >
+                            <Button
+                                variant="outline"
+                                size="bold"
+                                on:click={handleCancel}>Cancel</Button
+                            >
+                            <Button size="bold" on:click={handleSubmit}
+                                >Submit</Button
+                            >
+                        {:else}
+                            <Button on:click={close} size="bold">Cancel</Button>
+                            <Button
+                                on:click={() => {
+                                    editing = true;
+                                }}
+                                size="bold">Edit</Button
+                            >
+                        {/if}
+                    </Card.Footer>
+                </Card.Root>
             {/if}
-        </Card.Footer>
-    </Card.Root>
-{/if}
+        </Dialog.Content>
+    </Dialog.Portal>
+</Dialog.Root>
