@@ -2,6 +2,7 @@ import type { PageLoad } from './$types';
 import { getSensorDetails } from '@/helpers/sensor';
 
 export const load: PageLoad = async ({ params, fetch }) => {
+    console.log(params);
     return {
         sensor: (async () => {
             const res = await getSensorDetails(params.id, fetch);

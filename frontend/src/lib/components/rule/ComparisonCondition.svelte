@@ -24,15 +24,21 @@
 
     let editing = $state(false);
 
-    let type: { value: 'gt' | 'lt' | 'not found'; label: string } = $state();
-    let selectedSensor: { value: string; label: string } = $state();
-    let value: number = $state();
+    let type: { value: 'gt' | 'lt' | 'not found'; label: string } = $state({
+        value: 'gt',
+        label: '',
+    });
+    let selectedSensor: { value: string; label: string } = $state({
+        value: '',
+        label: '',
+    });
+    let value: number = $state(1);
     let dropDownsOpen = $state({
         sensor: false,
         type: false,
     });
 
-    let wrappingDiv: HTMLDivElement = $state();
+    let wrappingDiv: HTMLDivElement | undefined = $state();
 
     function toggleEditing() {
         editing = !editing;
@@ -69,7 +75,6 @@
         ) {
             editing = false;
             syncInternalValues();
-            console.log(dropDownsOpen, open);
         }
     }
 
@@ -83,7 +88,7 @@
 </script>
 
 <div
-    class="flex w-full min-w-[35rem] flex-row items-center gap-2 whitespace-nowrap"
+    class="flex w-full flex-row items-center gap-2 whitespace-nowrap"
     bind:this={wrappingDiv}
 >
     <Label>Value of</Label>
