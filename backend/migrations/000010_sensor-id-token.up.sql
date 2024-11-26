@@ -1,2 +1,2 @@
 ALTER TABLE sensors
-ADD COLUMN id_token uuid UNIQUE
+ADD COLUMN id_token uuid
