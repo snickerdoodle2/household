@@ -8,9 +8,15 @@ import (
 	"time"
 )
 
+func (app *App) parseSettings() error {
+	// TODO: ADD PARSING
+	app.settings.MeasurementsAmount = 32
+	return nil
+}
+
 func (app *App) serve() error {
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.config.port),
+		Addr:         fmt.Sprintf("%s:%d", app.config.host, app.config.port),
 		Handler:      app.routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
@@ -24,10 +30,7 @@ func (app *App) serve() error {
 	}
 
 	for _, sensor := range sensors {
-		listener := app.createAndAddSensorListener(sensor)
-		if !sensor.Active {
-			go listener.Start()
-		}
+		app.setupSensorListener(sensor)
 	}
 
 	rules, err := app.models.Rules.GetAll()

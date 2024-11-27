@@ -16,6 +16,17 @@ const RuleLT = z.object({
 
 export type RuleLtType = z.infer<typeof RuleLT>;
 
+const RulePerc = z.object({
+    type: z.literal('perc'),
+    sensor_id: z.string().uuid(),
+    duration: z
+        .string()
+        .regex(/^-?(?:\d+(?:\.\d+)?(?:h|m|s|(?:ms)|(?:µs)|(?:us)|(?:ns)))+$/),
+    perc: z.number().int().min(0).max(100),
+});
+
+export type RulePercType = z.infer<typeof RulePerc>;
+
 const RuleNot: z.ZodType<RuleNotType> = z.object({
     type: z.literal('not'),
     wrapped: z.lazy(() => ruleInternalSchema),
@@ -52,6 +63,7 @@ export const ruleInternalSchema = z.union([
     RuleNot,
     RuleGT,
     RuleLT,
+    RulePerc,
 ]);
 
 export type RuleInternal = z.infer<typeof ruleInternalSchema>;

@@ -3,6 +3,10 @@ import { SvelteMap } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 import { z } from 'zod';
 
+const durationSchema = z
+    .string()
+    .regex(/^-?(?:\d+(?:\.\d+)?(?:h|m|s|(?:ms)|(?:µs)|(?:us)|(?:ns)))+$/);
+
 const authSchema = z.object({
     type: z.literal('auth'),
     message: z.string(),
@@ -23,6 +27,19 @@ const sensorDataSuccessSchema = z.object({
 const sensorDataErrorSchema = z.object({
     status: z.literal('error'),
     message: z.string(),
+});
+
+const measurementResponseSchema = z.object({
+    type: z.literal('measurement_req'),
+    id: z.string(),
+    values: z
+        .record(z.string().datetime({ offset: true }), z.number())
+        .transform((e) => {
+            return Object.entries(e).reduce((acc, [key, value]) => {
+                acc.set(new Date(key), value);
+                return acc;
+            }, new SvelteMap<Date, number>());
+        }),
 });
 
 const subscribeSchema = z.object({
@@ -52,6 +69,7 @@ const messageSchema = z.discriminatedUnion('type', [
     authSchema,
     subscribeSchema,
     measurementSchema,
+    measurementResponseSchema,
 ]);
 
 export class SensorWebsocket {
@@ -107,6 +125,9 @@ export class SensorWebsocket {
             if (message.type === 'measurment') {
                 this.handleMeasurementMessage(message);
             }
+            if (message.type === 'measurement_req') {
+                this.handleMeasurementResponse(message);
+            }
         });
 
         this.websocket.addEventListener('open', () => {
@@ -136,6 +157,12 @@ export class SensorWebsocket {
             if (value.status === 'error') continue;
             this.data.set(key, value.values);
         }
+    }
+
+    private handleMeasurementResponse(
+        message: z.infer<typeof measurementResponseSchema>
+    ) {
+        this.data.set(message.id, message.values);
     }
 
     subscribe(sensorID: string) {
@@ -174,6 +201,23 @@ export class SensorWebsocket {
             );
             this.data.delete(sensorID);
         }
+    }
+
+    public requestSince(sensorID: string, delta: string) {
+        const { success, data: duration } = durationSchema.safeParse(delta);
+        if (!success) {
+            throw new Error('Invalid delta format');
+        }
+
+        this.websocket.send(
+            JSON.stringify({
+                type: 'measurement_req',
+                data: {
+                    id: sensorID,
+                    duration,
+                },
+            })
+        );
     }
 
     close() {

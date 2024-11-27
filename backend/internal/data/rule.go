@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"inzynierka/internal/data/validator"
 	"reflect"
 	"strings"
@@ -41,7 +40,7 @@ type SensorListeners map[uuid.UUID]*Listener[float64]
 
 // TOOD: Handle stopping on channel close
 // REF: https://pkg.go.dev/reflect#Select
-func (r *Rule) Run(listeners SensorListeners, validCh chan ValidRuleAction, stopCh chan struct{}) error {
+func (r *Rule) Run(listeners SensorListeners, validCh chan ValidRuleAction, stopCh chan struct{}, m *SensorMeasurementModel) error {
 	deps := r.Internal.Dependencies()
 	channels := make([]reflect.SelectCase, len(deps)+1)
 	values := make(RuleData)
@@ -62,27 +61,27 @@ func (r *Rule) Run(listeners SensorListeners, validCh chan ValidRuleAction, stop
 	}
 	channels[len(deps)] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(stopCh)}
 
-	r.update(values, validCh)
+	r.update(values, validCh, m)
 
-	for true {
+	for {
 		i, sliceV, ok := reflect.Select(channels)
 		if !ok {
 			break
 		}
 
 		if i == len(deps) { // STOP CHANNEL
-			fmt.Println("Stopping")
+			logger.Debug("stopping rule")
 			break
 		}
 		slice := sliceV.Interface().([]float64)
 		values[deps[i]] = slice[len(slice)-1]
-		r.update(values, validCh)
+		r.update(values, validCh, m)
 	}
 	return nil
 }
 
-func (r *Rule) update(data RuleData, ch chan ValidRuleAction) {
-	cur, err := r.Internal.Process(data)
+func (r *Rule) update(data RuleData, ch chan ValidRuleAction, m *SensorMeasurementModel) {
+	cur, err := r.Internal.Process(data, m)
 	if err != nil {
 		return
 	}

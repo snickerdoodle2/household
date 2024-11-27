@@ -12,6 +12,7 @@ import (
 )
 
 type Config struct {
+	host string
 	port int
 	db   struct {
 		dsn          string
@@ -24,19 +25,26 @@ type Config struct {
 	}
 }
 
+type Settings struct {
+	MeasurementsAmount int
+}
+
 type App struct {
-	config    Config
-	logger    *log.Logger
-	models    data.Models
-	listeners data.SensorListeners
-	rules     struct {
+	config     Config
+	logger     *log.Logger
+	models     data.Models
+	listeners  data.SensorListeners
+	initBuffer data.SensorInitBuffer
+	rules      struct {
 		channel      chan data.ValidRuleAction
 		stopChannels map[uuid.UUID]chan struct{}
 	}
+	settings Settings
 }
 
 func main() {
 	var cfg Config
+	flag.StringVar(&cfg.host, "host", "localhost", "API Server host")
 	flag.IntVar(&cfg.port, "port", 8080, "API Server port")
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "Database DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
@@ -50,6 +58,8 @@ func main() {
 
 	logger := log.NewWithOptions(os.Stdout, log.Options{
 		ReportTimestamp: true,
+		Level:           log.DebugLevel,
+		ReportCaller:    true,
 	})
 
 	db, err := openDB(cfg)
@@ -63,10 +73,11 @@ func main() {
 	logger.Info("DB connection established")
 
 	app := App{
-		logger:    logger,
-		config:    cfg,
-		models:    data.NewModels(db),
-		listeners: make(data.SensorListeners),
+		logger:     logger,
+		config:     cfg,
+		models:     data.NewModels(db),
+		listeners:  make(data.SensorListeners),
+		initBuffer: make(data.SensorInitBuffer),
 		rules: struct {
 			channel      chan data.ValidRuleAction
 			stopChannels map[uuid.UUID]chan struct{}
@@ -74,6 +85,12 @@ func main() {
 			channel:      make(chan data.ValidRuleAction, 1),
 			stopChannels: make(map[uuid.UUID]chan struct{}),
 		},
+	}
+
+	err = app.parseSettings()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
 	err = app.serve()
