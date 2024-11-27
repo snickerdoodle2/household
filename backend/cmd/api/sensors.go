@@ -283,7 +283,7 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: different sensor identification - address:port impossible
 	uri := r.RemoteAddr
-	app.logger.Info("received active sensor measurement", "uri", uri)
+	app.logger.Debug("received active sensor measurement", "uri", uri)
 
 	var requestBody struct {
 		MessageType string  `json:"message-type"`
