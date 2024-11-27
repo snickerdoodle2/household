@@ -124,6 +124,16 @@ func (app *App) readInt(qs url.Values, key string, defaulValue int, v *validator
 	return i
 }
 
+// function creates a new listener, adds it to app module and depending on sensor active flag starts it or just starts broker
+func (app *App) setupSensorListener(sensor *data.Sensor) {
+	listener := app.createAndAddSensorListener(sensor)
+	if sensor.Active {
+		go listener.Broker.Start()
+	} else {
+		go listener.Start()
+	}
+}
+
 // creates and adds a sensor listener to map in app module and returns pointer to it
 func (app *App) createAndAddSensorListener(sensor *data.Sensor) (listener *data.Listener[float64]) {
 	onNewValue := func(value float64) {

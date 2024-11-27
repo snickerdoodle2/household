@@ -30,10 +30,7 @@ func (app *App) serve() error {
 	}
 
 	for _, sensor := range sensors {
-		listener := app.createAndAddSensorListener(sensor)
-		if !sensor.Active {
-			go listener.Start()
-		}
+		app.setupSensorListener(sensor)
 	}
 
 	rules, err := app.models.Rules.GetAll()

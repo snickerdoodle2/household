@@ -81,16 +81,17 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 	if sensor.Active {
 		app.initSensor(*sensor)
 	} else {
-		app.insertAndHandleListener(sensor, w, r)
+		app.validateAndInsertSensor(sensor, w, r)
+		app.setupSensorListener(sensor)
 	}
 }
 
-func (app *App) insertAndHandleListener(sensor *data.Sensor, w http.ResponseWriter, r *http.Request) {
+func (app *App) validateAndInsertSensor(sensor *data.Sensor, w http.ResponseWriter, r *http.Request) (data.Sensor, error) {
 	v := validator.New()
 
 	if data.ValidateSensor(v, sensor); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
-		return
+		return data.Sensor{}, errors.New("validation failed")
 	}
 
 	err := app.models.Sensors.Insert(sensor)
@@ -102,13 +103,10 @@ func (app *App) insertAndHandleListener(sensor *data.Sensor, w http.ResponseWrit
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
-		return
+		return data.Sensor{}, err
 	}
 
-	listener := app.createAndAddSensorListener(sensor)
-	if !sensor.Active {
-		listener.Start()
-	}
+	return *sensor, nil
 }
 
 // function to initialize active (for now) sensor.
@@ -239,10 +237,7 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.stopAndDeleteSensorListener(sensorId)
-	listener := app.createAndAddSensorListener(sensor)
-	if !sensor.Active {
-		listener.Start()
-	}
+	app.setupSensorListener(sensor)
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"sensor": sensor}, nil)
 	if err != nil {
@@ -360,9 +355,9 @@ func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 
 	sensor.IdToken = requestBodyData.IdToken
 
-	app.insertAndHandleListener(&sensor, w, r)
+	app.validateAndInsertSensor(&sensor, w, r)
 
-	go app.listeners[sensor.ID].Broker.Start()
+	app.setupSensorListener(&sensor)
 
 	delete(app.initBuffer, requestBodyData.IdToken)
 }
