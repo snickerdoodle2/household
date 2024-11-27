@@ -304,7 +304,9 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.logger.Debug(("publishing value"), "value", requestBody.Value)
 	app.listeners[id].Broker.Publish([]float64{requestBody.Value})
+	app.logger.Debug("value published")
 
 	measurement := data.SensorMeasurement{
 		SensorID:      id,
@@ -315,6 +317,7 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 	err = app.models.SensorMeasurements.Insert(&measurement)
 	if err != nil {
 		app.logger.Error("Writing measurement to DB", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusAccepted)
@@ -364,6 +367,9 @@ func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.insertAndHandleListener(&sensor, w, r)
 
+	go app.listeners[sensor.ID].Broker.Start()
+
 	delete(app.initBuffer, requestBodyData.IdToken)
+	app.logger.Debug("init-ack processed")
 
 }

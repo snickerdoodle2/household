@@ -1,5 +1,11 @@
 package broker
 
+import (
+	"os"
+
+	"github.com/charmbracelet/log"
+)
+
 // https://stackoverflow.com/a/49877632
 type Broker[T any] struct {
 	stopCh    chan struct{}
@@ -7,6 +13,12 @@ type Broker[T any] struct {
 	subCh     chan chan T
 	unsubCh   chan chan T
 }
+
+var logger = log.NewWithOptions(os.Stdout, log.Options{
+	ReportTimestamp: true,
+	Level:           log.InfoLevel,
+	ReportCaller:    true,
+})
 
 func NewBroker[T any]() *Broker[T] {
 	return &Broker[T]{
@@ -39,6 +51,7 @@ func (b *Broker[T]) Start() {
 }
 
 func (b *Broker[T]) Stop() {
+	logger.Debug("Stopping broker")
 	close(b.stopCh)
 }
 
