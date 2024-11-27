@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"math"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -73,9 +75,16 @@ func activeLoop() {
 	log.Printf("Initialized - sending measurements to %s every %d seconds\n", serverUri, *interval)
 
 	ticker := time.NewTicker(time.Duration(*interval) * time.Second)
-	defer ticker.Stop()
+
+	stopLoop := func(ticker *time.Ticker) {
+		log.Printf("Stopping loop in defer")
+		ticker.Stop()
+	}
+
+	defer stopLoop(ticker)
 
 	for range ticker.C {
+		log.Printf("tick")
 		utime := time.Now().Unix()
 		value := (math.Sin(2*float64(utime))+math.Sin(math.Pi*float64(utime))+2)*(cfg.maxValue-cfg.minValue)/4 + cfg.minValue
 
@@ -97,18 +106,40 @@ func activeLoop() {
 			url = "http://" + url + serverMeasurementsEndpoint
 		}
 
-		resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+		client := &http.Client{
+			Timeout: 10 * time.Second,
+		}
+
+		log.Printf("Attempting to send measurement to URL: %s", url)
+
+		resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
-			log.Printf("Error sending request: %v", err)
+			log.Printf("Detailed error sending request: %v", err)
+
+			// If it's a timeout, you might want to implement a retry mechanism
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				log.Printf("Timeout occurred. Server might be unresponsive.")
+			}
 			continue
+		}
+
+		// Log response details
+		log.Printf("Response Status: %s", resp.Status)
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("Response Body: %s", string(body))
+
+		if resp.StatusCode >= 300 {
+			log.Printf("Server returned error status: %d", resp.StatusCode)
 		}
 		resp.Body.Close()
 
-		log.Printf("Sent measurement: %+v", measurement)
 	}
+
+	log.Printf("Loop ended")
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Status request received")
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -118,6 +149,7 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func valueHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Value request received")
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
