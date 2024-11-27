@@ -115,7 +115,7 @@ func (app *App) insertAndHandleListener(sensor *data.Sensor, w http.ResponseWrit
 // Sends init request to the sensor and adds it to initBuffer.
 // Sensor should send init-ack request to init-ack endpoint to be removed from initBuffer and further processed
 func (app *App) initSensor(sensor data.Sensor) error {
-	app.logger.Info("init sensor", "sensor", sensor.Name)
+	app.logger.Debug("init sensor", "sensor", sensor.Name)
 	sensorEndpoint := fmt.Sprintf("http://%v/init", sensor.URI)
 	measurementsEndpoint := "/api/v1/sensor/measurements" // TODO: find a way to get this from the app
 	initAckEndpoint := "/api/v1/sensor/init-ack"
@@ -138,8 +138,6 @@ func (app *App) initSensor(sensor data.Sensor) error {
 	requestBody.InitAckEndpoint = initAckEndpoint
 	requestBody.MeasurementsEndpoint = measurementsEndpoint
 
-	app.logger.Debug("init request body", "body", requestBody)
-
 	client := &http.Client{}
 	client.Timeout = 5 * time.Second
 
@@ -158,8 +156,7 @@ func (app *App) initSensor(sensor data.Sensor) error {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
-	app.logger.Debug("init response code", "code", resp.StatusCode)
+	_, err = client.Do(req)
 
 	if err != nil {
 		app.logger.Error("handleInitRequest request", "error", err.Error())
@@ -304,9 +301,7 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.logger.Debug(("publishing value"), "value", requestBody.Value)
 	app.listeners[id].Broker.Publish([]float64{requestBody.Value})
-	app.logger.Debug("value published")
 
 	measurement := data.SensorMeasurement{
 		SensorID:      id,
@@ -370,6 +365,4 @@ func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 	go app.listeners[sensor.ID].Broker.Start()
 
 	delete(app.initBuffer, requestBodyData.IdToken)
-	app.logger.Debug("init-ack processed")
-
 }
