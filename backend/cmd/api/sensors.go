@@ -8,6 +8,7 @@ import (
 	"inzynierka/internal/data"
 	"inzynierka/internal/data/validator"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -281,27 +282,25 @@ func (app *App) deleteSensorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: different sensor identification - address:port impossible
-	uri := r.RemoteAddr
-	app.logger.Debug("received active sensor measurement", "uri", uri)
+	app.logger.Debug("received active sensor measurement", "sensor address", r.RemoteAddr)
 
 	var requestBody struct {
-		MessageType string  `json:"message-type"`
-		SensorType  string  `json:"sensor-type"`
-		Value       float64 `json:"value"`
+		MessageType string    `json:"message-type"`
+		SensorType  string    `json:"sensor-type"`
+		Value       float64   `json:"value"`
+		IdToken     uuid.UUID `json:"id-token"`
 	}
 
 	err := app.readJSON(w, r, &requestBody)
 	if err != nil {
-		app.logger.Warn("active sensor error", "request body", err.Error())
+		app.logger.Warn("active sensor handler error", "request body", err.Error())
 		return
 	}
 	r.Body.Close()
 
-	id, err := app.models.Sensors.GetIdByUriAndType(uri, requestBody.SensorType)
-
-	if err != nil {
-		app.logger.Warn("error getting active sensor ID", "error", err.Error())
+	id, ok := app.isSensorIdentified(r.RemoteAddr, requestBody.IdToken)
+	if !ok {
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -321,6 +320,25 @@ func (app *App) activeSensorHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
+func (app *App) isSensorIdentified(remoteAddr string, idToken uuid.UUID) (uuid.UUID, bool) {
+	sensor, err := app.models.Sensors.GetByIdToken(idToken)
+
+	remoteHost := strings.Split(remoteAddr, ":")[0]
+	expectedHost := strings.Split(sensor.URI, ":")[0]
+
+	if err != nil {
+		app.logger.Warn("sensor unidentified", "id-token", idToken, "host", remoteHost)
+		return uuid.Nil, false
+	}
+
+	if remoteHost != expectedHost {
+		app.logger.Warn("sensor host mismatch", "received from host", remoteAddr, "expected host", sensor.URI)
+		return uuid.Nil, false
+	}
+
+	return sensor.ID, true
+}
+
 func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 	app.logger.Debug("init-ack received")
 	var requestBodyData struct {
@@ -338,7 +356,7 @@ func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 
 	sensor, ok := app.initBuffer[requestBodyData.IdToken]
 	if !ok {
-		app.logger.Warn("init-ack received for unknown sensor", "id-token", requestBodyData.IdToken)
+		app.logger.Warn("init-ack received from unknown sensor", "id-token", requestBodyData.IdToken, "address", r.RemoteAddr)
 		return
 	}
 

@@ -331,26 +331,35 @@ func (m SensorModel) DeleteSensorAndMeasurements(id uuid.UUID) error {
 	return nil
 }
 
-func (m SensorModel) GetIdByUriAndType(uri string, sensorType string) (uuid.UUID, error) {
+func (m SensorModel) GetByIdToken(idToken uuid.UUID) (*Sensor, error) {
 	query := `
-    SELECT id
-    FROM sensors
-    WHERE uri = $1
-    AND sensor_type = $2;
-    `
+	SELECT *
+	FROM sensors
+	WHERE id_token = $1;
+	`
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var id uuid.UUID
-	err := m.DB.QueryRow(ctx, query, uri, sensorType).Scan(&id)
+	var sensor Sensor
+	err := m.DB.QueryRow(ctx, query, idToken).Scan(
+		&sensor.ID,
+		&sensor.Name,
+		&sensor.URI,
+		&sensor.Type,
+		&sensor.RefreshRate,
+		&sensor.CreatedAt,
+		&sensor.Version,
+		&sensor.Active,
+		&sensor.IdToken,
+	)
 
 	if err == sql.ErrNoRows {
-		return uuid.UUID{}, fmt.Errorf("no sensor found with uri %s and type %s", uri, sensorType)
+		return &sensor, fmt.Errorf("no sensor found with id token %s", idToken)
 	}
 
 	if err != nil {
-		return uuid.UUID{}, err
+		return &sensor, err
 	}
 
-	return id, nil
+	return &sensor, nil
 }
