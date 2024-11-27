@@ -25,6 +25,13 @@ type Measurement struct {
 	IdToken     string  `json:"id-token"`
 }
 
+type input struct {
+	IdToken              string `json:"id-token"`
+	ServerUri            string `json:"server-uri"`
+	InitAckEndpoint      string `json:"init-ack-endpoint"`
+	MeasurementsEndpoint string `json:"measurements-endpoint"`
+}
+
 var (
 	cfg                        Config
 	serverUri                  string
@@ -85,7 +92,6 @@ func activeLoop() {
 			continue
 		}
 
-		// Ensure proper URL construction
 		url := serverUri
 		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 			url = "http://" + url + serverMeasurementsEndpoint
@@ -129,12 +135,7 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var input struct {
-		IdToken              string `json:"id-token"`
-		ServerUri            string `json:"server-uri"`
-		InitAckEndpoint      string `json:"init-ack-endpoint"`
-		MeasurementsEndpoint string `json:"measurements-endpoint"`
-	}
+	input := input{}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
@@ -149,26 +150,54 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
+	err := sendInitAck(input)
+	if err != nil {
+		log.Printf("Error sending init ack: %v", err)
+		return
+	}
+	initWg.Done()
+
+}
+
+func sendInitAck(input input) error {
+	client := &http.Client{}
+	client.Timeout = 5 * time.Second
+
+	body := new(bytes.Buffer)
+	err := json.NewEncoder(body).Encode(input)
+	if err != nil {
+		log.Printf("sendInitAck marshall error: %s", err.Error())
+		return err
+	}
+
 	url := serverUri
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "http://" + url + serverInitAckEndpoint
 	}
 
-	jsonData, err := json.Marshal(input)
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
-		log.Printf("Error marshaling JSON: %v", err)
-		return
+		log.Printf("handleRuleRequests request creation error: %s", err.Error())
+		return err
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	log.Printf("Sending init ack to %s", url)
+	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Error sending request: %v", err)
-		return
+		log.Printf("handleInitRequest request error: %s", err.Error())
+		return err
 	}
 
 	if resp.StatusCode < 300 {
 		resp.Body.Close()
-		initWg.Done()
+		return nil
+	} else {
+		log.Printf("init response code: %d", resp.StatusCode)
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		log.Printf("init response body: %s", buf.String())
+		return fmt.Errorf("init response code: %d", resp.StatusCode)
 	}
-
 }
