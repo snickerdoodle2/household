@@ -334,6 +334,7 @@ func (app *App) isSensorIdentified(remoteAddr string, idToken uuid.UUID) (uuid.U
 
 func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 	app.logger.Debug("init-ack received")
+	remoteAddr := r.RemoteAddr
 	var requestBodyData struct {
 		IdToken              uuid.UUID `json:"id-token"`
 		ServerUri            string    `json:"server-uri"`
@@ -350,6 +351,14 @@ func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 	sensor, ok := app.initBuffer[requestBodyData.IdToken]
 	if !ok {
 		app.logger.Warn("init-ack received from unknown sensor", "id-token", requestBodyData.IdToken, "address", r.RemoteAddr)
+		return
+	}
+
+	remoteHost := strings.Split(remoteAddr, ":")[0]
+	expectedHost := strings.Split(sensor.URI, ":")[0]
+
+	if remoteHost != expectedHost {
+		app.logger.Warn("sensor host mismatch", "received from host", remoteAddr, "expected host", sensor.URI)
 		return
 	}
 
