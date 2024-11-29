@@ -14,6 +14,7 @@
     import * as Dialog from '$lib/components/ui/dialog';
     import { goto, invalidate } from '$app/navigation';
     import { SENSOR_URL } from '@/helpers/sensor';
+    import DetailsChart from '@/components/sensor/DetailsChart.svelte';
 
     type Props = {
         data: PageData;
@@ -141,12 +142,12 @@
     <Dialog.Portal>
         <Dialog.Overlay />
         <Dialog.Content
-            class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
+            class="flex flex-row max-w-none items-center justify-center px-8 py-4 md:w-fit"
         >
-            <Card.Root class="w-[512px] border-none shadow-none">
-                {#if loading}
-                    <p>Loading...</p>
-                {:else}
+            {#if loading}
+                <p>Loading...</p>
+            {:else}
+                <Card.Root class="w-[512px] border-none shadow-none">
                     <Card.Header class="text-3xl">
                         <Card.Title>Sensor Details</Card.Title>
                     </Card.Header>
@@ -247,8 +248,10 @@
                             </div>
                         </div>
                     </Card.Footer>
-                {/if}
-            </Card.Root>
+                </Card.Root>
+
+                <DetailsChart sensorId={sensor.id} />
+            {/if}
         </Dialog.Content>
     </Dialog.Portal>
 </Dialog.Root>
