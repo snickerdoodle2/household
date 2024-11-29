@@ -9,10 +9,12 @@ import { z } from 'zod';
 import { authFetch } from './fetch';
 import type { FetchFn } from '@/types/misc';
 
+export const SENSOR_URL = '/api/v1/sensor';
+
 export const getAllSensors = async (
     fetch: FetchFn
 ): Promise<Result<Sensor[], string>> => {
-    const res = await authFetch(`/api/v1/sensor`, {}, fetch);
+    const res = await authFetch(SENSOR_URL, {}, fetch);
     const data = await res.json();
     if (!res.ok) {
         return {
@@ -39,7 +41,7 @@ export const getSensorDetails = async (
     id: string,
     fetch: FetchFn
 ): Promise<Result<SensorDetails, string>> => {
-    const res = await authFetch(`/api/v1/sensor/${id}`, {}, fetch);
+    const res = await authFetch(`${SENSOR_URL}/${id}`, {}, fetch);
     const data = await res.json();
     if (!res.ok) {
         return {

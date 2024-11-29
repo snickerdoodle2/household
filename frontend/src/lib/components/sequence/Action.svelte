@@ -4,6 +4,7 @@
     import { onMount } from 'svelte';
     import Input from '../ui/input/input.svelte';
     import Label from '../ui/label/label.svelte';
+    import { convertMsToTime, convertTimeToMs } from '@/helpers/time';
 
     type Props = {
         action: SequenceAction;
@@ -39,35 +40,6 @@
     $effect(() => {
         action.target = selectedSensor.value;
     });
-
-    function convertMsToTime(ms: number): {
-        hours: number;
-        minutes: number;
-        seconds: number;
-    } {
-        const seconds = Math.floor(Math.max(0, ms / 1000) % 60);
-        const minutes = Math.floor(Math.max(0, ms / (1000 * 60)) % 60);
-        const hours = Math.floor(Math.max(0, ms / (1000 * 60 * 60)));
-
-        return {
-            hours,
-            minutes,
-            seconds,
-        };
-    }
-
-    function convertTimeToMs(time: {
-        hours: number;
-        minutes: number;
-        seconds: number;
-    }): number {
-        const { hours, minutes, seconds } = time;
-
-        const ms =
-            hours * 60 * 60 * 1000 + minutes * 60 * 1000 + seconds * 1000;
-
-        return ms;
-    }
 
     function syncActionValues() {
         const initialSensor = sensors.find(

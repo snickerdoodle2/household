@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
-
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import { Button } from '$lib/components/ui/button';
@@ -39,14 +37,34 @@
         { value: 'lt', label: 'Lower than' },
         { value: 'and', label: 'And' },
         { value: 'or', label: 'Or' },
+        { value: 'perc', label: 'Perc' },
     ];
 
-    let selectedSensor: { value: string; label: string } = $state();
-    let value: number = $state();
-    let errors = $state({ value: false, sensor: false });
+    let selectedSensor: { value: string; label: string } = $state({
+        value: '',
+        label: '',
+    });
+    let value: number = $state(0);
+    let percentile: number = $state(0);
+    let duration = $state({
+        hours: '0',
+        minutes: '0',
+        seconds: '0',
+    });
+    let errors = $state({
+        value: false,
+        sensor: false,
+        percentile: false,
+        duration: {
+            hours: false,
+            minutes: false,
+            seconds: false,
+        },
+    });
 
     function constructRule(): RuleInternal | undefined {
         if (selectedType.value === 'gt' || selectedType.value === 'lt') {
+            if (errors.value || errors.sensor) return;
             return {
                 type: selectedType.value,
                 sensor_id: selectedSensor.value,
@@ -60,8 +78,23 @@
                 type: selectedType.value,
                 children: [],
             };
+        } else if (selectedType.value === 'perc') {
+            if (
+                errors.duration.hours ||
+                errors.duration.minutes ||
+                errors.duration.seconds ||
+                errors.percentile ||
+                errors.percentile
+            )
+                return;
+            return {
+                type: selectedType.value,
+                sensor_id: selectedSensor.value,
+                duration: `${duration.hours}h${duration.minutes}m${duration.seconds}s`,
+                perc: percentile,
+            };
         } else {
-            return undefined;
+            return;
         }
     }
 
@@ -81,24 +114,35 @@
         }
     }
 
-    const validate = () => {
+    $effect(() => {
         errors.value = typeof value === 'undefined';
         errors.sensor = !selectedSensor;
-    };
 
-    let timeout: number;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    const debounce = (callback: Function, ...args: unknown[]) => {
-        clearTimeout(timeout);
-        timeout = window.setTimeout(() => callback(args), 300);
-    };
-    run(() => {
-        debounce(validate, selectedSensor, value);
+        if (selectedType.value === 'perc') {
+            errors.percentile = Number(percentile) <= 0;
+            errors.sensor = !sensors.find((s) => s.id === selectedSensor.value);
+            errors.duration.hours = Number(duration.hours) < 0;
+            errors.duration.minutes = Number(duration.minutes) < 0;
+            errors.duration.seconds = Number(duration.seconds) < 0;
+
+            if (
+                Number(duration.hours) +
+                    Number(duration.minutes) +
+                    Number(duration.seconds) <=
+                0
+            ) {
+                errors.duration.hours = true;
+                errors.duration.minutes = true;
+                errors.duration.seconds = true;
+            }
+        } else if (selectedType.value === 'gt' || selectedType.value === 'lt') {
+            errors.sensor = !sensors.find((s) => s.id === selectedSensor.value);
+        }
     });
 </script>
 
 {#if open}
-    <div class="flex min-w-[35rem] items-center gap-3">
+    <div class="flex items-center gap-3">
         <Label>Type:</Label>
 
         <Select.Root bind:selected={selectedType}>
@@ -140,6 +184,73 @@
                     : ''}"
                 bind:value
             />
+        {:else if selectedType.value === 'perc'}
+            <Label>Sensor:</Label>
+            <Select.Root bind:selected={selectedSensor}>
+                <Select.Trigger
+                    class={errors['sensor'] ? 'border-2 border-red-600' : ''}
+                >
+                    <Select.Value />
+                </Select.Trigger>
+                <Select.Content>
+                    {#each sensors as sensor}
+                        <Select.Item value={sensor.id}
+                            >{sensor.name}</Select.Item
+                        >
+                    {/each}
+                </Select.Content>
+            </Select.Root>
+
+            <Label>Percentile:</Label>
+            <Input
+                type="number"
+                class="min-w-[4rem] {errors.percentile
+                    ? 'border-2 border-red-600'
+                    : ''}"
+                bind:value={percentile}
+            />
+
+            <Label>For:</Label>
+            <div class="flex flex-row items-center rounded-md gap-1">
+                <div
+                    class="flex items-center {errors.duration.hours
+                        ? 'border-2 border-red-600'
+                        : ''}"
+                >
+                    <Input
+                        type="number"
+                        class="min-w-14"
+                        bind:value={duration.hours}
+                    />
+                    <Label>h</Label>
+                </div>
+
+                <div
+                    class="flex items-center {errors.duration.minutes
+                        ? 'border-2 border-red-600'
+                        : ''}"
+                >
+                    <Input
+                        type="number"
+                        class="min-w-14"
+                        bind:value={duration.minutes}
+                    />
+                    <Label>m</Label>
+                </div>
+
+                <div
+                    class="flex items-center {errors.duration.seconds
+                        ? 'border-2 border-red-600'
+                        : ''}"
+                >
+                    <Input
+                        type="number"
+                        class="min-w-14"
+                        bind:value={duration.seconds}
+                    />
+                    <Label>s</Label>
+                </div>
+            </div>
         {/if}
 
         <div class="flex">

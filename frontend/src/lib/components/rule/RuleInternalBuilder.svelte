@@ -14,6 +14,7 @@
     import { Symbol } from 'radix-icons-svelte';
     import { Trash, Plus, Slash } from 'svelte-radix';
     import ConditionBuilder from './ConditionBuilder.svelte';
+    import PercentileCondition from './PercentileCondition.svelte';
 
     type Parent =
         | RuleDetails
@@ -32,7 +33,7 @@
     };
 
     let {
-        expanded = $bindable(false),
+        expanded = $bindable(true),
         internal = $bindable(),
         parent = $bindable(),
         secondParent = $bindable(),
@@ -54,12 +55,14 @@
         return Object.hasOwn(parentInput, 'description');
     }
 
-    function isRule(internal: RuleInternal | object): internal is RuleInternal {
+    function isNotEmptyRule(
+        internal: RuleInternal | object
+    ): internal is RuleInternal {
         return Object.keys(internal).length !== 0;
     }
 
     function deleteRule() {
-        if (!isRule(internal)) return;
+        if (!isNotEmptyRule(internal)) return;
 
         if (isRootRule(parent)) {
             internal = {};
@@ -71,10 +74,10 @@
                 parent.internal = internal.wrapped;
                 return;
             } else if (parent.type === 'or' || parent.type === 'and') {
+                parent.children.push(internal.wrapped);
                 parent.children = parent.children.filter((child) => {
                     return child != internal;
                 });
-                parent.children.push(internal.wrapped);
                 return;
             } else if (parent.type === 'not') {
                 parent.wrapped = internal.wrapped;
@@ -99,10 +102,9 @@
             ) {
                 secondParent.children = secondParent.children.filter(
                     (child) => {
-                        return child != internal;
+                        return child.type != 'not' || child.wrapped != internal;
                     }
                 );
-                secondParent.children.push(internal);
                 return;
             } else if (secondParent.type === 'not') {
                 secondParent.wrapped = internal;
@@ -116,7 +118,7 @@
     }
 
     function negateRule() {
-        if (!isRule(internal)) return;
+        if (!isNotEmptyRule(internal)) return;
 
         if (isRootRule(parent)) {
             parent.internal = {
@@ -127,24 +129,28 @@
         }
 
         if (parent.type === 'or' || parent.type === 'and') {
-            parent.children = parent.children.filter((child) => {
-                return child != internal;
-            });
             parent.children.push({
                 type: 'not',
                 wrapped: internal,
             });
+            parent.children = parent.children.filter((child) => {
+                return child != internal;
+            });
         }
     }
+
     let background = $derived(
-        isRule(internal) && (internal.type === 'lt' || internal.type === 'gt')
+        isNotEmptyRule(internal) &&
+            (internal.type === 'lt' ||
+                internal.type === 'gt' ||
+                internal.type === 'perc')
             ? ''
             : 'bg-foreground'
     );
 </script>
 
-<div class="w-full min-w-[35rem]">
-    {#if isRule(internal)}
+<div class="w-full">
+    {#if isNotEmptyRule(internal)}
         <!-- Main view (AND, OR, ...) -->
         <div class="flex inline-flex {background} rounded">
             {#if internal.type === 'lt' || internal.type === 'gt'}
@@ -166,6 +172,25 @@
                         </Button>
                     {/if}
                 </ComparisonRule>
+            {:else if internal.type === 'perc'}
+                <PercentileCondition {internal} {sensors} bind:editingDisabled>
+                    {#if !editingDisabled}
+                        <Button
+                            on:click={negateRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Slash class="w-4" />
+                        </Button>
+                        <Button
+                            on:click={deleteRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Trash class="w-4" />
+                        </Button>
+                    {/if}
+                </PercentileCondition>
             {:else}
                 {#if internal.type === 'and' || internal.type === 'or'}
                     <div class="flex">
@@ -175,7 +200,7 @@
                         {#if !editingDisabled}
                             <Button
                                 on:click={() => {
-                                    if (!isRule(internal)) return;
+                                    if (!isNotEmptyRule(internal)) return;
                                     internal.type =
                                         internal.type === 'and' ? 'or' : 'and';
                                 }}

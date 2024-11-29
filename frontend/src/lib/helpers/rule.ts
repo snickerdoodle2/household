@@ -9,10 +9,12 @@ import {
 import { authFetch } from './fetch';
 import { z } from 'zod';
 
+export const RULE_URL = '/api/v1/rule';
+
 export const getAllRules = async (
     fetch: FetchFn
 ): Promise<Result<Rule[], string>> => {
-    const res = await authFetch(`/api/v1/rule`, {}, fetch);
+    const res = await authFetch(RULE_URL, {}, fetch);
     const data = await res.json();
     if (!res.ok) {
         return {
@@ -39,7 +41,7 @@ export const getRuleDetails = async (
     id: string,
     fetch: FetchFn
 ): Promise<Result<RuleDetails, string>> => {
-    const res = await authFetch(`/api/v1/rule/${id}`, {}, fetch);
+    const res = await authFetch(`${RULE_URL}/${id}`, {}, fetch);
     const data = await res.json();
     if (!res.ok) {
         return {
