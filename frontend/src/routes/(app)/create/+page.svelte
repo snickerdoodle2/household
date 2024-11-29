@@ -29,8 +29,8 @@
     > = $state({});
 
     const getRefreshRate = () => {
-        return active ? 1 : (refresh_rate ? +refresh_rate : undefined)
-    }
+        return active ? 1 : refresh_rate ? +refresh_rate : undefined;
+    };
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const debounce = (callback: Function, ...args: unknown[]) => {
@@ -46,8 +46,7 @@
             type: type?.value,
             active: typeof active === 'boolean' ? active : false,
         });
-        
-        
+
         if (!success) {
             errors = Object.fromEntries(
                 error.issues.map((e) => [e.path[0], e.message])
@@ -55,9 +54,8 @@
         } else {
             errors = {};
         }
-        
-        console.log('validate', error);
 
+        console.log('validate', error);
     };
 
     run(() => {
