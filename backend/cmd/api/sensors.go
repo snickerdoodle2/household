@@ -71,6 +71,7 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sensor := &data.Sensor{
+		ID:          uuid.Nil,
 		Name:        input.Name,
 		URI:         input.URI,
 		Type:        input.Type,
@@ -109,13 +110,33 @@ func (app *App) validateAndInsertSensor(sensor *data.Sensor, w http.ResponseWrit
 	return *sensor, nil
 }
 
+func (app *App) validateAndUpdateSensor(sensor *data.Sensor, w http.ResponseWriter, r *http.Request) {
+	v := validator.New()
+	if data.ValidateSensor(v, sensor); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err := app.models.Sensors.Update(sensor)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrDuplicateUri):
+			v.AddError("uri", "a sensor with this URI already exists")
+			app.failedValidationResponse(w, r, v.Errors)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+}
+
 // function to initialize active (for now) sensor.
 // Sends init request to the sensor and adds it to initBuffer.
 // Sensor should send init-ack request to init-ack endpoint to be removed from initBuffer and further processed
 func (app *App) initSensor(sensor data.Sensor) error {
 	app.logger.Debug("init sensor", "sensor", sensor.Name)
 	sensorEndpoint := fmt.Sprintf("http://%v/init", sensor.URI)
-	measurementsEndpoint := "/api/v1/sensor/measurements" // TODO: find a way to get this from the app
+	measurementsEndpoint := "/api/v1/sensor/measurements"
 	initAckEndpoint := "/api/v1/sensor/init-ack"
 	idToken, err := uuid.NewRandom()
 	if err != nil {
@@ -334,6 +355,7 @@ func (app *App) isSensorIdentified(remoteAddr string, idToken uuid.UUID) (uuid.U
 
 func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 	app.logger.Debug("init-ack received")
+	remoteAddr := r.RemoteAddr
 	var requestBodyData struct {
 		IdToken              uuid.UUID `json:"id-token"`
 		ServerUri            string    `json:"server-uri"`
@@ -353,11 +375,47 @@ func (app *App) initAckHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	remoteHost := strings.Split(remoteAddr, ":")[0]
+	expectedHost := strings.Split(sensor.URI, ":")[0]
+
+	if remoteHost != expectedHost {
+		app.logger.Warn("sensor host mismatch", "received from host", remoteAddr, "expected host", sensor.URI)
+		return
+	}
+
 	sensor.IdToken = requestBodyData.IdToken
 
-	app.validateAndInsertSensor(&sensor, w, r)
-
-	app.setupSensorListener(&sensor)
-
+	if sensor.ID != uuid.Nil {
+		app.logger.Debug("re-init", "name", sensor.Name)
+		app.validateAndUpdateSensor(&sensor, w, r)
+		app.stopAndDeleteSensorListener(sensor.ID)
+		app.setupSensorListener(&sensor)
+	} else {
+		app.validateAndInsertSensor(&sensor, w, r)
+		app.setupSensorListener(&sensor)
+	}
 	delete(app.initBuffer, requestBodyData.IdToken)
+}
+
+func (app *App) reInitSensorHandler(w http.ResponseWriter, r *http.Request) {
+	sensorIdStr := chi.URLParam(r, "id")
+	sensorId, err := uuid.Parse(sensorIdStr)
+
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	sensor, err := app.models.Sensors.Get(sensorId)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	app.initSensor(*sensor)
 }

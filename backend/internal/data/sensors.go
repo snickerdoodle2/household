@@ -269,8 +269,8 @@ func (m SensorModel) GetUri(id uuid.UUID) (string, error) {
 func (m SensorModel) Update(sensor *Sensor) error {
 	query := `
     UPDATE sensors
-    SET name = $1, uri = $2, sensor_type = $3, refresh_rate = $4, active = $5, version = version + 1
-    WHERE id = $6
+    SET name = $1, uri = $2, sensor_type = $3, refresh_rate = $4, active = $5, id_token = $6, version = version + 1
+    WHERE id = $7
     RETURNING version
     `
 
@@ -280,6 +280,7 @@ func (m SensorModel) Update(sensor *Sensor) error {
 		sensor.Type,
 		sensor.RefreshRate,
 		sensor.Active,
+		sensor.IdToken,
 		sensor.ID,
 	}
 

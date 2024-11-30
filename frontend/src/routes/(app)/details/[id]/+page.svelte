@@ -85,6 +85,19 @@
         }
     };
 
+    const handleReInit = async () => {
+        const res = await authFetch(`/api/v1/sensor/re-init/${orgSensor.id}`, {
+            method: 'POST',
+        });
+
+        if (res.ok) {
+            await invalidate(SENSOR_URL);
+            close();
+        }else{
+            console.error(res);
+        }
+    };
+
     const handleSubmit = async () => {
         const { data, success, error } = sensorDetailsSchema.safeParse({
             ...sensor,
@@ -282,6 +295,14 @@
                                         >Submit</Button
                                     >
                                 {:else}
+                                    {#if sensor.active}
+                                        <Button
+                                            variant="outline"
+                                            size="bold"
+                                            on:click={handleReInit}
+                                            >Re-Init</Button
+                                        >
+                                    {/if}
                                     <Button
                                         on:click={() => {
                                             editing = true;
