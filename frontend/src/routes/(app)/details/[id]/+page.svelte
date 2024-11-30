@@ -93,7 +93,7 @@
         if (res.ok) {
             await invalidate(SENSOR_URL);
             close();
-        }else{
+        } else {
             console.error(res);
         }
     };
