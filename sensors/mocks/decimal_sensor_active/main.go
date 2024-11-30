@@ -40,6 +40,8 @@ var (
 	idToken                    string
 	initWg                     sync.WaitGroup
 	interval                   *int
+	configured                 bool
+	configMutex                sync.Mutex
 )
 
 func main() {
@@ -80,11 +82,17 @@ func activeLoop() {
 		utime := time.Now().Unix()
 		value := (math.Sin(2*float64(utime))+math.Sin(math.Pi*float64(utime))+2)*(cfg.maxValue-cfg.minValue)/4 + cfg.minValue
 
+		configMutex.Lock()
+		url := serverUri
+		measurementsEndpoint := serverMeasurementsEndpoint
+		locIdToken := idToken
+		configMutex.Unlock()
+
 		measurement := Measurement{
 			MessageType: "measurement",
 			SensorType:  "decimal_sensor",
 			Value:       value,
-			IdToken:     idToken,
+			IdToken:     locIdToken,
 		}
 
 		jsonData, err := json.Marshal(measurement)
@@ -93,9 +101,8 @@ func activeLoop() {
 			continue
 		}
 
-		url := serverUri
 		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-			url = "http://" + url + serverMeasurementsEndpoint
+			url = "http://" + url + measurementsEndpoint
 		}
 
 		client := &http.Client{
@@ -154,10 +161,13 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	configMutex.Lock()
 	serverUri = input.ServerUri
 	idToken = input.IdToken
 	serverMeasurementsEndpoint = input.MeasurementsEndpoint
 	serverInitAckEndpoint = input.InitAckEndpoint
+	configMutex.Unlock()
+
 	log.Printf("Init request received: %+v", input)
 
 	w.WriteHeader(http.StatusOK)
@@ -167,13 +177,21 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error sending init ack: %v", err)
 		return
 	}
-	initWg.Done()
+	if !configured {
+		initWg.Done()
+	}
+	configured = true
 
 }
 
 func sendInitAck(input input) error {
 	client := &http.Client{}
 	client.Timeout = 5 * time.Second
+
+	configMutex.Lock()
+	url := serverUri
+	initAckEndpoint := serverInitAckEndpoint
+	configMutex.Unlock()
 
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(input)
@@ -182,9 +200,8 @@ func sendInitAck(input input) error {
 		return err
 	}
 
-	url := serverUri
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-		url = "http://" + url + serverInitAckEndpoint
+		url = "http://" + url + initAckEndpoint
 	}
 
 	req, err := http.NewRequest(http.MethodPost, url, body)
