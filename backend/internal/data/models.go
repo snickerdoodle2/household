@@ -2,13 +2,20 @@ package data
 
 import (
 	"errors"
+	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
 	ErrRecordNotFound = errors.New("record not found")
 	ErrEditConflict   = errors.New("edit conflict")
+	logger            = log.NewWithOptions(os.Stdout, log.Options{
+		ReportTimestamp: true,
+		Level:           log.InfoLevel,
+		ReportCaller:    true,
+	})
 )
 
 type Models struct {
