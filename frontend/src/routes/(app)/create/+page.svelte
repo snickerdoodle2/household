@@ -79,10 +79,8 @@
             fetch
         );
 
-        const resJson = await res.json();
-        console.log(resJson);
-
         if (!res.ok) {
+            const resJson = await res.json();
             errors = resJson.error;
         } else {
             await invalidate(SENSOR_URL);
