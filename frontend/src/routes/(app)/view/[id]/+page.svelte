@@ -13,7 +13,11 @@
     import type { SensorDetails } from '@/types/sensor';
     import { Label } from '$lib/components/ui/label';
     import 'flatpickr/dist/flatpickr.css';
-    import { DateInput, DatePicker, localeFromDateFnsLocale } from 'date-picker-svelte'
+    import {
+        DateInput,
+        DatePicker,
+        localeFromDateFnsLocale,
+    } from 'date-picker-svelte';
     import Input from '@/components/ui/input/input.svelte';
 
     const DEFAULT_RECORD_COUNT = 32;
@@ -41,7 +45,7 @@
     };
 
     let { data }: Props = $props();
-    
+
     let sensorId: string = $state(data.sensorId);
     let sensor: SensorDetails | undefined = $state(undefined);
     let updateValues = $state(false);
@@ -49,12 +53,12 @@
     let settingValue = $state(false);
     let valueToSet = $state(0);
     let fixedView: {
-        from: Date,
-        to: Date
+        from: Date;
+        to: Date;
     } | null = $state(null);
-    let accuracy = $state(0.0)
-    let startDate: Date= $state(new Date());
-    let endDate: Date= $state(new Date());
+    let accuracy = $state(0.0);
+    let startDate: Date = $state(new Date());
+    let endDate: Date = $state(new Date());
 
     let statistics = $state({
         [StatisticsTypes.Mean]: 0,
@@ -75,8 +79,12 @@
 
     const setSensorValue = () => {
         settingValue = false;
-        console.log(`Setting sensor value not implemented.`, sensorId, valueToSet);
-    }
+        console.log(
+            `Setting sensor value not implemented.`,
+            sensorId,
+            valueToSet
+        );
+    };
 
     $effect(() => {
         const entries = [...(ws.data.get(sensorId)?.entries() ?? [])];
@@ -136,7 +144,11 @@
         const ySum = y.reduce((sum, value) => sum + value, 0);
         const xySum = x.reduce((sum, value, i) => sum + value * y[i], 0);
         const xSquaredSum = x.reduce((sum, value) => sum + value * value, 0);
-        const trend = (n * xSquaredSum - Math.pow(xSum, 2) == 0) ? 0 : (n * xySum - xSum * ySum) / (n * xSquaredSum - Math.pow(xSum, 2)); // Represents the rate of change over time
+        const trend =
+            n * xSquaredSum - Math.pow(xSum, 2) == 0
+                ? 0
+                : (n * xySum - xSum * ySum) /
+                  (n * xSquaredSum - Math.pow(xSum, 2)); // Represents the rate of change over time
 
         // Update the statistics state
         statistics = {

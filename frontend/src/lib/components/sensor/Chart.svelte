@@ -54,8 +54,7 @@
         );
 
         // Aggregate data if it exceeds maxEntries
-        if (filtered.length <= maxEntries || accuracy >= 1.0)
-            return filtered;
+        if (filtered.length <= maxEntries || accuracy >= 1.0) return filtered;
 
         const compartmentSize = Math.ceil(filtered.length / maxEntries);
         const aggregated = [];
