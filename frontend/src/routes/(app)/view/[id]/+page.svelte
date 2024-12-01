@@ -44,7 +44,6 @@
     let sensorId: string = $state(data.sensorId);
     let sensor: SensorDetails | undefined = $state(undefined);
     let settingView = $state(false);
-    let settingValue = $state(false);
     let valueToSet = $state(0);
     let fixedView: {
         from: Date;
@@ -72,12 +71,25 @@
     };
 
     const setSensorValue = () => {
-        settingValue = false;
         console.log(
             `Setting sensor value not implemented.`,
             sensorId,
             valueToSet
         );
+    };
+
+    const viewLastMs = (msDuration: number) => {
+        setFixedView(new Date(Date.now() - msDuration), new Date());
+    };
+
+    const setFixedView = (from: Date, to: Date) => {
+        ws.requestSince(
+            sensorId,
+            generateDurationString(startDate, new Date())
+        );
+        fixedView = { from, to };
+        startDate = from;
+        endDate = to;
     };
 
     $effect(() => {
@@ -237,39 +249,6 @@
                             </div>
                         </div>
 
-                        {#if settingValue}
-                            <div class="flex gap-2 text-md p-2">
-                                <div class="pr-2">
-                                    <Label>Value</Label>
-                                    <Input
-                                        type="number"
-                                        size="sm"
-                                        class="ml-2"
-                                        bind:value={valueToSet}
-                                    />
-                                </div>
-                                <Button
-                                    size="sm"
-                                    class="mt-6"
-                                    on:click={setSensorValue}>Set</Button
-                                >
-                                <Button
-                                    size="sm"
-                                    class="mt-6"
-                                    variant="destructive"
-                                    on:click={() => (settingValue = false)}
-                                    >Cancel</Button
-                                >
-                            </div>
-                        {:else}
-                            <Button
-                                on:click={() => {
-                                    settingValue = true;
-                                }}
-                                size="bold">Set sensor value</Button
-                            >
-                        {/if}
-
                         {#if settingView || fixedView}
                             <div class="flex items-left">
                                 <div class="p-2 flex gap-4 items-center">
@@ -305,19 +284,12 @@
                                             class="mt-5"
                                             size="sm"
                                             on:click={() => {
-                                                ws.requestSince(
-                                                    sensorId,
-                                                    generateDurationString(
-                                                        startDate,
-                                                        new Date()
-                                                    )
+                                                setFixedView(
+                                                    startDate,
+                                                    endDate
                                                 );
-                                                fixedView = {
-                                                    from: startDate,
-                                                    to: endDate,
-                                                };
                                                 settingView = false;
-                                            }}>Show measurments</Button
+                                            }}>Set</Button
                                         >
                                         <Button
                                             class="mt-5"
@@ -366,12 +338,57 @@
                         {:else if !fixedView && !settingView}
                             <Button
                                 class="p-2"
+                                on:click={() => viewLastMs(12 * 60 * 60 * 1000)}
+                                size="bold">Analyze Last 12h</Button
+                            >
+
+                            <Button
+                                class="p-2"
+                                on:click={() => viewLastMs(24 * 60 * 60 * 1000)}
+                                size="bold">Analyze Last 24h</Button
+                            >
+
+                            <Button
+                                class="p-2"
+                                on:click={() =>
+                                    viewLastMs(3 * 24 * 60 * 60 * 1000)}
+                                size="bold">Analyze Last 3 days</Button
+                            >
+
+                            <Button
+                                class="p-2"
+                                on:click={() =>
+                                    viewLastMs(7 * 24 * 60 * 60 * 1000)}
+                                size="bold">Analyze last week</Button
+                            >
+
+                            <Button
+                                class="p-2"
                                 on:click={() => {
                                     settingView = true;
                                 }}
-                                size="bold">See history</Button
+                                size="bold">Custom Timeframe</Button
                             >
                         {/if}
+
+                        <div class="flex gap-2 text-md p-2">
+                            <div class="pr-2">
+                                <Label>Value</Label>
+                                <Input
+                                    type="number"
+                                    size="sm"
+                                    class="ml-2"
+                                    bind:value={valueToSet}
+                                    disabled={!!fixedView}
+                                />
+                            </div>
+                            <Button
+                                size="sm"
+                                class="mt-6"
+                                disabled={!!fixedView}
+                                on:click={setSensorValue}>Set</Button
+                            >
+                        </div>
                     </Card.Content>
                     <Card.Footer class="flex justify-end">
                         <div>
