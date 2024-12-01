@@ -15,7 +15,6 @@
     import * as Dialog from '$lib/components/ui/dialog';
     import { goto, invalidate } from '$app/navigation';
     import { SENSOR_URL } from '@/helpers/sensor';
-    import DetailsChart from '@/components/sensor/DetailsChart.svelte';
 
     type Props = {
         data: PageData;
@@ -306,6 +305,12 @@
                                     {/if}
                                     <Button
                                         on:click={() => {
+                                            goto(`/view/${sensor.id}`);
+                                        }}
+                                        size="bold">Inspect values</Button
+                                    >
+                                    <Button
+                                        on:click={() => {
                                             editing = true;
                                         }}
                                         size="bold">Edit</Button
@@ -315,8 +320,6 @@
                         </div>
                     </Card.Footer>
                 </Card.Root>
-
-                <DetailsChart sensorId={sensor.id} />
             {/if}
         </Dialog.Content>
     </Dialog.Portal>
