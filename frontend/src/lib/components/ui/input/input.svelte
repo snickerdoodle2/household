@@ -16,6 +16,7 @@
     interface Props {
         class?: $$Props['class'];
         value?: $$Props['value'];
+        checked?: $$Props['checked'];
         // Fixed in Svelte 5, but not backported to 4.x.
         readonly?: $$Props['readonly'];
         [key: string]: any;
@@ -24,34 +25,65 @@
     let {
         class: className = undefined,
         value = $bindable(undefined),
+        checked = $bindable(undefined),
         readonly = undefined,
         ...rest
     }: Props = $props();
 </script>
 
-<div class="flex flex-col">
-    <input
-        class={cn(
-            'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-            className
-        )}
-        bind:value
-        {readonly}
-        onblur={bubble('blur')}
-        onchange={bubble('change')}
-        onclick={bubble('click')}
-        onfocus={bubble('focus')}
-        onfocusin={bubble('focusin')}
-        onfocusout={bubble('focusout')}
-        onkeydown={bubble('keydown')}
-        onkeypress={bubble('keypress')}
-        onkeyup={bubble('keyup')}
-        onmouseover={bubble('mouseover')}
-        onmouseenter={bubble('mouseenter')}
-        onmouseleave={bubble('mouseleave')}
-        onpaste={bubble('paste')}
-        oninput={bubble('input')}
-        use:passive={['wheel', () => bubble('wheel')]}
-        {...rest}
-    />
-</div>
+{#if rest.type === 'checkbox'}
+    <div class="flex flex-col">
+        <input
+            class={cn(
+                'flex h-7 rounded-md border border-input bg-transparent px-3 py-1 text-sm transition-colors file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                className
+            )}
+            type="checkbox"
+            bind:checked
+            {readonly}
+            onblur={bubble('blur')}
+            onchange={bubble('change')}
+            onclick={bubble('click')}
+            onfocus={bubble('focus')}
+            onfocusin={bubble('focusin')}
+            onfocusout={bubble('focusout')}
+            onkeydown={bubble('keydown')}
+            onkeypress={bubble('keypress')}
+            onkeyup={bubble('keyup')}
+            onmouseover={bubble('mouseover')}
+            onmouseenter={bubble('mouseenter')}
+            onmouseleave={bubble('mouseleave')}
+            onpaste={bubble('paste')}
+            oninput={bubble('input')}
+            use:passive={['wheel', () => bubble('wheel')]}
+            {...rest}
+        />
+    </div>
+{:else}
+    <div class="flex flex-col">
+        <input
+            class={cn(
+                'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                className
+            )}
+            bind:value
+            {readonly}
+            onblur={bubble('blur')}
+            onchange={bubble('change')}
+            onclick={bubble('click')}
+            onfocus={bubble('focus')}
+            onfocusin={bubble('focusin')}
+            onfocusout={bubble('focusout')}
+            onkeydown={bubble('keydown')}
+            onkeypress={bubble('keypress')}
+            onkeyup={bubble('keyup')}
+            onmouseover={bubble('mouseover')}
+            onmouseenter={bubble('mouseenter')}
+            onmouseleave={bubble('mouseleave')}
+            onpaste={bubble('paste')}
+            oninput={bubble('input')}
+            use:passive={['wheel', () => bubble('wheel')]}
+            {...rest}
+        />
+    </div>
+{/if}

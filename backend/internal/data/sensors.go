@@ -2,7 +2,9 @@ package data
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 	"inzynierka/internal/data/validator"
 	"strings"
 	"time"
@@ -13,6 +15,7 @@ import (
 )
 
 type SensorType string
+type SensorInitBuffer map[uuid.UUID]Sensor
 
 var (
 	ErrDuplicateUri = errors.New("duplicate uri")
@@ -46,6 +49,8 @@ type Sensor struct {
 	RefreshRate int        `json:"refresh_rate"`
 	CreatedAt   time.Time  `json:"created_at"`
 	Version     int        `json:"version"`
+	Active      bool       `json:"active"`
+	IdToken     uuid.UUID  `json:"idToken"`
 }
 
 func ValidateSensor(v *validator.Validator, sensor *Sensor) {
@@ -58,8 +63,13 @@ func ValidateSensor(v *validator.Validator, sensor *Sensor) {
 	v.Check(sensor.Type != "", "type", "must be provided")
 	v.Check(validator.PermittedValue(sensor.Type, SensorTypes...), "type", "must be known")
 
-	v.Check(sensor.RefreshRate != 0, "refresh_rate", "must be provided")
-	v.Check(sensor.RefreshRate > 0, "refresh_rate", "must be a positive integer")
+	isActive := sensor.Active
+	v.Check(isActive || !isActive, "active", "must be a boolean")
+
+	if !isActive {
+		v.Check(sensor.RefreshRate != 0, "refresh_rate", "must be provided")
+		v.Check(sensor.RefreshRate > 0, "refresh_rate", "must be a positive integer")
+	}
 }
 
 type SensorModel struct {
@@ -68,8 +78,8 @@ type SensorModel struct {
 
 func (m SensorModel) Insert(sensor *Sensor) error {
 	query := `
-    INSERT INTO sensors (id, name, uri, sensor_type, refresh_rate)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO sensors (id, name, uri, sensor_type, refresh_rate, active, id_token)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING created_at, version
     `
 
@@ -80,7 +90,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 	sensor.ID = uuid
 
-	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate}
+	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate, sensor.Active, sensor.IdToken}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -102,7 +112,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 	query := `
-    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version
+    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active, id_token
     FROM sensors
     WHERE id = $1
     `
@@ -119,6 +129,8 @@ func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 		&sensor.RefreshRate,
 		&sensor.CreatedAt,
 		&sensor.Version,
+		&sensor.Active,
+		&sensor.IdToken,
 	)
 
 	if err != nil {
@@ -134,15 +146,16 @@ func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 }
 
 type SensorSimple struct {
-	ID   uuid.UUID  `json:"id"`
-	Name string     `json:"name"`
-	Type SensorType `json:"type"`
+	ID     uuid.UUID  `json:"id"`
+	Name   string     `json:"name"`
+	Type   SensorType `json:"type"`
+	Active bool       `json:"active"`
 }
 
 func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 	// TODO: add filtering and pagination
 	query := `
-    SELECT id, name, sensor_type
+    SELECT id, name, sensor_type, active
     FROM sensors
     ORDER BY id
     `
@@ -165,6 +178,7 @@ func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 			&sensor.ID,
 			&sensor.Name,
 			&sensor.Type,
+			&sensor.Active,
 		)
 
 		if err != nil {
@@ -183,7 +197,7 @@ func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 
 func (m SensorModel) GetAll() ([]*Sensor, error) {
 	query := `
-    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version
+    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active, id_token
     FROM sensors
     ORDER BY id
     `
@@ -210,6 +224,8 @@ func (m SensorModel) GetAll() ([]*Sensor, error) {
 			&sensor.RefreshRate,
 			&sensor.CreatedAt,
 			&sensor.Version,
+			&sensor.Active,
+			&sensor.IdToken,
 		)
 
 		if err != nil {
@@ -253,8 +269,8 @@ func (m SensorModel) GetUri(id uuid.UUID) (string, error) {
 func (m SensorModel) Update(sensor *Sensor) error {
 	query := `
     UPDATE sensors
-    SET name = $1, uri = $2, sensor_type = $3, refresh_rate = $4, version = version + 1
-    WHERE id = $5
+    SET name = $1, uri = $2, sensor_type = $3, refresh_rate = $4, active = $5, id_token = $6, version = version + 1
+    WHERE id = $7
     RETURNING version
     `
 
@@ -263,6 +279,8 @@ func (m SensorModel) Update(sensor *Sensor) error {
 		sensor.URI,
 		sensor.Type,
 		sensor.RefreshRate,
+		sensor.Active,
+		sensor.IdToken,
 		sensor.ID,
 	}
 
@@ -312,4 +330,37 @@ func (m SensorModel) DeleteSensorAndMeasurements(id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (m SensorModel) GetByIdToken(idToken uuid.UUID) (*Sensor, error) {
+	query := `
+	SELECT *
+	FROM sensors
+	WHERE id_token = $1;
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var sensor Sensor
+	err := m.DB.QueryRow(ctx, query, idToken).Scan(
+		&sensor.ID,
+		&sensor.Name,
+		&sensor.URI,
+		&sensor.Type,
+		&sensor.RefreshRate,
+		&sensor.CreatedAt,
+		&sensor.Version,
+		&sensor.Active,
+		&sensor.IdToken,
+	)
+
+	if err == sql.ErrNoRows {
+		return &sensor, fmt.Errorf("no sensor found with id token %s", idToken)
+	}
+
+	if err != nil {
+		return &sensor, err
+	}
+
+	return &sensor, nil
 }

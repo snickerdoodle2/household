@@ -48,7 +48,7 @@
                     bind:sensors
                     bind:action={actions[idx]}
                     bind:editing
-                    bind:errorFields={fieldErrors[idx]}
+                    errorFields={fieldErrors[idx]}
                 />
                 {#if editing}
                     <Button

@@ -11,6 +11,7 @@
     import { sensorDetailsSchema, sensorTypeSchema } from '$lib/types/sensor';
     import { z } from 'zod';
     import { authFetch } from '@/helpers/fetch';
+    import Input from '@/components/ui/input/input.svelte';
     import * as Dialog from '$lib/components/ui/dialog';
     import { goto, invalidate } from '$app/navigation';
     import { SENSOR_URL } from '@/helpers/sensor';
@@ -28,15 +29,17 @@
     let sensor: SensorDetails = $state({
         id: '',
         name: '',
-        type: 'decimal_sensor',
+        created_at: new Date(),
+        type: 'binary_switch',
+        active: false,
         refresh_rate: 0,
         uri: '',
-        created_at: new Date(),
     });
 
     let fieldErrors: Partial<
-        Record<'uri' | 'name' | 'refresh_rate' | 'type', string>
+        Record<'uri' | 'name' | 'refresh_rate' | 'type' | 'active', string>
     > = $state({});
+
     let globalError: string | null = $state(null);
 
     const sensorTypes = sensorTypeSchema.options.map((e) => ({
@@ -80,6 +83,19 @@
             const resJson = await res.json();
             console.log(resJson);
             globalError = resJson.error;
+        }
+    };
+
+    const handleReInit = async () => {
+        const res = await authFetch(`/api/v1/sensor/re-init/${orgSensor.id}`, {
+            method: 'POST',
+        });
+
+        if (res.ok) {
+            await invalidate(SENSOR_URL);
+            close();
+        } else {
+            console.error(res);
         }
     };
 
@@ -162,14 +178,56 @@
                             errors={fieldErrors}
                             disabled={!editing}
                         />
-                        <NewSensorInput
-                            name="refresh_rate"
-                            label="Refresh rate"
-                            bind:value={sensor.refresh_rate}
-                            type="number"
-                            errors={fieldErrors}
-                            disabled={!editing}
-                        />
+                        <Label
+                            for={'refresh_rate'}
+                            class="flex items-center justify-between text-base font-semibold"
+                            >{'Refresh rate'}
+                            {#if fieldErrors['refresh_rate'] && !sensor.active}
+                                <span
+                                    class="text-sm font-normal italic text-red-400"
+                                    >{fieldErrors['refresh_rate']}</span
+                                >
+                            {/if}
+                        </Label>
+
+                        <div
+                            class="flex w-full flex-row items-center justify-between"
+                        >
+                            <Input
+                                type="number"
+                                {name}
+                                bind:value={sensor.refresh_rate}
+                                required
+                                disabled={!editing || sensor.active}
+                                class={!sensor.active &&
+                                fieldErrors['refresh_rate']
+                                    ? 'border-2 border-red-600'
+                                    : ''}
+                            />
+
+                            <div class="ml-2 flex flex-row items-center">
+                                <Label
+                                    for="type"
+                                    class="flex items-center justify-between text-base font-semibold"
+                                >
+                                    Active
+                                    {#if fieldErrors['active']}
+                                        <span
+                                            class="text-sm font-normal italic text-red-400"
+                                            >{fieldErrors['active']}</span
+                                        >
+                                    {/if}
+                                </Label>
+                                <Input
+                                    type="checkbox"
+                                    class="ml-2 w-8 {fieldErrors['active']
+                                        ? 'border-2 border-red-600'
+                                        : ''}"
+                                    disabled={!editing}
+                                    bind:checked={sensor.active}
+                                />
+                            </div>
+                        </div>
                         <NewSensorInput
                             name="uri"
                             label="URI"
@@ -238,6 +296,14 @@
                                         >Submit</Button
                                     >
                                 {:else}
+                                    {#if sensor.active}
+                                        <Button
+                                            variant="outline"
+                                            size="bold"
+                                            on:click={handleReInit}
+                                            >Re-Init</Button
+                                        >
+                                    {/if}
                                     <Button
                                         on:click={() => {
                                             editing = true;

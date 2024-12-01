@@ -60,7 +60,7 @@ func (l *Listener[T]) Start() error {
 
 		res, err := http.Get(sensorEndpoint)
 		if err != nil {
-			fmt.Print(err.Error())
+			logger.Warn("Error while getting sensor value", "error", err.Error())
 
 			l.Broker.Publish(nil)
 
@@ -69,7 +69,7 @@ func (l *Listener[T]) Start() error {
 		}
 
 		if res.StatusCode >= 400 {
-			fmt.Printf("Received: %v when calling %v %v\n", res.Status, res.Request.Method, sensorEndpoint)
+			logger.Warn("Sensor value request returned HTTP Error code", "status", res.Status)
 			return ErrSensorHttpErrorResponse
 			// TODO: send notification
 		}

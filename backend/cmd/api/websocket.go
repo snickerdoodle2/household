@@ -170,6 +170,10 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 
 		// message fron sensor listener
 		values := msg.Interface().([]float64)
+		if values == nil {
+			// TODO: SEND SENSOR UNAVAILABLE
+			continue
+		}
 		err := sendSensorUpdate(conn, listeners[i-1].id, values[len(values)-1])
 		if err != nil {
 			app.logger.Error("sendSensorUpdates", "action", "update", "error", err)
