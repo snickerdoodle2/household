@@ -12,9 +12,7 @@
     import type { SensorDetails } from '@/types/sensor';
     import { Label } from '$lib/components/ui/label';
     import 'flatpickr/dist/flatpickr.css';
-    import {
-        DateInput
-    } from 'date-picker-svelte';
+    import { DateInput } from 'date-picker-svelte';
     import Input from '@/components/ui/input/input.svelte';
 
     const DEFAULT_RECORD_COUNT = 32;
