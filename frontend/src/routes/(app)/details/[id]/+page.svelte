@@ -157,12 +157,12 @@
     <Dialog.Portal>
         <Dialog.Overlay />
         <Dialog.Content
-            class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
+            class="flex flex-row max-w-none items-center justify-center px-8 py-4 md:w-fit"
         >
-            <Card.Root class="w-[512px] border-none shadow-none">
-                {#if loading}
-                    <p>Loading...</p>
-                {:else}
+            {#if loading}
+                <p>Loading...</p>
+            {:else}
+                <Card.Root class="w-[512px] border-none shadow-none">
                     <Card.Header class="text-3xl">
                         <Card.Title>Sensor Details</Card.Title>
                     </Card.Header>
@@ -305,6 +305,12 @@
                                     {/if}
                                     <Button
                                         on:click={() => {
+                                            goto(`/view/${sensor.id}`);
+                                        }}
+                                        size="bold">Inspect values</Button
+                                    >
+                                    <Button
+                                        on:click={() => {
                                             editing = true;
                                         }}
                                         size="bold">Edit</Button
@@ -313,8 +319,8 @@
                             </div>
                         </div>
                     </Card.Footer>
-                {/if}
-            </Card.Root>
+                </Card.Root>
+            {/if}
         </Dialog.Content>
     </Dialog.Portal>
 </Dialog.Root>

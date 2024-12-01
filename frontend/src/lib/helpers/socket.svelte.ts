@@ -73,8 +73,8 @@ const messageSchema = z.discriminatedUnion('type', [
 ]);
 
 export class SensorWebsocket {
-    private websocket: WebSocket;
-    private subscriptionCount: Map<string, number>;
+    private websocket!: WebSocket;
+    private subscriptionCount!: Map<string, number>;
     ready = $state(false);
     data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
     private static _instance: SensorWebsocket | null = null;

@@ -34,7 +34,9 @@
         </div>
     </div>
     {#if data}
-        <Chart {data} />
+        <a href={`/view/${sensor.id}`}>
+            <Chart {data} fixedView={null} />
+        </a>
     {:else}
         <p>Error opening socket</p>
     {/if}
