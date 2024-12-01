@@ -1,6 +1,5 @@
 <script lang="ts">
     import { generateDurationString } from '@/helpers/time';
-
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import * as Dialog from '$lib/components/ui/dialog';
@@ -14,9 +13,7 @@
     import { Label } from '$lib/components/ui/label';
     import 'flatpickr/dist/flatpickr.css';
     import {
-        DateInput,
-        DatePicker,
-        localeFromDateFnsLocale,
+        DateInput
     } from 'date-picker-svelte';
     import Input from '@/components/ui/input/input.svelte';
 
@@ -48,7 +45,6 @@
 
     let sensorId: string = $state(data.sensorId);
     let sensor: SensorDetails | undefined = $state(undefined);
-    let updateValues = $state(false);
     let settingView = $state(false);
     let settingValue = $state(false);
     let valueToSet = $state(0);
@@ -311,7 +307,6 @@
                                             class="mt-5"
                                             size="sm"
                                             on:click={() => {
-                                                updateValues = false;
                                                 ws.requestSince(
                                                     sensorId,
                                                     generateDurationString(
@@ -363,7 +358,6 @@
                                         <Button
                                             class="mt-4"
                                             on:click={() => {
-                                                updateValues = false;
                                                 fixedView = null;
                                             }}
                                             size="sm">Resume</Button

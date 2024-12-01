@@ -6,11 +6,6 @@
     import { Plus } from 'svelte-radix';
     import { Button } from '@/components/ui/button';
 
-    const handleDetails = async (e: Event) => {
-        const { href } = e.currentTarget as HTMLAnchorElement;
-        goto(href);
-    };
-
     const handleCreate = () => {
         goto(window.location.href + 'create');
     };
