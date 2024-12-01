@@ -14,6 +14,7 @@
     import { Label } from '$lib/components/ui/label';
     import 'flatpickr/dist/flatpickr.css';
     import { DateInput, DatePicker, localeFromDateFnsLocale } from 'date-picker-svelte'
+    import Input from '@/components/ui/input/input.svelte';
 
     const DEFAULT_RECORD_COUNT = 32;
 
@@ -40,12 +41,13 @@
     };
 
     let { data }: Props = $props();
-
+    
     let sensorId: string = $state(data.sensorId);
     let sensor: SensorDetails | undefined = $state(undefined);
     let updateValues = $state(false);
     let settingView = $state(false);
-
+    let settingValue = $state(false);
+    let valueToSet = $state(0);
     let fixedView: {
         from: Date,
         to: Date
@@ -70,6 +72,10 @@
     const close = () => {
         goto(`/`);
     };
+
+    const setSensorValue = () => {
+        console.log(`Setting sensor value not implemented.`, sensorId, valueToSet);
+    }
 
     $effect(() => {
         const entries = [...(ws.data.get(sensorId)?.entries() ?? [])];
@@ -223,12 +229,46 @@
                                 </table>
                             </div>
                         </div>
+
+                        {#if settingValue}
+                            <div class="flex gap-2 text-md p-2">
+                                <div class="pr-2">
+                                    <Label>Value</Label>
+                                    <Input
+                                        type="number"
+                                        size="sm"
+                                        class="ml-2"
+                                        bind:value={valueToSet}
+                                    />
+                                </div>
+                                <Button
+                                    size="sm"
+                                    class="mt-6"
+                                    on:click={setSensorValue}>Set</Button
+                                >
+                                <Button
+                                    size="sm"
+                                    class="mt-6"
+                                    variant="destructive"
+                                    on:click={() => (settingValue = false)}
+                                    >Cancel</Button
+                                >
+                            </div>
+                        {:else}
+                            <Button
+                                on:click={() => {
+                                    settingValue = true;
+                                }}
+                                size="bold">Set sensor value</Button
+                            >
+                        {/if}
+
                         {#if settingView || fixedView}
-                            <div class="flex p-1 items-left">
+                            <div class="flex items-left">
                                 <div class="p-2 flex gap-4 items-center">
                                     <div class="text-sm">
                                         <Label class="text-md"
-                                            >Start Date:</Label
+                                            >Start date:</Label
                                         >
                                         <DateInput
                                             class="ml-2"
@@ -242,7 +282,7 @@
                                     </div>
 
                                     <div class="text-sm">
-                                        <Label class="text-md">End Date:</Label>
+                                        <Label class="text-md">End date:</Label>
                                         <DateInput
                                             class="ml-2"
                                             bind:value={endDate}
@@ -271,7 +311,7 @@
                                                     to: endDate,
                                                 };
                                                 settingView = false;
-                                            }}>Show Measurments</Button
+                                            }}>Show measurments</Button
                                         >
                                         <Button
                                             class="mt-5"
@@ -320,10 +360,11 @@
                             </div>
                         {:else if !fixedView && !settingView}
                             <Button
+                                class="p-2"
                                 on:click={() => {
                                     settingView = true;
                                 }}
-                                size="bold">Set view</Button
+                                size="bold">See history</Button
                             >
                         {/if}
                     </Card.Content>
