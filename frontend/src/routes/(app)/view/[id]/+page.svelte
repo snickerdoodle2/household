@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { generateDurationString } from '@/helpers/time';
+
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import * as Dialog from '$lib/components/ui/dialog';
@@ -10,8 +12,8 @@
     import Button from '@/components/ui/button/button.svelte';
     import type { SensorDetails } from '@/types/sensor';
     import { Label } from '$lib/components/ui/label';
-    // import flatpickr from "flatpickr";  // Import flatpickr
-    // import "flatpickr/dist/themes/material_blue.css"; // Import a theme for styling
+    import 'flatpickr/dist/flatpickr.css';
+    import { DateInput, DatePicker, localeFromDateFnsLocale } from 'date-picker-svelte'
 
     const DEFAULT_RECORD_COUNT = 32;
 
@@ -42,6 +44,7 @@
     let sensorId: string = $state(data.sensorId);
     let sensor: SensorDetails | undefined = $state(undefined);
     let updateValues = $state(false);
+    let settingView = $state(false);
 
     let fixedView: {
         from: Date,
@@ -50,7 +53,6 @@
     let accuracy = $state(0.0)
     let startDate: Date= $state(new Date());
     let endDate: Date= $state(new Date());
-    let flatpickrInstance;
 
     let statistics = $state({
         [StatisticsTypes.Mean]: 0,
@@ -63,17 +65,6 @@
 
     onMount(async () => {
         sensor = await data.sensor;
-        // flatpickrInstance = flatpickr("#date-range", {enableTime: true,  // Enable time selection
-        // dateFormat: "Y-m-d H:i:S",  // Format to include date and time
-        // mode: "range",  // Enable range selection
-        // time_24hr: true, // Use 24-hour format
-        // onChange: (selectedDates) => {
-        // // Set start and end date when the range is selected
-        // if (selectedDates.length === 2) {
-        //     startDate = selectedDates[0];
-        //     endDate = selectedDates[1];
-        // }
-        // },});  // Attach flatpickr to input field
     });
 
     const close = () => {
@@ -194,7 +185,7 @@
                     </Card.Header>
                     <Card.Content>
                         <div class="flex w-full">
-                            <div class="p-2 w-full">
+                            <div class="p-2 pb-4 w-full">
                                 {#if chartData}
                                     <Chart
                                         data={chartData}
@@ -232,60 +223,111 @@
                                 </table>
                             </div>
                         </div>
-                        <div>
-                            <div
-                                class="flex items-center align-center gap-2 min-w-32"
-                            >
-                                <Label class="mr-2">Accuracy:</Label>
+                        {#if settingView || fixedView}
+                            <div class="flex p-1 items-left">
+                                <div class="p-2 flex gap-4 items-center">
+                                    <div class="text-sm">
+                                        <Label class="text-md"
+                                            >Start Date:</Label
+                                        >
+                                        <DateInput
+                                            class="ml-2"
+                                            bind:value={startDate}
+                                            format="yyyy/MM/dd HH:mm:ss"
+                                            placeholder="2000/31/12 23:59:59"
+                                            dynamicPositioning={true}
+                                            timePrecision={'second'}
+                                            disabled={!!fixedView}
+                                        />
+                                    </div>
 
-                                <input
-                                    type="range"
-                                    class="mt-1"
-                                    min="0.0"
-                                    max="1.0"
-                                    step="0.05"
-                                    bind:value={accuracy}
-                                    disabled={!fixedView}
-                                />
+                                    <div class="text-sm">
+                                        <Label class="text-md">End Date:</Label>
+                                        <DateInput
+                                            class="ml-2"
+                                            bind:value={endDate}
+                                            format="yyyy/MM/dd HH:mm:ss"
+                                            placeholder="2000/31/12 23:59:59"
+                                            dynamicPositioning={true}
+                                            timePrecision={'second'}
+                                            disabled={!!fixedView}
+                                        />
+                                    </div>
+                                    {#if !fixedView}
+                                        <Button
+                                            class="mt-5"
+                                            size="sm"
+                                            on:click={() => {
+                                                updateValues = false;
+                                                ws.requestSince(
+                                                    sensorId,
+                                                    generateDurationString(
+                                                        startDate,
+                                                        new Date()
+                                                    )
+                                                );
+                                                fixedView = {
+                                                    from: startDate,
+                                                    to: endDate,
+                                                };
+                                                settingView = false;
+                                            }}>Show Measurments</Button
+                                        >
+                                        <Button
+                                            class="mt-5"
+                                            variant="destructive"
+                                            size="sm"
+                                            on:click={() => {
+                                                settingView = false;
+                                            }}>Cancel</Button
+                                        >
+                                    {:else}
+                                        <div>
+                                            <Label class="text-md"
+                                                >Accuracy:</Label
+                                            >
+                                            <div class="ml-2 flex items-center">
+                                                <div>
+                                                    <input
+                                                        type="range"
+                                                        min="0.0"
+                                                        max="1.0"
+                                                        step="0.05"
+                                                        bind:value={accuracy}
+                                                        disabled={!fixedView}
+                                                    />
+                                                </div>
 
-                                
-                                <Label>
-                                    <span class="text-md text-gray-500">
-                                        {accuracy.toFixed(2)}
-                                    </span>
-                                </Label>
+                                                <Label>
+                                                    <span
+                                                        class="pl-2 mb-4 text-md text-gray-500"
+                                                    >
+                                                        {accuracy.toFixed(2)}
+                                                    </span>
+                                                </Label>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            class="mt-4"
+                                            on:click={() => {
+                                                updateValues = false;
+                                                fixedView = null;
+                                            }}
+                                            size="sm">Resume</Button
+                                        >
+                                    {/if}
+                                </div>
                             </div>
-                            <div>jasbd </div>
-                            <!-- <input id="date-range" class="border p-2 rounded-md" type="text" placeholder="Select Date Range" /> -->
-                        </div>
-                    </Card.Content>
-                    <Card.Footer class="flex justify-between">
-                        <div>
-                            {#if fixedView}
-                                <Button
-                                    on:click={() => {
-                                        updateValues = false;
-                                        fixedView = null;
-                                    }}
-                                    size="bold">Resume</Button
-                                >
-                            {/if}
-
+                        {:else if !fixedView && !settingView}
                             <Button
                                 on:click={() => {
-                                    updateValues = false;
-
-                                    ws.requestSince(sensorId, '24h');
-                                    fixedView = {
-                                        from: new Date(
-                                            Date.now() - 60 * 60 * 1000
-                                        ), // One hour ago
-                                        to: new Date(), // Current time
-                                    };
+                                    settingView = true;
                                 }}
-                                size="bold">New</Button
+                                size="bold">Set view</Button
                             >
-                        </div>
+                        {/if}
+                    </Card.Content>
+                    <Card.Footer class="flex justify-end">
                         <div>
                             <Button
                                 on:click={() => {
