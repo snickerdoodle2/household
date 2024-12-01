@@ -28,7 +28,7 @@
             class="grid flex-1 grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
         >
             {#each sensors as sensor}
-                <Sensor {sensor} on:click={handleDetails} />
+                <Sensor {sensor}/>
             {/each}
             <div class="flex items-center justify-center">
                 <Button variant="outline" size="icon" on:click={handleCreate}>

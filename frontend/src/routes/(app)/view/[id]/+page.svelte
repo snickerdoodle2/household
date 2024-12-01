@@ -10,6 +10,8 @@
     import Button from '@/components/ui/button/button.svelte';
     import type { SensorDetails } from '@/types/sensor';
     import { Label } from '$lib/components/ui/label';
+    // import flatpickr from "flatpickr";  // Import flatpickr
+    // import "flatpickr/dist/themes/material_blue.css"; // Import a theme for styling
 
     const DEFAULT_RECORD_COUNT = 32;
 
@@ -40,11 +42,15 @@
     let sensorId: string = $state(data.sensorId);
     let sensor: SensorDetails | undefined = $state(undefined);
     let updateValues = $state(false);
+
     let fixedView: {
-        from: Date;
-        to: Date;
+        from: Date,
+        to: Date
     } | null = $state(null);
     let accuracy = $state(0.0)
+    let startDate: Date= $state(new Date());
+    let endDate: Date= $state(new Date());
+    let flatpickrInstance;
 
     let statistics = $state({
         [StatisticsTypes.Mean]: 0,
@@ -57,6 +63,17 @@
 
     onMount(async () => {
         sensor = await data.sensor;
+        // flatpickrInstance = flatpickr("#date-range", {enableTime: true,  // Enable time selection
+        // dateFormat: "Y-m-d H:i:S",  // Format to include date and time
+        // mode: "range",  // Enable range selection
+        // time_24hr: true, // Use 24-hour format
+        // onChange: (selectedDates) => {
+        // // Set start and end date when the range is selected
+        // if (selectedDates.length === 2) {
+        //     startDate = selectedDates[0];
+        //     endDate = selectedDates[1];
+        // }
+        // },});  // Attach flatpickr to input field
     });
 
     const close = () => {
@@ -231,12 +248,15 @@
                                     disabled={!fixedView}
                                 />
 
+                                
                                 <Label>
                                     <span class="text-md text-gray-500">
                                         {accuracy.toFixed(2)}
                                     </span>
                                 </Label>
                             </div>
+                            <div>jasbd </div>
+                            <!-- <input id="date-range" class="border p-2 rounded-md" type="text" placeholder="Select Date Range" /> -->
                         </div>
                     </Card.Content>
                     <Card.Footer class="flex justify-between">
