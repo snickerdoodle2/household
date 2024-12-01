@@ -336,39 +336,45 @@
                                 </div>
                             </div>
                         {:else if !fixedView && !settingView}
-                            <Button
-                                class="p-2"
-                                on:click={() => viewLastMs(12 * 60 * 60 * 1000)}
-                                size="bold">Analyze Last 12h</Button
-                            >
+                            <div class="p-2">
+                                <Label>Analyse</Label>
+                                <div class="ml-2 p-1">
+                                    <Button
+                                        class="p-2"
+                                        on:click={() => viewLastMs(12 * 60 * 60 * 1000)}
+                                        size="bold">Last 12h</Button
+                                    >
+        
+                                    <Button
+                                        class="p-2"
+                                        on:click={() => viewLastMs(24 * 60 * 60 * 1000)}
+                                        size="bold">Last 24h</Button
+                                    >
+        
+                                    <Button
+                                        class="p-2"
+                                        on:click={() =>
+                                            viewLastMs(3 * 24 * 60 * 60 * 1000)}
+                                        size="bold">Last 3 days</Button
+                                    >
+        
+                                    <Button
+                                        class="p-2"
+                                        on:click={() =>
+                                            viewLastMs(7 * 24 * 60 * 60 * 1000)}
+                                        size="bold">last week</Button
+                                    >
+        
+                                    <Button
+                                        class="p-2"
+                                        on:click={() => {
+                                            settingView = true;
+                                        }}
+                                        size="bold">Custom Timeframe</Button
+                                    >
+                                </div>
 
-                            <Button
-                                class="p-2"
-                                on:click={() => viewLastMs(24 * 60 * 60 * 1000)}
-                                size="bold">Analyze Last 24h</Button
-                            >
-
-                            <Button
-                                class="p-2"
-                                on:click={() =>
-                                    viewLastMs(3 * 24 * 60 * 60 * 1000)}
-                                size="bold">Analyze Last 3 days</Button
-                            >
-
-                            <Button
-                                class="p-2"
-                                on:click={() =>
-                                    viewLastMs(7 * 24 * 60 * 60 * 1000)}
-                                size="bold">Analyze last week</Button
-                            >
-
-                            <Button
-                                class="p-2"
-                                on:click={() => {
-                                    settingView = true;
-                                }}
-                                size="bold">Custom Timeframe</Button
-                            >
+                            </div>
                         {/if}
 
                         <div class="flex gap-2 text-md p-2">
