@@ -74,6 +74,7 @@
     };
 
     const setSensorValue = () => {
+        settingValue = false;
         console.log(`Setting sensor value not implemented.`, sensorId, valueToSet);
     }
 
