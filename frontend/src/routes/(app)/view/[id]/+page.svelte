@@ -341,30 +341,32 @@
                                 <div class="ml-2 p-1">
                                     <Button
                                         class="p-2"
-                                        on:click={() => viewLastMs(12 * 60 * 60 * 1000)}
+                                        on:click={() =>
+                                            viewLastMs(12 * 60 * 60 * 1000)}
                                         size="bold">Last 12h</Button
                                     >
-        
+
                                     <Button
                                         class="p-2"
-                                        on:click={() => viewLastMs(24 * 60 * 60 * 1000)}
+                                        on:click={() =>
+                                            viewLastMs(24 * 60 * 60 * 1000)}
                                         size="bold">Last 24h</Button
                                     >
-        
+
                                     <Button
                                         class="p-2"
                                         on:click={() =>
                                             viewLastMs(3 * 24 * 60 * 60 * 1000)}
                                         size="bold">Last 3 days</Button
                                     >
-        
+
                                     <Button
                                         class="p-2"
                                         on:click={() =>
                                             viewLastMs(7 * 24 * 60 * 60 * 1000)}
                                         size="bold">last week</Button
                                     >
-        
+
                                     <Button
                                         class="p-2"
                                         on:click={() => {
@@ -373,7 +375,6 @@
                                         size="bold">Custom Timeframe</Button
                                     >
                                 </div>
-
                             </div>
                         {/if}
 

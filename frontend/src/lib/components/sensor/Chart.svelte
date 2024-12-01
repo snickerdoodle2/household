@@ -78,14 +78,53 @@
         if (!mounted) return;
 
         if (fixedView) {
-            if (chart.data?.labels)
-                chart.data.labels = [
-                    ...filteredData.values().map((e) => e.date.toUTCString()),
-                ];
+            if (chart.options.scales?.x?.display !== undefined)
+                chart.options.scales.x.display = true;
+            const diffInHours =
+                (filteredData[filteredData.length - 1]?.date.getTime() -
+                    filteredData[0]?.date.getTime()) /
+                (1000 * 60 * 60);
+            const diffInDays = diffInHours / 24;
+
+            const formatDate = (date: Date) => {
+                // If the range is within a few minutes, show minutes and seconds
+                if (diffInHours < 1) {
+                    return new Date(date).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                }
+
+                // If the range is within a few hours, show only hours and minutes
+                if (diffInHours < 24) {
+                    return new Date(date).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    });
+                }
+
+                // If the range is within a few days, show only the date (month/day)
+                if (diffInDays < 7) {
+                    return new Date(date).toLocaleDateString([], {
+                        month: '2-digit',
+                        day: '2-digit',
+                    });
+                }
+
+                // Otherwise, return the full UTC date string
+                return new Date(date).toUTCString();
+            };
+
+            chart.data.labels = [
+                ...filteredData.values().map((e) => formatDate(e.date)),
+            ];
             chart.data.datasets[0].data = [
                 ...filteredData.values().map((e) => e.value),
             ];
         } else {
+            if (chart.options.scales?.x?.display)
+                chart.options.scales.x.display = false;
             if (
                 chart.data?.labels?.[defaultRecordCount - 1] !==
                 filteredData[filteredData.length - 2]?.date.toUTCString()
@@ -125,7 +164,7 @@
                 scales: {
                     x: {
                         ticks: {
-                            display: false,
+                            display: true,
                         },
                     },
                 },
