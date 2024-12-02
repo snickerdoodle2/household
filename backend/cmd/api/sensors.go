@@ -429,7 +429,7 @@ func (app *App) setSensorValue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input struct {
-		Value int `json:"value"`
+		Value float64 `json:"value"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -443,6 +443,18 @@ func (app *App) setSensorValue(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+	url := fmt.Sprintf("http://%s/value", uri)
 
-	app.logger.Debug("setSensorValue", "id", sensorId, "value", input.Value, "uri", uri)
+	app.logger.Debug("setSensorValue", "id", sensorId, "value", input.Value, "uri", url)
+
+	body := new(bytes.Buffer)
+	err = json.NewEncoder(body).Encode(input)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	go app.sendValue(url, body)
+
+	app.writeJSON(w, http.StatusOK, envelope{"message": "sent"}, nil)
 }
