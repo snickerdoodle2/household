@@ -175,3 +175,27 @@ func (m SequenceModel) Get(id uuid.UUID) (*Sequence, error) {
 
 	return &sequence, nil
 }
+
+func (m SequenceModel) Update(sequence *Sequence) error {
+	query := `UPDATE sequences
+	SET name = $2, description = $3, actions = $4, version = version + 1
+	WHERE id = $1
+	RETURNING version`
+
+	args := []any{sequence.ID, sequence.Name, sequence.Description, sequence.Actions}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, args...).Scan(&sequence.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return ErrRecordNotFound
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
