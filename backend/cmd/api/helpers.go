@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -175,7 +176,18 @@ func (app *App) stopRule(ruleId uuid.UUID) {
 	delete(app.rules.stopChannels, ruleId)
 }
 
-type SocketMsg struct {
-	Values []float64 `json:"values"`
-	Status string    `json:"status"`
+func (app *App) sendValue(url string, body *bytes.Buffer) error {
+	req, err := http.NewRequest(http.MethodPut, url, body)
+	if err != nil {
+		app.logger.Error("handleRuleRequests request creation", "error", err.Error())
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	_, err = app.client.Do(req)
+	if err != nil {
+		app.logger.Error("handleRuleRequests request", "error", err.Error())
+	}
+
+	return nil
 }
