@@ -283,6 +283,25 @@ func (r RuleTime) MarshalJSON() ([]byte, error) {
 }
 
 func (r *RuleTime) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
+	now := time.Now()
+	switch r.Variant {
+	case TimeBefore:
+		if r.Hour < now.Hour() {
+			return true, nil
+		}
+		if r.Hour == now.Hour() && r.Minute < now.Minute() {
+			return true, nil
+		}
+	case TimeAfter:
+		if r.Hour > now.Hour() {
+			return true, nil
+		}
+		if r.Hour == now.Hour() && r.Minute > now.Minute() {
+			return true, nil
+		}
+	default:
+		panic("Unhandled time rule variant")
+	}
 	return false, nil
 }
 
