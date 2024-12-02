@@ -26,7 +26,7 @@ type Sequence struct {
 
 type SequenceAction struct {
 	Target  uuid.UUID `json:"target"`
-	Value   float64   `json:"value"`
+	Value   float32   `json:"value"`
 	MsDelay int       `json:"msDelay"`
 }
 
