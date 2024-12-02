@@ -2,10 +2,12 @@ package data
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -117,7 +119,14 @@ func (m SequenceModel) GetAll() ([]*Sequence, error) {
 		var sequence Sequence
 		var actions []SequenceAction
 
-		err := rows.Scan(&sequence.ID, &sequence.Name, &sequence.Description, &actions, &sequence.CreatedAt, &sequence.Version)
+		err := rows.Scan(
+			&sequence.ID,
+			&sequence.Name,
+			&sequence.Description,
+			&actions,
+			&sequence.CreatedAt,
+			&sequence.Version,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -131,4 +140,38 @@ func (m SequenceModel) GetAll() ([]*Sequence, error) {
 	}
 
 	return sequences, nil
+}
+
+func (m SequenceModel) Get(id uuid.UUID) (*Sequence, error) {
+	query := `SELECT id, name, description, actions, created_at, version
+	FROM sequences
+	WHERE id = $1`
+
+	var sequence Sequence
+	var actions []SequenceAction
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, id).Scan(
+		&sequence.ID,
+		&sequence.Name,
+		&sequence.Description,
+		&actions,
+		&sequence.CreatedAt,
+		&sequence.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	sequence.Actions = actions
+
+	return &sequence, nil
 }

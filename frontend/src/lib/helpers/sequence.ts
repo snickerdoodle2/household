@@ -48,7 +48,9 @@ export const getSequenceDetails = async (
         };
     }
 
-    const parsed = z.object({ rule: sequenceDetailsSchema }).safeParse(data);
+    const parsed = z
+        .object({ sequence: sequenceDetailsSchema })
+        .safeParse(data);
     if (!parsed.success) {
         return {
             isError: true,
@@ -58,7 +60,7 @@ export const getSequenceDetails = async (
 
     return {
         isError: false,
-        data: parsed.data.rule,
+        data: parsed.data.sequence,
     };
 };
 
