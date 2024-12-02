@@ -63,6 +63,18 @@
         }
     };
 
+    const handleStart = async () => {
+        const res = await authFetch(`/api/v1/sequence/${sequence.id}/start`, {
+            method: 'POST',
+        });
+
+        console.log(await res.json());
+
+        if (res.ok) {
+            close();
+        }
+    };
+
     const handleSubmit = async () => {
         const { data, success, error } = sequenceDetailsSchema.safeParse({
             ...sequence,
@@ -187,6 +199,9 @@
                             >
                         {:else}
                             <Button on:click={close} size="bold">Cancel</Button>
+                            <Button on:click={handleStart} size="bold"
+                                >Start</Button
+                            >
                             <Button
                                 on:click={() => {
                                     editing = true;
