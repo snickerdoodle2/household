@@ -291,4 +291,9 @@ func (r *RuleTime) Dependencies() []uuid.UUID {
 }
 
 func (r *RuleTime) Validate(v *validator.Validator) {
+	v.Check(0 <= r.Hour, "ruleTime", "Hour should be >= 0")
+	v.Check(r.Hour <= 23, "ruleTime", "Hour should be <= 23")
+	v.Check(0 <= r.Minute, "ruleTime", "Minutes should be >= 0")
+	v.Check(r.Minute <= 59, "ruleTime", "Minutes should be <= 59")
+	v.Check(slices.Contains([]TimeType{TimeBefore, TimeAfter}, r.Variant), "ruleTime", "Variant should be either \"before\" or \"after\"")
 }
