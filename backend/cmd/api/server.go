@@ -50,8 +50,6 @@ func (app *App) serve() error {
 }
 
 func (app *App) handleRuleRequests() {
-	client := &http.Client{}
-	client.Timeout = 5 * time.Second
 	for message := range app.rules.channel {
 		uri, err := app.models.Sensors.GetUri(message.To)
 		if err != nil {
@@ -67,17 +65,8 @@ func (app *App) handleRuleRequests() {
 			continue
 		}
 
-		req, err := http.NewRequest(http.MethodPut, url, body)
-		if err != nil {
-			app.logger.Error("handleRuleRequests request creation", "error", err.Error())
-			continue
-		}
-		req.Header.Set("Content-Type", "application/json")
-
-		_, err = client.Do(req)
-		if err != nil {
-			app.logger.Error("handleRuleRequests request", "error", err.Error())
-			continue
+		if err = app.sendValue(url, body); err != nil {
+			app.logger.Error("handleRuleRequests request", "url", url, "error", err)
 		}
 	}
 }

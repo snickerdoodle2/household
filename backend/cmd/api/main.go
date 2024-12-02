@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"inzynierka/internal/data"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -39,6 +40,7 @@ type App struct {
 		channel      chan data.ValidRuleAction
 		stopChannels map[uuid.UUID]chan struct{}
 	}
+	client   *http.Client
 	settings Settings
 }
 
@@ -72,12 +74,16 @@ func main() {
 
 	logger.Info("DB connection established")
 
+	httpClient := &http.Client{}
+	httpClient.Timeout = 5 * time.Second
+
 	app := App{
 		logger:     logger,
 		config:     cfg,
 		models:     data.NewModels(db),
 		listeners:  make(data.SensorListeners),
 		initBuffer: make(data.SensorInitBuffer),
+		client:     httpClient,
 		rules: struct {
 			channel      chan data.ValidRuleAction
 			stopChannels map[uuid.UUID]chan struct{}
