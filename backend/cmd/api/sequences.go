@@ -123,5 +123,30 @@ func (app *App) updateSequenceHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
 
+func (app *App) deleteSequenceHandler(w http.ResponseWriter, r *http.Request) {
+	sequenceIdStr := chi.URLParam(r, "id")
+	sequenceId, err := uuid.Parse(sequenceIdStr)
+
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	err = app.models.Sequences.Delete(sequenceId)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "sequence succesfully deleted"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }

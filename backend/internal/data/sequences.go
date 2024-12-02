@@ -199,3 +199,22 @@ func (m SequenceModel) Update(sequence *Sequence) error {
 
 	return nil
 }
+
+func (m SequenceModel) Delete(id uuid.UUID) error {
+	query := `DELETE FROM sequences
+	WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := m.DB.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
+}
