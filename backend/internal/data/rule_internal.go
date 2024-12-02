@@ -129,6 +129,36 @@ func unmarshalPerc(data map[string]interface{}) (*RulePerc, error) {
 	return &RulePerc{SensorID: sensorID, Delta: Duration(duration), Percentile: int(perc)}, nil
 }
 
+func unmarhsalField[T any](fieldName string, data map[string]interface{}) (*T, error) {
+	str, ok := data[fieldName]
+	if !ok {
+		return nil, ErrParseMissingValue
+	}
+	value, ok := str.(T)
+	if !ok {
+		return nil, ErrParseInvalidType
+	}
+
+	return &value, nil
+}
+
+func unmarshalTime(data map[string]interface{}) (*RuleTime, error) {
+	hour, err := unmarhsalField[int]("hour", data)
+	if err != nil {
+		return nil, err
+	}
+	minute, err := unmarhsalField[int]("minute", data)
+	if err != nil {
+		return nil, err
+	}
+	variant, err := unmarhsalField[string]("variant", data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RuleTime{Hour: *hour, Minute: *minute, Variant: TimeType(*variant)}, nil
+}
+
 func UnmarshalInternalRuleJSON(data map[string]interface{}) (RuleInternal, error) {
 	nodeType, ok := data["type"]
 
@@ -184,6 +214,8 @@ func UnmarshalInternalRuleJSON(data map[string]interface{}) (RuleInternal, error
 		return &RuleLT{SensorID: sensorID, Value: value}, nil
 	case "perc":
 		return unmarshalPerc(data)
+	case "time":
+		return unmarshalTime(data)
 	default:
 		return nil, ErrParseUnknownType
 	}
