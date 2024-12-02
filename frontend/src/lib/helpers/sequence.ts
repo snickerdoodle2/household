@@ -12,7 +12,7 @@ import {
 export const getAllSequences = async (
     fetch: FetchFn
 ): Promise<Result<Sequence[], string>> => {
-    const res = await authFetch(`/api/v1/seqence`, {}, fetch);
+    const res = await authFetch(`/api/v1/sequence`, {}, fetch);
     const data = await res.json();
     if (!res.ok) {
         return {

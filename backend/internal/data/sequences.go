@@ -58,3 +58,38 @@ func (m SequenceModel) Insert(sequence *Sequence) error {
 
 	return nil
 }
+
+func (m SequenceModel) GetAll() ([]*Sequence, error) {
+	query := `SELECT id, name, description, actions, created_at, version
+	FROM sequences`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var sequences []*Sequence
+
+	for rows.Next() {
+		var sequence Sequence
+		var actions []SequenceAction
+
+		err := rows.Scan(&sequence.ID, &sequence.Name, &sequence.Description, &actions, &sequence.CreatedAt, &sequence.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		sequence.Actions = actions
+		sequences = append(sequences, &sequence)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return sequences, nil
+}
