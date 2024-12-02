@@ -428,11 +428,21 @@ func (app *App) setSensorValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var input struct {
+		Value int `json:"value"`
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
 	uri, err := app.models.Sensors.GetUri(sensorId)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	app.logger.Debug("setSensorValue", "uri", uri)
+	app.logger.Debug("setSensorValue", "id", sensorId, "value", input.Value, "uri", uri)
 }
