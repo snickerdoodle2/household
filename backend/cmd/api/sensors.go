@@ -419,3 +419,20 @@ func (app *App) reInitSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.initSensor(*sensor)
 }
+
+func (app *App) setSensorValue(w http.ResponseWriter, r *http.Request) {
+	sensorIdStr := chi.URLParam(r, "id")
+	sensorId, err := uuid.Parse(sensorIdStr)
+	if err != nil {
+		app.writeJSON(w, http.StatusBadRequest, envelope{"error": "not a valid uuid"}, nil)
+		return
+	}
+
+	uri, err := app.models.Sensors.GetUri(sensorId)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.logger.Debug("setSensorValue", "uri", uri)
+}

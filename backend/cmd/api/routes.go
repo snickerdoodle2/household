@@ -38,6 +38,7 @@ func (app *App) routes() http.Handler {
 			r.Post("/sensor", app.createSensorHandler)
 			r.Put("/sensor/{id}", app.updateSensorHandler)
 			r.Delete("/sensor/{id}", app.deleteSensorHandler)
+			r.Put("/sensor/{id}/value", app.setSensorValue)
 
 			r.Get("/rule", app.listRulesHandler)
 			r.Get("/rule/{id}", app.getRuleHandler)

@@ -14,6 +14,7 @@
     import 'flatpickr/dist/flatpickr.css';
     import { DateInput } from 'date-picker-svelte';
     import Input from '@/components/ui/input/input.svelte';
+    import { authFetch } from '@/helpers/fetch';
 
     const DEFAULT_RECORD_COUNT = 32;
 
@@ -71,11 +72,12 @@
     };
 
     const setSensorValue = () => {
-        console.log(
-            `Setting sensor value not implemented.`,
-            sensorId,
-            valueToSet
-        );
+        authFetch(`/api/v1/sensor/${sensorId}/value`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                value: valueToSet,
+            }),
+        });
     };
 
     const viewLastMs = (msDuration: number) => {
