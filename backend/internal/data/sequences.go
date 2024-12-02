@@ -28,6 +28,12 @@ type SequenceAction struct {
 	MsDelay int       `json:"msDelay"`
 }
 
+type SequenceInfo struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+}
+
 func (m SequenceModel) Insert(sequence *Sequence) error {
 	query := `INSERT INTO SEQUENCES (id, name, description, actions)
 	VALUES ($1, $2, $3, $4)
@@ -57,6 +63,39 @@ func (m SequenceModel) Insert(sequence *Sequence) error {
 	}
 
 	return nil
+}
+
+func (m SequenceModel) GetAllInfo() ([]*SequenceInfo, error) {
+	query := `SELECT id, name, description
+	FROM sequences`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var allInfo []*SequenceInfo
+
+	for rows.Next() {
+		var info SequenceInfo
+
+		err := rows.Scan(&info.ID, &info.Name, &info.Description)
+		if err != nil {
+			return nil, err
+		}
+
+		allInfo = append(allInfo, &info)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return allInfo, nil
 }
 
 func (m SequenceModel) GetAll() ([]*Sequence, error) {

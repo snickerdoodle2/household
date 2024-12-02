@@ -29,13 +29,13 @@ func (app *App) createSequenceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) listSequencesHandler(w http.ResponseWriter, r *http.Request) {
-	sequences, err := app.models.Sequences.GetAll()
+	sequencesInfo, err := app.models.Sequences.GetAllInfo()
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"data": sequences}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"data": sequencesInfo}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
