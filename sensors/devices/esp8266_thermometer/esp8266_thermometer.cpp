@@ -5,27 +5,37 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-#define STASSID "YOUR_WIFI_SSID"
-#define ONE_WIRE_BUS D6
-#define STAPSK "YOUR_WIFI_PASSWORD"
+// Replace with your network credentials
+#define STASSID "YOUR_SSID"
+#define STAPSK "YOUR_PASSWORD"
+// Set your sensor type here
+const char *sensor_type = "decimal_sensor";
 
+// Set your sensor pins here
+#define ONE_WIRE_BUS D6
+
+ESP8266WebServer server(80);
 const char *ssid = STASSID;
 const char *password = STAPSK;
 
-ESP8266WebServer server(80);
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-void handleValue()
+float measure()
 {
     sensors.requestTemperatures();
-    float tempC = sensors.getTempCByIndex(0);
-    server.send(200, "text/json", "{\"value\":" + String(tempC) + "}");
+    return sensors.getTempCByIndex(0);
+}
+
+void handleValue()
+{
+    float value = measure();
+    server.send(200, "text/json", "{\"value\":" + String(value) + "}");
 }
 
 void handleStatus()
 {
-    server.send(200, "text/json", "{ \"status\": \"online\", \"type\": \"decimal_sensor\" }");
+    server.send(200, "text/json", "{ \"status\": \"online\", \"type\": \"" + String(sensor_type) + "\" }");
 }
 
 void setup(void)
@@ -35,7 +45,6 @@ void setup(void)
     WiFi.begin(ssid, password);
     Serial.println("");
 
-    // Wait for connection
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
