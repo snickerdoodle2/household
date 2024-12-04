@@ -125,6 +125,32 @@ func (m *NotificationModel) MarkAsRead(notificationId, userId uuid.UUID) error {
 	return err
 }
 
-func (m *NotificationModel) GetUnread(userId uuid.UUID) error {
-	return nil
+func (m *NotificationModel) GetUnread(userId uuid.UUID) ([]*UserNotification, error) {
+	query := `
+    SELECT id, level, title, description, read FROM notifications
+    INNER JOIN user_notifications ON notifications.id = user_notifications.notification_id
+    WHERE user_id = $1 AND NOT read
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	notifications := make([]*UserNotification, 0)
+
+	for rows.Next() {
+		notif := UserNotification{}
+		err = rows.Scan(&notif.ID, &notif.Level, &notif.Title, &notif.Description, &notif.Read)
+		if err != nil {
+			return nil, err
+		}
+
+		notifications = append(notifications, &notif)
+	}
+
+	return notifications, nil
 }
