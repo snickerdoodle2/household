@@ -54,7 +54,7 @@ func (m *NotificationModel) Insert(notification *Notification) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return m.DB.QueryRow(ctx, query, args...).Scan(notification.CreatedAt)
+	return m.DB.QueryRow(ctx, query, args...).Scan(&notification.CreatedAt)
 }
 
 func (m *NotificationModel) InsertForUsers(notification *Notification, users []uuid.UUID) error {
