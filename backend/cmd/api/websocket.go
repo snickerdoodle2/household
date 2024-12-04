@@ -263,8 +263,9 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 		return invalidTokenResponse(conn)
 	}
 
-	_, err = app.models.Users.GetForToken(token)
+	user, err := app.models.Users.GetForToken(token)
 	if err != nil {
+		app.logger.Error("handleAuthMessage GetForToken", "error", err)
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
 			return serverErrorResponse(conn)
@@ -272,6 +273,14 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 			return serverErrorResponse(conn)
 		}
 	}
+
+	notifications, err := app.models.Notifications.GetUnread(user.ID)
+	if err != nil {
+		app.logger.Error("handleAuthMsg", "reading notifs", "error", err)
+		return serverErrorResponse(conn)
+	}
+
+	app.logger.Debug("handleAuthMsg", "notifications check", "unread count", len(notifications))
 
 	status.mu.Lock()
 	defer status.mu.Unlock()
