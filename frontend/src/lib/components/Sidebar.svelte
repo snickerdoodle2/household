@@ -6,7 +6,6 @@
     import { Reader } from 'radix-icons-svelte';
     import * as Dialog from '$lib/components/ui/dialog';
     import { Bell } from 'radix-icons-svelte';
-    import Notifications from './Notifications.svelte';
     import { Avatar } from 'radix-icons-svelte';
 
     const LINKS = [
@@ -112,8 +111,6 @@
         <Dialog.Overlay />
         <Dialog.Content
             class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
-        >
-            <Notifications />
-        </Dialog.Content>
+        ></Dialog.Content>
     </Dialog.Portal>
 </Dialog.Root>
