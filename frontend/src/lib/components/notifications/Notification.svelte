@@ -18,9 +18,10 @@
 
     type Props = {
         notification: Notification;
+        onclick: () => void;
     };
 
-    const { notification }: Props = $props();
+    const { notification, onclick }: Props = $props();
 </script>
 
 {#snippet icon(level: NotificationLevel)}
@@ -46,9 +47,9 @@
     <div class="flex-1">
         <Alert.Title class="text-lg flex justify-between pb-2 items-center">
             <span>{notification.title}</span>
-            <Button size="icon" variant="ghost"
-                ><BellOff class="w-4 h-4"></BellOff></Button
-            >
+            <Button size="icon" variant="ghost" on:click={onclick}>
+                <BellOff class="w-4 h-4" />
+            </Button>
         </Alert.Title>
         <Alert.Description class="flex justify-between">
             <p>
