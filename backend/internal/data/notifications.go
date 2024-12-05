@@ -144,6 +144,21 @@ func (m *NotificationModel) MarkAsRead(notificationId, userId uuid.UUID) error {
 	return err
 }
 
+func (m *NotificationModel) MarkAllAsRead(userId uuid.UUID) error {
+	query := `
+    UPDATE user_notifications
+    SET read = true
+    WHERE NOT read AND user_id = $1
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := m.DB.Exec(ctx, query, userId)
+
+	return err
+}
+
 func (m *NotificationModel) GetUnread(userId uuid.UUID) ([]*UserNotification, error) {
 	query := `
     SELECT id, level, title, description, created_at, read FROM notifications

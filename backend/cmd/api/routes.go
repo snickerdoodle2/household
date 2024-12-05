@@ -54,6 +54,7 @@ func (app *App) routes() http.Handler {
 			r.Post("/sequence/{id}/start", app.startSequenceHandler)
 
 			r.Put("/notification/{id}", app.readNotificationHandler)
+			r.Put("/notification", app.readAllNotificationHandler)
 			r.Post("/notification/debug", app.requestAllNotifsHandler)
 
 			// TODO: make sure only person who can change user data is THE user (or admin)

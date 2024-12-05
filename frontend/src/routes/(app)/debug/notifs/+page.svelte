@@ -14,7 +14,7 @@
 
 <div class="flex flex-col gap-8 items-center">
     <ol>
-        {#each ws.notifications as notification}
+        {#each ws.notifications as notification (notification.id)}
             <li>
                 ({notification.level}) {notification.title} - {notification.description}
             </li>

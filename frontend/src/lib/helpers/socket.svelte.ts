@@ -227,6 +227,18 @@ export class AppWebsocket {
         }
     }
 
+    async markAllAsRead() {
+        const res = await authFetch(`/api/v1/notification`, {
+            method: 'PUT',
+        });
+
+        if (res.ok) {
+            this.notifications = [];
+        } else {
+            console.log(await res.json());
+        }
+    }
+
     private handleMeasurementResponse(
         message: z.infer<typeof measurementResponseSchema>
     ) {

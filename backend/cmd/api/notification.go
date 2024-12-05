@@ -16,7 +16,20 @@ func (app *App) readNotificationHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	user := app.contextGetUser(r)
-	app.models.Notifications.MarkAsRead(notifId, user.ID)
+	err = app.models.Notifications.MarkAsRead(notifId, user.ID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *App) readAllNotificationHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	err := app.models.Notifications.MarkAllAsRead(user.ID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }
 
 func (app *App) requestAllNotifsHandler(w http.ResponseWriter, r *http.Request) {
