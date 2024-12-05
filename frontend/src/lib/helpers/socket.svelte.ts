@@ -2,6 +2,7 @@ import { authToken } from '@/auth/token';
 import { SvelteMap } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 import { z } from 'zod';
+import { toast } from 'svelte-sonner';
 import { authFetch } from './fetch';
 
 const durationSchema = z
@@ -201,8 +202,15 @@ export class AppWebsocket {
             this.notifications.push(...notification);
             return;
         }
+        const method = toast[notification.level];
+        method(notification.title, {
+            description: notification.description,
+            action: {
+                label: 'Mark as read',
+                onClick: () => this.markNotificationAsRead(notification.id),
+            },
+        });
 
-        // TODO: MAKE NOTIFICATION ON SCREEN
         this.notifications.push(notification);
     }
 
