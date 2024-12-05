@@ -72,19 +72,19 @@ const messageSchema = z.discriminatedUnion('type', [
     measurementResponseSchema,
 ]);
 
-export class SensorWebsocket {
+export class AppWebsocket {
     private websocket!: WebSocket;
     private subscriptionCount!: Map<string, number>;
     ready = $state(false);
     data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
-    private static _instance: SensorWebsocket | null = null;
+    private static _instance: AppWebsocket | null = null;
 
     constructor() {
-        if (SensorWebsocket._instance) {
-            return SensorWebsocket._instance;
+        if (AppWebsocket._instance) {
+            return AppWebsocket._instance;
         }
 
-        SensorWebsocket._instance = this;
+        AppWebsocket._instance = this;
 
         this.subscriptionCount = new Map();
 
