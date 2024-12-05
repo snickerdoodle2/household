@@ -28,8 +28,8 @@ type Notification struct {
 
 type UserNotification struct {
 	Notification
-	Read  bool         `json:"read"`
-	Users []*uuid.UUID `json:"-"`
+	Read  bool        `json:"read"`
+	Users []uuid.UUID `json:"-"`
 }
 
 type NotificationModel struct {
@@ -78,7 +78,7 @@ func (m *NotificationModel) InsertForUsers(notification *Notification, users []u
 	return err
 }
 
-func (m *NotificationModel) InsertForAll(notification *Notification) ([]*uuid.UUID, error) {
+func (m *NotificationModel) InsertForAll(notification *Notification) ([]uuid.UUID, error) {
 	err := m.Insert(notification)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (m *NotificationModel) InsertForAll(notification *Notification) ([]*uuid.UU
 		return nil, err
 	}
 
-	ids := make([]*uuid.UUID, 0)
+	ids := make([]uuid.UUID, 0)
 
 	for rows.Next() {
 		var id uuid.UUID
@@ -107,7 +107,7 @@ func (m *NotificationModel) InsertForAll(notification *Notification) ([]*uuid.UU
 			return nil, err
 		}
 
-		ids = append(ids, &id)
+		ids = append(ids, id)
 	}
 
 	return ids, nil

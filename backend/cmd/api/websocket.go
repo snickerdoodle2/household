@@ -21,6 +21,7 @@ import (
 type connStatus struct {
 	mu     sync.Mutex
 	authed bool
+	userId uuid.UUID
 	ch     wsChan
 }
 
@@ -104,6 +105,9 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 		status.mu.Unlock()
 	}
 
+	notificationChan := app.notificationBroker.Subscribe()
+	defer app.notificationBroker.Unsubscribe(notificationChan)
+
 	listeners := make([]wsListener, 0)
 
 	defer (func() {
@@ -118,8 +122,9 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 	})()
 
 	defer app.logger.Debug("sendSensorUpdates", "action", "closing")
-	channels := make([]reflect.SelectCase, 1)
+	channels := make([]reflect.SelectCase, 2)
 	channels[0] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(status.ch)}
+	channels[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(notificationChan)}
 
 	for {
 		i, msg, ok := reflect.Select(channels)
@@ -166,14 +171,27 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 			}
 			continue
 		}
-
+		if i == 1 {
+			notification := msg.Interface().(data.UserNotification)
+			if !slices.Contains(notification.Users, status.userId) {
+				continue
+			}
+			app.logger.Debug("sendSensorUpdates", "action", "new notification", "title", notification.Title)
+			err := wsjson.Write(context.Background(), conn, map[string]any{"type": notificationMsg, "data": notification})
+			if err != nil {
+				app.logger.Error("sendSensorUpdates", "action", "sendNotification", "error", err)
+			}
+			continue
+		}
+		// NOTE: obrzydliwy sposob na trzymanie tego tbh...
+		idx := i - 2
 		// message fron sensor listener
 		values := msg.Interface().([]float64)
 		if values == nil {
 			// TODO: SEND SENSOR UNAVAILABLE
 			continue
 		}
-		err := sendSensorUpdate(conn, listeners[i-1].id, values[len(values)-1])
+		err := sendSensorUpdate(conn, listeners[idx].id, values[len(values)-1])
 		if err != nil {
 			app.logger.Error("sendSensorUpdates", "action", "update", "error", err)
 		}
@@ -302,6 +320,7 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 	status.mu.Lock()
 	defer status.mu.Unlock()
 	status.authed = true
+	status.userId = user.ID
 	return authResponse(conn, "ok")
 }
 
