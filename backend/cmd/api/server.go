@@ -34,6 +34,8 @@ func (app *App) serve() error {
 		app.setupSensorListener(sensor)
 	}
 
+	go app.notificationBroker.Start()
+
 	rules, err := app.models.Rules.GetAll()
 	if err != nil {
 		return err
