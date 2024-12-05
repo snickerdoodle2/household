@@ -53,6 +53,28 @@ const subscribeSchema = z.object({
     ),
 });
 
+const notificationLevelSchema = z.enum(['error', 'success', 'warning', 'info']);
+export type NotificationLevel = z.infer<typeof notificationLevelSchema>;
+
+const notificationSchema = z.object({
+    id: z.string().uuid(),
+    level: notificationLevelSchema,
+    title: z.string().min(1),
+    description: z.string(),
+    created_at: z
+        .string()
+        .or(z.date())
+        .transform((d) => new Date(d)),
+    read: z.boolean(),
+});
+
+const notificationMessageSchema = z.object({
+    type: z.literal('notification'),
+    data: notificationSchema,
+});
+
+type Notification = z.infer<typeof notificationSchema>;
+
 const measurementSchema = z.object({
     type: z.literal('measurment'),
     sensor_id: z.string().uuid(),
@@ -70,6 +92,7 @@ const messageSchema = z.discriminatedUnion('type', [
     subscribeSchema,
     measurementSchema,
     measurementResponseSchema,
+    notificationMessageSchema,
 ]);
 
 export class AppWebsocket {
@@ -128,6 +151,9 @@ export class AppWebsocket {
             if (message.type === 'measurement_req') {
                 this.handleMeasurementResponse(message);
             }
+            if (message.type === 'notification') {
+                this.handleNotificationMessage(message.data);
+            }
         });
 
         this.websocket.addEventListener('open', () => {
@@ -157,6 +183,12 @@ export class AppWebsocket {
             if (value.status === 'error') continue;
             this.data.set(key, value.values);
         }
+    }
+
+    private handleNotificationMessage(notification: Notification) {
+        console.log(
+            `New notification: ${notification.title} - ${notification.description}`
+        );
     }
 
     private handleMeasurementResponse(
