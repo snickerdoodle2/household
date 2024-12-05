@@ -113,21 +113,6 @@ func (m *NotificationModel) InsertForAll(notification *Notification) ([]uuid.UUI
 	return ids, nil
 }
 
-func (m *NotificationModel) InsertUser(notificationId, userId uuid.UUID) error {
-	query := `
-    INSERT INTO user_notifications (notification_id, user_id)
-    VALUES ($1, $2)
-    `
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	_, err := m.DB.Exec(ctx, query, notificationId, userId)
-
-	// TODO: Handle user already notified
-	return err
-}
-
 func (m *NotificationModel) MarkAsRead(notificationId, userId uuid.UUID) error {
 	query := `
     UPDATE user_notifications
