@@ -6,6 +6,8 @@
         Notification,
     } from '@/helpers/socket.svelte';
     import { cn } from '@/utils';
+    import dayjs from 'dayjs';
+    import relativeTime from 'dayjs/plugin/relativeTime';
     import { BadgeAlert, BadgeCheck, BadgeInfo, BadgeX } from 'lucide-svelte';
 
     type Props = {
@@ -13,6 +15,9 @@
     };
 
     const { notification }: Props = $props();
+    $effect(() => {
+        dayjs.extend(relativeTime);
+    });
 </script>
 
 {#snippet icon(level: NotificationLevel)}
@@ -35,12 +40,13 @@
 
 <Alert.Root class="flex gap-4 items-center">
     {@render icon(notification.level)}
-    <div class="">
-        <Alert.Title>{notification.title}</Alert.Title>
-        <Alert.Description>
+    <div class="flex-1">
+        <Alert.Title class="text-base">{notification.title}</Alert.Title>
+        <Alert.Description class="flex justify-between">
             <p>
                 {notification.description}
             </p>
+            <span>{dayjs(notification.created_at).fromNow()}</span>
         </Alert.Description>
     </div>
 </Alert.Root>
