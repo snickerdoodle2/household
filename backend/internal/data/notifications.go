@@ -77,21 +77,39 @@ func (m *NotificationModel) InsertForUsers(notification *Notification, users []u
 	return err
 }
 
-func (m *NotificationModel) InsertForAll(notification *Notification) error {
+func (m *NotificationModel) InsertForAll(notification *Notification) ([]*uuid.UUID, error) {
 	err := m.Insert(notification)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	query := `INSERT INTO user_notifications
+	query := `INSERT INTO user_notifications (notification_id, user_id)
     SELECT $1, id FROM users
+    RETURNING user_id
     `
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err = m.DB.Exec(ctx, query, notification.ID)
-	return err
+	rows, err := m.DB.Query(ctx, query, notification.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]*uuid.UUID, 0)
+
+	for rows.Next() {
+		var id uuid.UUID
+
+		err = rows.Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, &id)
+	}
+
+	return ids, nil
 }
 
 func (m *NotificationModel) InsertUser(notificationId, userId uuid.UUID) error {
