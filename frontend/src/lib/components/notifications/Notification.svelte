@@ -7,7 +7,6 @@
     } from '@/helpers/socket.svelte';
     import { cn } from '@/utils';
     import dayjs from 'dayjs';
-    import relativeTime from 'dayjs/plugin/relativeTime';
     import {
         BadgeAlert,
         BadgeCheck,
@@ -22,9 +21,6 @@
     };
 
     const { notification }: Props = $props();
-    $effect(() => {
-        dayjs.extend(relativeTime);
-    });
 </script>
 
 {#snippet icon(level: NotificationLevel)}
