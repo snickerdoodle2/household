@@ -127,7 +127,7 @@ func (m *NotificationModel) MarkAsRead(notificationId, userId uuid.UUID) error {
 
 func (m *NotificationModel) GetUnread(userId uuid.UUID) ([]*UserNotification, error) {
 	query := `
-    SELECT id, level, title, description, read FROM notifications
+    SELECT id, level, title, description, created_at, read FROM notifications
     INNER JOIN user_notifications ON notifications.id = user_notifications.notification_id
     WHERE user_id = $1 AND NOT read
     `
@@ -144,7 +144,7 @@ func (m *NotificationModel) GetUnread(userId uuid.UUID) ([]*UserNotification, er
 
 	for rows.Next() {
 		notif := UserNotification{}
-		err = rows.Scan(&notif.ID, &notif.Level, &notif.Title, &notif.Description, &notif.Read)
+		err = rows.Scan(&notif.ID, &notif.Level, &notif.Title, &notif.Description, &notif.CreatedAt, &notif.Read)
 		if err != nil {
 			return nil, err
 		}
