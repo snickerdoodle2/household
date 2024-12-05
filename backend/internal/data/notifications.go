@@ -19,16 +19,16 @@ const (
 )
 
 type Notification struct {
-	ID          uuid.UUID
-	Level       NotificationLevel
-	Title       string
-	Description string
-	CreatedAt   time.Time
+	ID          uuid.UUID         `json:"id"`
+	Level       NotificationLevel `json:"level"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	CreatedAt   time.Time         `json:"created_at"`
 }
 
 type UserNotification struct {
 	Notification
-	Read bool
+	Read bool `json:"read"`
 }
 
 type NotificationModel struct {

@@ -68,6 +68,11 @@ const notificationSchema = z.object({
     read: z.boolean(),
 });
 
+const unreadNotificationMessageSchema = z.object({
+    type: z.literal('notifications_unread'),
+    data: notificationSchema.array(),
+});
+
 const notificationMessageSchema = z.object({
     type: z.literal('notification'),
     data: notificationSchema,
@@ -93,6 +98,7 @@ const messageSchema = z.discriminatedUnion('type', [
     measurementSchema,
     measurementResponseSchema,
     notificationMessageSchema,
+    unreadNotificationMessageSchema,
 ]);
 
 export class AppWebsocket {
@@ -100,6 +106,7 @@ export class AppWebsocket {
     private subscriptionCount!: Map<string, number>;
     ready = $state(false);
     data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
+    notifications: Notification[] = $state([]);
     private static _instance: AppWebsocket | null = null;
 
     constructor() {
@@ -151,8 +158,11 @@ export class AppWebsocket {
             if (message.type === 'measurement_req') {
                 this.handleMeasurementResponse(message);
             }
-            if (message.type === 'notification') {
-                this.handleNotificationMessage(message.data);
+            if (
+                message.type === 'notification' ||
+                message.type === 'notifications_unread'
+            ) {
+                this.handleNotification(message.data);
             }
         });
 
@@ -185,10 +195,13 @@ export class AppWebsocket {
         }
     }
 
-    private handleNotificationMessage(notification: Notification) {
-        console.log(
-            `New notification: ${notification.title} - ${notification.description}`
-        );
+    private handleNotification(notification: Notification | Notification[]) {
+        if (Array.isArray(notification)) {
+            this.notifications.push(...notification);
+            return;
+        }
+
+        this.notifications.push(notification);
     }
 
     private handleMeasurementResponse(

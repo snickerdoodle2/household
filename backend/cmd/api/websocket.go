@@ -202,12 +202,14 @@ func sendSensorUpdate(conn *websocket.Conn, id uuid.UUID, value float64) error {
 type messageType string
 
 const (
-	authMsg        messageType = "auth"
-	serverError    messageType = "server_error"
-	subscribeMsg   messageType = "subscribe"
-	unsubscribeMsg messageType = "unsubscribe"
-	measurementMsg messageType = "measurment"
-	measurmentsReq messageType = "measurement_req"
+	authMsg                messageType = "auth"
+	serverError            messageType = "server_error"
+	subscribeMsg           messageType = "subscribe"
+	unsubscribeMsg         messageType = "unsubscribe"
+	measurementMsg         messageType = "measurment"
+	measurmentsReq         messageType = "measurement_req"
+	notificationMsg        messageType = "notification"
+	unreadNotificationsMsg messageType = "notifications_unread"
 )
 
 type websocketMsg struct {
@@ -250,6 +252,28 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 	return nil
 }
 
+func (app *App) sendUnreadNotifications(conn *websocket.Conn, status *connStatus, userID uuid.UUID) error {
+	// wait for user to be authed
+	status.mu.Lock()
+	if !status.authed {
+		status.mu.Unlock()
+		app.logger.Debug("sendNotifications", "status", "not authed")
+		return nil
+	}
+	status.mu.Unlock()
+
+	notifications, err := app.models.Notifications.GetUnread(userID)
+	if err != nil {
+		return serverErrorResponse(conn)
+	}
+
+	if len(notifications) == 0 {
+		return nil
+	}
+
+	return wsjson.Write(context.Background(), conn, map[string]any{"type": unreadNotificationsMsg, "data": notifications})
+}
+
 func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input json.RawMessage) error {
 	var token string
 
@@ -274,13 +298,7 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 		}
 	}
 
-	notifications, err := app.models.Notifications.GetUnread(user.ID)
-	if err != nil {
-		app.logger.Error("handleAuthMsg", "reading notifs", "error", err)
-		return serverErrorResponse(conn)
-	}
-
-	app.logger.Debug("handleAuthMsg", "notifications check", "unread count", len(notifications))
+	go app.sendUnreadNotifications(conn, status, user.ID)
 
 	status.mu.Lock()
 	defer status.mu.Unlock()
