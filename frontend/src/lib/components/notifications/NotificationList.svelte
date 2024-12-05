@@ -4,10 +4,6 @@
     import Notification from './Notification.svelte';
 
     const ws = new AppWebsocket();
-
-    const onReadClick = (id: string) => {
-        console.log(id);
-    };
 </script>
 
 <Card.Root class="w-[600px] border-none shadow-none">
@@ -18,7 +14,7 @@
         {#each ws.notifications as notification (notification.id)}
             <Notification
                 {notification}
-                onclick={() => onReadClick(notification.id)}
+                onclick={() => ws.markNotificationAsRead(notification.id)}
             />
         {/each}
     </Card.Content>

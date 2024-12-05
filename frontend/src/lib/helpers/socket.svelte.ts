@@ -2,6 +2,7 @@ import { authToken } from '@/auth/token';
 import { SvelteMap } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 import { z } from 'zod';
+import { authFetch } from './fetch';
 
 const durationSchema = z
     .string()
@@ -201,7 +202,21 @@ export class AppWebsocket {
             return;
         }
 
+        // TODO: MAKE NOTIFICATION ON SCREEN
         this.notifications.push(notification);
+    }
+
+    async markNotificationAsRead(id: string) {
+        const res = await authFetch(`/api/v1/notification/${id}`, {
+            method: 'PUT',
+        });
+
+        if (res.ok) {
+            this.notifications.splice(
+                this.notifications.findIndex((e) => e.id === id),
+                1
+            );
+        }
     }
 
     private handleMeasurementResponse(

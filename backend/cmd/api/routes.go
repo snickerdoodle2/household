@@ -53,6 +53,8 @@ func (app *App) routes() http.Handler {
 			r.Delete("/sequence/{id}", app.deleteSequenceHandler)
 			r.Post("/sequence/{id}/start", app.startSequenceHandler)
 
+			r.Put("/notification/{id}", app.readNotificationHandler)
+
 			// TODO: make sure only person who can change user data is THE user (or admin)
 			r.Get("/user", app.getUserHandler)
 			r.Post("/user", app.createUserHandler)
