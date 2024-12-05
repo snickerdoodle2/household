@@ -158,10 +158,9 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 					continue
 				}
 
-				app.listeners[listeners[i].id].Broker.Unsubscribe(listeners[i].msgCh)
-				listeners = slices.Delete(listeners, i, i+1)
-				channels = slices.Delete(channels, i+1, i+2)
-
+				app.listeners[action.id].Broker.Unsubscribe(listeners[idx].msgCh)
+				listeners = slices.Delete(listeners, idx, idx+1)
+				channels = slices.Delete(channels, idx+1, idx+2)
 			default:
 				app.logger.Debug("sendSensorUpdates", "action", action.action, "error", "unhandled")
 			}
