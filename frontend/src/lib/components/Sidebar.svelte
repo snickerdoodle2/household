@@ -5,9 +5,12 @@
     import { authToken } from '@/auth/token';
     import { Reader } from 'radix-icons-svelte';
     import * as Dialog from '$lib/components/ui/dialog';
-    import { Bell } from 'radix-icons-svelte';
     import { Avatar } from 'radix-icons-svelte';
     import NotificationList from './notifications/NotificationList.svelte';
+    import { AppWebsocket } from '@/helpers/socket.svelte';
+    import { Bell, BellDot } from 'lucide-svelte';
+
+    const ws = new AppWebsocket();
 
     const LINKS = [
         {
@@ -66,7 +69,11 @@
             class="h-11 w-11"
             on:click={() => (notificationsOpen = true)}
         >
-            <Bell class="scale-150" />
+            {#if ws.notifications.length > 0}
+                <BellDot />
+            {:else}
+                <Bell />
+            {/if}
         </Button>
 
         <Button
