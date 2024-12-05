@@ -78,7 +78,7 @@ const notificationMessageSchema = z.object({
     data: notificationSchema,
 });
 
-type Notification = z.infer<typeof notificationSchema>;
+export type Notification = z.infer<typeof notificationSchema>;
 
 const measurementSchema = z.object({
     type: z.literal('measurment'),

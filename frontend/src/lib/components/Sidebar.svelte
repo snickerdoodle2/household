@@ -7,6 +7,7 @@
     import * as Dialog from '$lib/components/ui/dialog';
     import { Bell } from 'radix-icons-svelte';
     import { Avatar } from 'radix-icons-svelte';
+    import NotificationList from './notifications/NotificationList.svelte';
 
     const LINKS = [
         {
@@ -111,6 +112,7 @@
         <Dialog.Overlay />
         <Dialog.Content
             class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
-        ></Dialog.Content>
+            ><NotificationList /></Dialog.Content
+        >
     </Dialog.Portal>
 </Dialog.Root>
