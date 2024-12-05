@@ -36,7 +36,7 @@ type NotificationModel struct {
 	DB *pgxpool.Pool
 }
 
-func (m *NotificationModel) Insert(notification *Notification) error {
+func (m *NotificationModel) insert(notification *Notification) error {
 	query := `
     INSERT INTO notifications (id, level, title, description)
     VALUES ($1, $2, $3, $4)
@@ -59,7 +59,7 @@ func (m *NotificationModel) Insert(notification *Notification) error {
 }
 
 func (m *NotificationModel) InsertForUsers(notification *Notification, users []uuid.UUID) error {
-	err := m.Insert(notification)
+	err := m.insert(notification)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (m *NotificationModel) InsertForUsers(notification *Notification, users []u
 }
 
 func (m *NotificationModel) InsertForAll(notification *Notification) ([]uuid.UUID, error) {
-	err := m.Insert(notification)
+	err := m.insert(notification)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (m *NotificationModel) GetUnread(userId uuid.UUID) ([]*UserNotification, er
 	notifications := make([]*UserNotification, 0)
 
 	for rows.Next() {
-		notif := UserNotification{}
+		notif := UserNotification{Users: []uuid.UUID{userId}}
 		err = rows.Scan(&notif.ID, &notif.Level, &notif.Title, &notif.Description, &notif.CreatedAt, &notif.Read)
 		if err != nil {
 			return nil, err
