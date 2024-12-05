@@ -1,14 +1,14 @@
 <script lang="ts">
     import { type Sensor } from '@/types/sensor';
     import { DotsVertical } from 'svelte-radix';
-    import { SensorWebsocket } from '@/helpers/socket.svelte';
+    import { AppWebsocket } from '@/helpers/socket.svelte';
     import Chart from './Chart.svelte';
     type Props = {
         sensor: Sensor;
     };
 
     let { sensor }: Props = $props();
-    const ws = new SensorWebsocket();
+    const ws = new AppWebsocket();
 
     $effect(() => {
         if (!ws.ready) return;

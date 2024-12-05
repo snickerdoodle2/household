@@ -135,6 +135,32 @@ func (app *App) setupSensorListener(sensor *data.Sensor) {
 	}
 }
 
+func (app *App) sendNotificationToAll(title, description string, level data.NotificationLevel) error {
+	notification := data.Notification{
+		Title:       title,
+		Description: description,
+		Level:       level,
+	}
+
+	app.logger.Debug("sendNotificationToAll", "note", "sending notification")
+	ids, err := app.models.Notifications.InsertForAll(&notification)
+	if err != nil {
+		app.logger.Error("sendNotificationToAll", "step", "sending notification", "error", err)
+		return err
+	}
+
+	app.logger.Debug("sendNotificationToAll", "step", "sending notification", "ids", ids)
+
+	userNotification := data.UserNotification{
+		Notification: notification,
+		Read:         false,
+		Users:        ids,
+	}
+
+	app.notificationBroker.Publish(userNotification)
+	return nil
+}
+
 // creates and adds a sensor listener to map in app module and returns pointer to it
 func (app *App) createAndAddSensorListener(sensor *data.Sensor) (listener *data.Listener[float64]) {
 	onNewValue := func(value float64) {

@@ -10,7 +10,7 @@
     let { data }: Props = $props();
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col gap-3">
     <div>
         <code><pre>{JSON.stringify($authToken, null, 4)}</pre></code>
         {#await data.user then user}
@@ -18,4 +18,5 @@
         {/await}
     </div>
     <Button href="/debug/ws">Websocket</Button>
+    <Button href="/debug/notifs" variant="outline">Notifications</Button>
 </div>

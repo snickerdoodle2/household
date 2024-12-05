@@ -21,6 +21,7 @@ import (
 type connStatus struct {
 	mu     sync.Mutex
 	authed bool
+	userId uuid.UUID
 	ch     wsChan
 }
 
@@ -104,6 +105,9 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 		status.mu.Unlock()
 	}
 
+	notificationChan := app.notificationBroker.Subscribe()
+	defer app.notificationBroker.Unsubscribe(notificationChan)
+
 	listeners := make([]wsListener, 0)
 
 	defer (func() {
@@ -118,8 +122,9 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 	})()
 
 	defer app.logger.Debug("sendSensorUpdates", "action", "closing")
-	channels := make([]reflect.SelectCase, 1)
+	channels := make([]reflect.SelectCase, 2)
 	channels[0] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(status.ch)}
+	channels[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(notificationChan)}
 
 	for {
 		i, msg, ok := reflect.Select(channels)
@@ -158,23 +163,35 @@ func (app *App) sendSensorUpdates(conn *websocket.Conn, status *connStatus) {
 					continue
 				}
 
-				app.listeners[listeners[i].id].Broker.Unsubscribe(listeners[i].msgCh)
-				listeners = slices.Delete(listeners, i, i+1)
-				channels = slices.Delete(channels, i+1, i+2)
-
+				app.listeners[action.id].Broker.Unsubscribe(listeners[idx].msgCh)
+				listeners = slices.Delete(listeners, idx, idx+1)
+				channels = slices.Delete(channels, idx+1, idx+2)
 			default:
 				app.logger.Debug("sendSensorUpdates", "action", action.action, "error", "unhandled")
 			}
 			continue
 		}
-
+		if i == 1 {
+			notification := msg.Interface().(data.UserNotification)
+			if !slices.Contains(notification.Users, status.userId) {
+				continue
+			}
+			app.logger.Debug("sendSensorUpdates", "action", "new notification", "title", notification.Title)
+			err := wsjson.Write(context.Background(), conn, map[string]any{"type": notificationMsg, "data": notification})
+			if err != nil {
+				app.logger.Error("sendSensorUpdates", "action", "sendNotification", "error", err)
+			}
+			continue
+		}
+		// NOTE: obrzydliwy sposob na trzymanie tego tbh...
+		idx := i - 2
 		// message fron sensor listener
 		values := msg.Interface().([]float64)
 		if values == nil {
 			// TODO: SEND SENSOR UNAVAILABLE
 			continue
 		}
-		err := sendSensorUpdate(conn, listeners[i-1].id, values[len(values)-1])
+		err := sendSensorUpdate(conn, listeners[idx].id, values[len(values)-1])
 		if err != nil {
 			app.logger.Error("sendSensorUpdates", "action", "update", "error", err)
 		}
@@ -202,12 +219,14 @@ func sendSensorUpdate(conn *websocket.Conn, id uuid.UUID, value float64) error {
 type messageType string
 
 const (
-	authMsg        messageType = "auth"
-	serverError    messageType = "server_error"
-	subscribeMsg   messageType = "subscribe"
-	unsubscribeMsg messageType = "unsubscribe"
-	measurementMsg messageType = "measurment"
-	measurmentsReq messageType = "measurement_req"
+	authMsg                messageType = "auth"
+	serverError            messageType = "server_error"
+	subscribeMsg           messageType = "subscribe"
+	unsubscribeMsg         messageType = "unsubscribe"
+	measurementMsg         messageType = "measurment"
+	measurmentsReq         messageType = "measurement_req"
+	notificationMsg        messageType = "notification"
+	unreadNotificationsMsg messageType = "notifications_unread"
 )
 
 type websocketMsg struct {
@@ -250,6 +269,28 @@ func (app *App) handleWebSocketMessage(conn *websocket.Conn, status *connStatus)
 	return nil
 }
 
+func (app *App) sendUnreadNotifications(conn *websocket.Conn, status *connStatus, userID uuid.UUID) error {
+	// wait for user to be authed
+	status.mu.Lock()
+	if !status.authed {
+		status.mu.Unlock()
+		app.logger.Debug("sendNotifications", "status", "not authed")
+		return nil
+	}
+	status.mu.Unlock()
+
+	notifications, err := app.models.Notifications.GetUnread(userID)
+	if err != nil {
+		return serverErrorResponse(conn)
+	}
+
+	if len(notifications) == 0 {
+		return nil
+	}
+
+	return wsjson.Write(context.Background(), conn, map[string]any{"type": unreadNotificationsMsg, "data": notifications})
+}
+
 func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input json.RawMessage) error {
 	var token string
 
@@ -263,8 +304,9 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 		return invalidTokenResponse(conn)
 	}
 
-	_, err = app.models.Users.GetForToken(token)
+	user, err := app.models.Users.GetForToken(token)
 	if err != nil {
+		app.logger.Error("handleAuthMessage GetForToken", "error", err)
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
 			return serverErrorResponse(conn)
@@ -273,9 +315,12 @@ func (app *App) handleAuthMsg(conn *websocket.Conn, status *connStatus, input js
 		}
 	}
 
+	go app.sendUnreadNotifications(conn, status, user.ID)
+
 	status.mu.Lock()
 	defer status.mu.Unlock()
 	status.authed = true
+	status.userId = user.ID
 	return authResponse(conn, "ok")
 }
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"inzynierka/internal/data"
 	"net/http"
 	"time"
 )
@@ -33,6 +34,8 @@ func (app *App) serve() error {
 		app.setupSensorListener(sensor)
 	}
 
+	go app.notificationBroker.Start()
+
 	rules, err := app.models.Rules.GetAll()
 	if err != nil {
 		return err
@@ -51,6 +54,7 @@ func (app *App) serve() error {
 
 func (app *App) handleRuleRequests() {
 	for message := range app.rules.channel {
+		_ = app.sendNotificationToAll("Rule passed!", fmt.Sprintf("Sent message %v to sensor %v", message.Payload, message.To), data.NotificationLevelSuccess)
 		uri, err := app.models.Sensors.GetUri(message.To)
 		if err != nil {
 			app.logger.Error("handleRuleRequests query", "error", err.Error(), "uuid", message.To)
