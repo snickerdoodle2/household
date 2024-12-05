@@ -8,7 +8,14 @@
     import { cn } from '@/utils';
     import dayjs from 'dayjs';
     import relativeTime from 'dayjs/plugin/relativeTime';
-    import { BadgeAlert, BadgeCheck, BadgeInfo, BadgeX } from 'lucide-svelte';
+    import {
+        BadgeAlert,
+        BadgeCheck,
+        BadgeInfo,
+        BadgeX,
+        BellOff,
+    } from 'lucide-svelte';
+    import { Button } from '$lib/components/ui/button';
 
     type Props = {
         notification: Notification;
@@ -41,7 +48,12 @@
 <Alert.Root class="flex gap-4 items-center">
     {@render icon(notification.level)}
     <div class="flex-1">
-        <Alert.Title class="text-base">{notification.title}</Alert.Title>
+        <Alert.Title class="text-lg flex justify-between pb-2 items-center">
+            <span>{notification.title}</span>
+            <Button size="icon" variant="ghost"
+                ><BellOff class="w-4 h-4"></BellOff></Button
+            >
+        </Alert.Title>
         <Alert.Description class="flex justify-between">
             <p>
                 {notification.description}
