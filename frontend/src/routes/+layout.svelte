@@ -15,5 +15,5 @@
 </script>
 
 <ModeWatcher />
-<Toaster duration={5000} />
+<Toaster duration={5000} expand visibleToasts={10} />
 {@render children?.()}
