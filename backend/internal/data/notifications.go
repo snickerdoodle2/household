@@ -13,7 +13,7 @@ type NotificationLevel string
 
 const (
 	NotificationLevelError   NotificationLevel = "error"
-	NotificationLevelUrgent  NotificationLevel = "urgent"
+	NotificationLevelSuccess NotificationLevel = "success"
 	NotificationLevelWarning NotificationLevel = "warning"
 	NotificationLevelInfo    NotificationLevel = "info"
 )
