@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"inzynierka/internal/data"
 	"net/http"
 	"time"
 )
@@ -54,19 +53,6 @@ func (app *App) serve() error {
 
 func (app *App) handleRuleRequests() {
 	for message := range app.rules.channel {
-		notif := data.Notification{
-			Title:       "Rule passed!",
-			Description: fmt.Sprintf("Message %v sent to %v", message.Payload, message.To),
-			Level:       data.NotificationLevelSuccess,
-		}
-		app.logger.Debug("handleRuleRequests", "step", "sending notification", "note", "sending notification")
-		ids, err := app.models.Notifications.InsertForAll(&notif)
-		if err != nil {
-			app.logger.Error("handleRuleRequests", "step", "sending notification", "error", err)
-		} else {
-			app.logger.Debug("handleRuleRequests", "step", "sending notification", "ids", ids)
-		}
-
 		uri, err := app.models.Sensors.GetUri(message.To)
 		if err != nil {
 			app.logger.Error("handleRuleRequests query", "error", err.Error(), "uuid", message.To)

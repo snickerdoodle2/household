@@ -28,7 +28,8 @@ type Notification struct {
 
 type UserNotification struct {
 	Notification
-	Read bool `json:"read"`
+	Read  bool         `json:"read"`
+	Users []*uuid.UUID `json:"-"`
 }
 
 type NotificationModel struct {
