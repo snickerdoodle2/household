@@ -8,7 +8,6 @@
 // Replace with your network credentials
 #define STASSID "YOUR_SSID"
 #define STAPSK "YOUR_PASSWORD"
-
 // Set your sensor type here
 const char *sensor_type = "SENSOR_TYPE";
 
@@ -35,21 +34,31 @@ float measure()
     return 0.0;
 }
 
-bool sendingCondition()
-{
-    // Implement your sending condition here
-    return true;
-}
-
-void handleValue()
+void handleGetValue()
 {
     float value = measure();
     server.send(200, "text/json", "{\"value\":" + String(value) + "}");
 }
 
+void handleSetValue()
+{
+    if(!server.hasArg("value")){
+        server.send(400, "text/plain", "400: Invalid Request, no 'value' argument found");
+        return;
+    }
+    // Implement your setValue logic
+    return;
+}
+
 void handleStatus()
 {
     server.send(200, "text/json", "{ \"status\": \"online\", \"type\": \"" + String(sensor_type) + "\" }");
+}
+
+bool sendingCondition()
+{
+    // Implement your sending condition here
+    return true;
 }
 
 void handleInit()
@@ -150,8 +159,9 @@ void setup(void)
         Serial.println("MDNS responder started");
     }
 
+    server.on("/value", HTTP_GET, handleGetValue);
     server.on("/status", HTTP_GET, handleStatus);
-    server.on("/value", HTTP_GET, handleValue);
+    server.on("/value", HTTP_PUT, handleSetValue);
     server.on("/init", HTTP_POST, handleInit);
 
     server.begin();
@@ -161,11 +171,9 @@ void setup(void)
 void loop(void)
 {
     server.handleClient();
-
     if (sensorConfig.isConfigured && sendingCondition())
     {
         sendValue();
     }
-
     MDNS.update();
 }
