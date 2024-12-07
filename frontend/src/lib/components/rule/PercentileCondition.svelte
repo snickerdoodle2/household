@@ -162,9 +162,7 @@
     />
 
     <Label>For:</Label>
-    <div
-        class="flex items-center gap-2"
-    >
+    <div class="flex items-center gap-2">
         <input
             type="number"
             class="time-part-input {errors.duration.hours

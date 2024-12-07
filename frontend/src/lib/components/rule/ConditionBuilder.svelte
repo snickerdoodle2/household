@@ -38,12 +38,18 @@
         { value: 'and', label: 'And' },
         { value: 'or', label: 'Or' },
         { value: 'perc', label: 'Perc' },
+        { value: 'time', label: 'Time' },
     ];
 
+    let selectedVariant: { value: string; label: string } = $state({
+        value: '',
+        label: '---',
+    });
     let selectedSensor: { value: string; label: string } = $state({
         value: '',
         label: '---',
     });
+    let time: string = $state('-:-');
     let value: number = $state(0);
     let percentile: number = $state(0);
     let duration = $state({
@@ -60,6 +66,8 @@
             minutes: false,
             seconds: false,
         },
+        variant: false,
+        time: false,
     });
 
     function constructRule(): RuleInternal | undefined {
@@ -92,6 +100,18 @@
                 sensor_id: selectedSensor.value,
                 duration: `${duration.hours}h${duration.minutes}m${duration.seconds}s`,
                 perc: percentile,
+            };
+        } else if (selectedType.value === 'time') {
+            if (errors.variant || errors.time) return;
+            const match = time.split(':');
+            const hour = parseInt(match[0], 10); // Extract hour (index 1)
+            const minute = parseInt(match[1], 10); // Extract minute (index 2)
+
+            return {
+                type: selectedType.value,
+                variant: selectedVariant.value as 'before' | 'after',
+                hour,
+                minute,
             };
         } else {
             return;
@@ -137,6 +157,12 @@
             }
         } else if (selectedType.value === 'gt' || selectedType.value === 'lt') {
             errors.sensor = !sensors.find((s) => s.id === selectedSensor.value);
+        } else if (selectedType.value === 'time') {
+            errors.variant =
+                selectedVariant.value !== 'before' &&
+                selectedVariant.value !== 'after';
+            const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+            errors.time = !time || !timeRegex.test(time);
         }
     });
 </script>
@@ -246,6 +272,27 @@
                 />
                 <Label class="">HH:MM:SS</Label>
             </div>
+        {:else if selectedType.value === 'time'}
+            <Label>Variant:</Label>
+            <Select.Root bind:selected={selectedVariant}>
+                <Select.Trigger
+                    class={errors.variant ? 'border-2 border-red-600' : ''}
+                >
+                    <Select.Value />
+                </Select.Trigger>
+                <Select.Content>
+                    <Select.Item value={'before'}>{'Before'}</Select.Item>
+                    <Select.Item value={'after'}>{'After'}</Select.Item>
+                </Select.Content>
+            </Select.Root>
+
+            <Input
+                type="time"
+                class="min-w-[4rem] {errors.time
+                    ? 'border-2 border-red-600'
+                    : ''}"
+                bind:value={time}
+            />
         {/if}
 
         <div class="flex">
