@@ -42,7 +42,7 @@
 
     let selectedSensor: { value: string; label: string } = $state({
         value: '',
-        label: '',
+        label: '---',
     });
     let value: number = $state(0);
     let percentile: number = $state(0);
@@ -211,45 +211,40 @@
             />
 
             <Label>For:</Label>
-            <div class="flex flex-row items-center rounded-md gap-1">
-                <div
-                    class="flex items-center {errors.duration.hours
+            <div class="flex items-center gap-2">
+                <input
+                    type="number"
+                    class="time-part-input {errors.duration.hours
                         ? 'border-2 border-red-600'
                         : ''}"
-                >
-                    <Input
-                        type="number"
-                        class="min-w-14"
-                        bind:value={duration.hours}
-                    />
-                    <Label>h</Label>
-                </div>
-
-                <div
-                    class="flex items-center {errors.duration.minutes
+                    bind:value={duration.hours}
+                    min="0"
+                    max="23"
+                    placeholder="HH"
+                />
+                <span>:</span>
+                <input
+                    type="number"
+                    class="time-part-input {errors.duration.minutes
                         ? 'border-2 border-red-600'
                         : ''}"
-                >
-                    <Input
-                        type="number"
-                        class="min-w-14"
-                        bind:value={duration.minutes}
-                    />
-                    <Label>m</Label>
-                </div>
-
-                <div
-                    class="flex items-center {errors.duration.seconds
+                    bind:value={duration.minutes}
+                    min="0"
+                    max="59"
+                    placeholder="MM"
+                />
+                <span>:</span>
+                <input
+                    type="number"
+                    class="time-part-input {errors.duration.seconds
                         ? 'border-2 border-red-600'
                         : ''}"
-                >
-                    <Input
-                        type="number"
-                        class="min-w-14"
-                        bind:value={duration.seconds}
-                    />
-                    <Label>s</Label>
-                </div>
+                    bind:value={duration.seconds}
+                    min="0"
+                    max="59"
+                    placeholder="SS"
+                />
+                <Label class="">HH:MM:SS</Label>
             </div>
         {/if}
 
@@ -262,3 +257,10 @@
         </div>
     </div>
 {/if}
+
+<style>
+    .time-part-input {
+        text-align: center;
+        width: 2.5rem;
+    }
+</style>

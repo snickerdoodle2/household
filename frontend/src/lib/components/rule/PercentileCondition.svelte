@@ -162,49 +162,44 @@
     />
 
     <Label>For:</Label>
-    <div class="flex flex-row items-center rounded-md gap-1">
-        <div
-            class="flex items-center {errors.duration.hours
+    <div
+        class="flex items-center gap-2"
+    >
+        <input
+            type="number"
+            class="time-part-input {errors.duration.hours
                 ? 'border-2 border-red-600'
                 : ''}"
-        >
-            <Input
-                type="number"
-                class="min-w-14"
-                bind:value={duration.hours}
-                disabled={!editing}
-            />
-            <Label>h</Label>
-        </div>
-
-        <div
-            class="flex items-center {errors.duration.minutes
+            bind:value={duration.hours}
+            min="0"
+            max="23"
+            disabled={!editing}
+            placeholder="HH"
+        />
+        <span>:</span>
+        <input
+            type="number"
+            class="time-part-input {errors.duration.minutes
                 ? 'border-2 border-red-600'
                 : ''}"
-        >
-            <Input
-                type="number"
-                class="min-w-14"
-                bind:value={duration.minutes}
-                disabled={!editing}
-            />
-            <Label>m</Label>
-        </div>
-
-        <div
-            class="flex items-center {errors.duration.seconds
-                ? 'border-2 border-red-600'
-                : ''}"
-        >
-            <Input
-                type="number"
-                class="min-w-14"
-                bind:value={duration.seconds}
-                disabled={!editing}
-            />
-            <Label>s</Label>
-        </div>
+            bind:value={duration.minutes}
+            min="0"
+            max="59"
+            disabled={!editing}
+            placeholder="MM"
+        />
+        <span>:</span>
+        <input
+            type="number"
+            class="time-part-input"
+            bind:value={duration.seconds}
+            min="0"
+            max="59"
+            disabled={!editing}
+            placeholder="SS"
+        />
     </div>
+    <Label class="">HH:MM:SS</Label>
 
     {#if !editingDisabled}
         {#if editing}
@@ -226,3 +221,10 @@
 
     {@render children?.()}
 </div>
+
+<style>
+    .time-part-input {
+        text-align: center;
+        width: 2.5rem;
+    }
+</style>
