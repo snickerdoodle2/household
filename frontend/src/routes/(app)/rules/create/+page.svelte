@@ -173,6 +173,7 @@
                                 type={'number'}
                                 bind:value={payload}
                                 required
+                                step="0.1"
                                 class={`w-full ${errors['on_valid.payload'] ? 'border-2 border-red-600' : ''}`}
                             />
 
