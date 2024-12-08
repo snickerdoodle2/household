@@ -27,15 +27,6 @@ const RulePerc = z.object({
 
 export type RulePercType = z.infer<typeof RulePerc>;
 
-const RuleTime = z.object({
-    type: z.literal('time'),
-    variant: z.literal('before').or(z.literal('after')),
-    hour: z.number().min(0).max(23),
-    minute: z.number().min(0).max(59),
-});
-
-export type RuleTimeType = z.infer<typeof RuleTime>;
-
 const RuleNot: z.ZodType<RuleNotType> = z.object({
     type: z.literal('not'),
     wrapped: z.lazy(() => ruleInternalSchema),
@@ -73,7 +64,6 @@ export const ruleInternalSchema = z.union([
     RuleGT,
     RuleLT,
     RulePerc,
-    RuleTime,
 ]);
 
 export type RuleInternal = z.infer<typeof ruleInternalSchema>;
