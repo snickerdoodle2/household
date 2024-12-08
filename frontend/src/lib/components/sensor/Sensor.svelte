@@ -26,7 +26,7 @@
         const res = await authFetch(`/api/v1/sensor/${sensor.id}/hidden`, {
             method: 'PUT',
             body: JSON.stringify({
-                hidden: true
+                hidden: true,
             }),
         });
 
