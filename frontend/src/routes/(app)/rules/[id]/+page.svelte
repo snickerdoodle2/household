@@ -4,10 +4,7 @@
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import FormInput from '@/components/FormInput.svelte';
-    import {
-        type RuleDetails,
-        ruleDetailsSchema,
-    } from '@/types/rule';
+    import { type RuleDetails, ruleDetailsSchema } from '@/types/rule';
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
