@@ -23,6 +23,7 @@ export const sensorSchema = z.object({
     name: z.string(),
     type: sensorTypeSchema,
     active: z.boolean(),
+    hidden: z.boolean().optional(),
 });
 
 export type Sensor = z.infer<typeof sensorSchema>;
@@ -33,6 +34,7 @@ export const newSensorSchema = z.object({
     type: sensorTypeSchema,
     uri: z.string(),
     active: z.boolean(),
+    hidden: z.boolean().optional(),
 });
 
 export type NewSensor = z.infer<typeof newSensorSchema>;
