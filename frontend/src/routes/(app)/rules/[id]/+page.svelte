@@ -19,6 +19,7 @@
     import { RULE_URL } from '@/helpers/rule';
     import Input from '@/components/ui/input/input.svelte';
     import * as Dialog from '$lib/components/ui/dialog';
+    import type { Sequence } from '@/types/sequence';
 
     type Props = {
         data: PageData;
@@ -40,42 +41,33 @@
     let errors: Record<string, string> = $state({});
     let editing = $state(false);
     let sensors: Sensor[] = $state([]);
+    let sequences: Sequence[] = $state([]);
     let selectedSensor: { label: string; value: string } = $state({
         label: '',
         value: '',
     });
     let internal = $state({});
     let payload = $state('');
+    let selectedSequence: { label: string; value: string } = $state({
+        label: '',
+        value: '',
+    });
+    let isSensorPayload: boolean = $state(true);
 
     // TODO: make single validation function
     run(() => {
-        if (!loading) {
-            rule.on_valid.to = selectedSensor.value;
-        }
-    });
+        if (loading) return;
 
-    run(() => {
-        if (!loading) {
-            try {
-                const { data, success } =
-                    ruleInternalSchema.safeParse(internal);
-                if (success) {
-                    rule.internal = data;
-                }
-            } catch {
-                errors['internal'] = 'Invalid JSON';
+        if (isSensorPayload) {
+            if (payload && selectedSensor.value !== '') {
+                rule.on_valid = {
+                    to: selectedSensor.value,
+                    payload: { value: Number(payload) },
+                };
             }
-        }
-    });
-
-    run(() => {
-        if (!loading) {
-            try {
-                rule.on_valid.payload = { value: Number(payload) };
-                delete errors['payload'];
-                errors = errors;
-            } catch {
-                errors['payload'] = 'Not a valid JSON';
+        } else {
+            if (selectedSequence.value !== '') {
+                rule.on_valid = { sequence: selectedSequence.value };
             }
         }
     });
@@ -85,12 +77,26 @@
     };
 
     const resetRule = async () => {
-        rule = { ...(await data.rule) };
-        const sensor = sensors.find((e) => e.id === rule.on_valid.to);
-        if (sensor) {
-            selectedSensor = { value: sensor.id, label: sensor.name };
+        rule = { ...(await data.rule) } as RuleDetails;
+        if ('to' in rule.on_valid) {
+            const sensor = sensors.find(
+                (e) => 'to' in rule.on_valid && e.id === rule.on_valid.to
+            );
+            if (sensor) {
+                selectedSensor = { value: sensor.id, label: sensor.name };
+            }
+
+            payload = JSON.stringify(rule.on_valid.payload['value']);
+        } else {
+            const seqeunce = sequences.find(
+                (e) =>
+                    'seqeunce' in rule.on_valid &&
+                    e.id === rule.on_valid.seqeunce
+            );
+            if (seqeunce) {
+                selectedSequence = { value: seqeunce.id, label: seqeunce.name };
+            }
         }
-        payload = JSON.stringify(rule.on_valid.payload['value']);
         internal = JSON.stringify(rule.internal);
     };
 
@@ -157,6 +163,7 @@
 
     onMount(async () => {
         sensors = await data.sensors;
+        sequences = await data.sequences;
         await resetRule();
         loading = false;
     });
@@ -209,48 +216,84 @@
                         <div
                             class="flex grid-cols-3 gap-3 justify-center items-center"
                         >
-                            <Input
-                                type={'number'}
-                                bind:value={payload}
-                                required
-                                class={`w-full ${errors['on_valid.payload'] ? 'border-2 border-red-600' : ''}`}
-                                disabled={!editing}
-                            />
-
-                            <div class="flex items-center justify-center">
-                                <Label
-                                    for="type"
-                                    class="flex items-center text-base font-semibold"
+                            <div class="flex">
+                                <Button
+                                    disabled={isSensorPayload || !editing}
+                                    on:click={() => {
+                                        isSensorPayload = true;
+                                    }}>Sensor</Button
                                 >
-                                    to
-                                    {#if errors['on_valid.to']}
-                                        <span
-                                            class="text-sm font-normal italic text-red-400"
-                                            >{errors['type']}</span
-                                        >
-                                    {/if}
-                                </Label>
+                                <Button
+                                    disabled={!isSensorPayload || !editing}
+                                    on:click={() => {
+                                        isSensorPayload = false;
+                                    }}>Sequence</Button
+                                >
                             </div>
 
-                            <Select.Root
-                                bind:selected={selectedSensor}
-                                required
-                                name="on_valid.to"
-                                disabled={!editing}
-                            >
-                                <Select.Trigger
-                                    class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                            {#if isSensorPayload}
+                                <Input
+                                    type={'number'}
+                                    bind:value={payload}
+                                    required
+                                    class={`w-full ${errors['on_valid.payload'] ? 'border-2 border-red-600' : ''}`}
+                                    disabled={!editing}
+                                />
+
+                                <div class="flex items-center justify-center">
+                                    <Label
+                                        for="type"
+                                        class="flex items-center text-base font-semibold"
+                                    >
+                                        to
+                                        {#if errors['on_valid.to']}
+                                            <span
+                                                class="text-sm font-normal italic text-red-400"
+                                                >{errors['type']}</span
+                                            >
+                                        {/if}
+                                    </Label>
+                                </div>
+                                <Select.Root
+                                    bind:selected={selectedSensor}
+                                    required
+                                    name="on_valid.to"
+                                    disabled={!editing}
                                 >
-                                    <Select.Value />
-                                </Select.Trigger>
-                                <Select.Content>
-                                    {#each sensors as type}
-                                        <Select.Item value={type.id}
-                                            >{type.name}</Select.Item
-                                        >
-                                    {/each}
-                                </Select.Content>
-                            </Select.Root>
+                                    <Select.Trigger
+                                        class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                                    >
+                                        <Select.Value />
+                                    </Select.Trigger>
+                                    <Select.Content>
+                                        {#each sensors as type}
+                                            <Select.Item value={type.id}
+                                                >{type.name}</Select.Item
+                                            >
+                                        {/each}
+                                    </Select.Content>
+                                </Select.Root>
+                            {:else}
+                                <Select.Root
+                                    bind:selected={selectedSequence}
+                                    required
+                                    name="on_valid.to"
+                                    disabled={!editing}
+                                >
+                                    <Select.Trigger
+                                        class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                                    >
+                                        <Select.Value />
+                                    </Select.Trigger>
+                                    <Select.Content>
+                                        {#each sequences as sequence}
+                                            <Select.Item value={sequence.id}
+                                                >{sequence.name}</Select.Item
+                                            >
+                                        {/each}
+                                    </Select.Content>
+                                </Select.Root>
+                            {/if}
                         </div>
                         <Label
                             for="type"

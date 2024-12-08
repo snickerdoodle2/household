@@ -27,6 +27,15 @@ const RulePerc = z.object({
 
 export type RulePercType = z.infer<typeof RulePerc>;
 
+const RuleTime = z.object({
+    type: z.literal('time'),
+    variant: z.literal('before').or(z.literal('after')),
+    hour: z.number().min(0).max(23),
+    minute: z.number().min(0).max(59),
+});
+
+export type RuleTimeType = z.infer<typeof RuleTime>;
+
 const RuleNot: z.ZodType<RuleNotType> = z.object({
     type: z.literal('not'),
     wrapped: z.lazy(() => ruleInternalSchema),
@@ -64,6 +73,7 @@ export const ruleInternalSchema = z.union([
     RuleGT,
     RuleLT,
     RulePerc,
+    RuleTime,
 ]);
 
 export type RuleInternal = z.infer<typeof ruleInternalSchema>;
@@ -82,10 +92,15 @@ export const ruleSchema = ruleNameDescSchema.merge(
 export type Rule = z.infer<typeof ruleSchema>;
 
 const internalRuleSchema = z.object({
-    on_valid: z.object({
-        to: z.string().uuid(),
-        payload: z.object({}).passthrough(),
-    }),
+    on_valid: z.union([
+        z.object({
+            to: z.string().uuid(),
+            payload: z.object({}).passthrough(),
+        }),
+        z.object({
+            sequence: z.string().uuid(),
+        }),
+    ]),
     internal: ruleInternalSchema,
 });
 

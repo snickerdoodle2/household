@@ -1,5 +1,6 @@
 import { getRuleDetails } from '@/helpers/rule';
 import type { PageLoad } from './$types';
+import { getAllSequences } from '@/helpers/sequence';
 
 export const load: PageLoad = async ({ params, fetch }) => {
     return {
@@ -9,6 +10,11 @@ export const load: PageLoad = async ({ params, fetch }) => {
                 throw res.error;
             }
             return res.data;
+        })(),
+        sequences: (async () => {
+            const sequences = await getAllSequences(fetch);
+            if (sequences.isError) return [];
+            return sequences.data;
         })(),
     };
 };
