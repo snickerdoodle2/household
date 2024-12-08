@@ -7,7 +7,6 @@
     import {
         type RuleDetails,
         ruleDetailsSchema,
-        ruleInternalSchema,
     } from '@/types/rule';
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
@@ -46,7 +45,6 @@
         label: '',
         value: '',
     });
-    let internal = $state({});
     let payload = $state('');
     let selectedSequence: { label: string; value: string } = $state({
         label: '',
@@ -97,7 +95,6 @@
                 selectedSequence = { value: seqeunce.id, label: seqeunce.name };
             }
         }
-        internal = JSON.stringify(rule.internal);
     };
 
     const handleCancel = async () => {
