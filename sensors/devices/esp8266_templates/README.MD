@@ -1,0 +1,3 @@
+# Szablony urządzeń IoT na ESP8266
+
+Katalog ten zawiera szkielety oprogramowania urządzeń peryferyjnych, mogących współpracować z systemem Household. Każdy ze szkieletów zawiera gotowe oprogramowanie, niezbędne aby urządzenie mogło prowadzić interakcję z serwerem. programowanie jest stworzone w języku C++ i przetestowane na płytkach ESP8266. Rolą użytkownika jest zaprogramowanie obsługi podpinanego do płytki sensora czy efektora. Każdy szkielet zawiera komentarze wskazujące użytkownikowi jaką funkcjonalność, w którym miejscu ma zaimplementować. Początkujący użytkownicy mogą tylko wypełnić te miejsca i cieszyć się z działającego urządzenia, a ci bardziej zaawansowani mogą dowolnie oprogramować urządzenie, zachowując podstawowe funkcjonalności komunikacji z serwerem.
