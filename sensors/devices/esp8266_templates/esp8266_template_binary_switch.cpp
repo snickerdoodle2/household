@@ -2,35 +2,48 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
 // Replace with your network credentials
 #define STASSID "YOUR_SSID"
 #define STAPSK "YOUR_PASSWORD"
 // Set your sensor type here
-const char *sensor_type = "decimal_sensor";
+const char *sensor_type = "SENSOR_TYPE";
 
 // Set your sensor pins here
-#define ONE_WIRE_BUS D6
 
 ESP8266WebServer server(80);
 const char *ssid = STASSID;
 const char *password = STAPSK;
 
-OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature sensors(&oneWire);
-
 float measure()
 {
-    sensors.requestTemperatures();
-    return sensors.getTempCByIndex(0);
+    // Implement your sensor reading here
+    return 0.0;
 }
 
-void handleValue()
+void handleGetValue()
 {
     float value = measure();
     server.send(200, "text/json", "{\"value\":" + String(value) + "}");
+}
+
+void handleToggle()
+{
+    // Implement your toggle logic here
+    return;
+}
+
+void handleSetValue()
+{
+    if(!server.hasArg("value")){
+        server.send(400, "text/plain", "400: Invalid Request, no 'value' argument found");
+        return;
+    }else if (server.arg("value") != "1" && server.arg("value") != "0") {
+        server.send(400, "text/plain", "400: Invalid Request, 'value' argument must be 0 or 1");
+        return;
+    }
+    // Implement your setValue logic
+    return;
 }
 
 void handleStatus()
@@ -61,8 +74,10 @@ void setup(void)
         Serial.println("MDNS responder started");
     }
 
-    server.on("/value", handleValue);
-    server.on("/status", handleStatus);
+    server.on("/value", HTTP_GET, handleGetValue);
+    server.on("/status", HTTP_GET, handleStatus);
+    server.on("/toggle", HTTP_POST, handleToggle);
+    server.on("/value", HTTP_PUT, handleSetValue);
 
     server.begin();
     Serial.println("HTTP server started");
