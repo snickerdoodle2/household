@@ -30,7 +30,6 @@
         });
 
         const resJson = await res.json();
-        console.log(resJson);
 
         if (!res.ok) {
             console.log(resJson.error);
