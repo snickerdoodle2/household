@@ -11,6 +11,10 @@
 
     let { data }: Props = $props();
     const { sensors } = data;
+    let disableShowButton = $derived(
+        sensors.filter((sensor) => sensor.hidden).length === 0
+    );
+
     let showHidden = $state(false);
     let shownSensors = $derived.by(() => {
         if (showHidden) {
@@ -25,6 +29,7 @@
         <Button
             variant="outline"
             size="icon"
+            disabled={disableShowButton}
             onclick={() => {
                 showHidden = !showHidden;
             }}
