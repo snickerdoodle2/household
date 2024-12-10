@@ -46,6 +46,7 @@ type Sensor struct {
 	Name        string     `json:"name"`
 	URI         string     `json:"uri"`
 	Type        SensorType `json:"type"`
+	Hidden      bool       `json:"hidden"`
 	RefreshRate int        `json:"refresh_rate"`
 	CreatedAt   time.Time  `json:"created_at"`
 	Version     int        `json:"version"`
@@ -78,8 +79,8 @@ type SensorModel struct {
 
 func (m SensorModel) Insert(sensor *Sensor) error {
 	query := `
-    INSERT INTO sensors (id, name, uri, sensor_type, refresh_rate, active, id_token)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO sensors (id, name, uri, sensor_type, hidden, refresh_rate, active, id_token)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING created_at, version
     `
 
@@ -90,7 +91,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 	sensor.ID = uuid
 
-	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.RefreshRate, sensor.Active, sensor.IdToken}
+	args := []any{sensor.ID, sensor.Name, sensor.URI, sensor.Type, sensor.Hidden, sensor.RefreshRate, sensor.Active, sensor.IdToken}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -112,7 +113,7 @@ func (m SensorModel) Insert(sensor *Sensor) error {
 
 func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 	query := `
-    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active, id_token
+    SELECT id, name, uri, sensor_type, hidden, refresh_rate, created_at, version, active, id_token
     FROM sensors
     WHERE id = $1
     `
@@ -126,6 +127,7 @@ func (m SensorModel) Get(id uuid.UUID) (*Sensor, error) {
 		&sensor.Name,
 		&sensor.URI,
 		&sensor.Type,
+		&sensor.Hidden,
 		&sensor.RefreshRate,
 		&sensor.CreatedAt,
 		&sensor.Version,
@@ -149,13 +151,14 @@ type SensorSimple struct {
 	ID     uuid.UUID  `json:"id"`
 	Name   string     `json:"name"`
 	Type   SensorType `json:"type"`
+	Hidden bool       `json:"hidden"`
 	Active bool       `json:"active"`
 }
 
 func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 	// TODO: add filtering and pagination
 	query := `
-    SELECT id, name, sensor_type, active
+    SELECT id, name, sensor_type, hidden, active
     FROM sensors
     ORDER BY id
     `
@@ -178,6 +181,7 @@ func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 			&sensor.ID,
 			&sensor.Name,
 			&sensor.Type,
+			&sensor.Hidden,
 			&sensor.Active,
 		)
 
@@ -197,7 +201,7 @@ func (m SensorModel) GetAllInfo() ([]*SensorSimple, error) {
 
 func (m SensorModel) GetAll() ([]*Sensor, error) {
 	query := `
-    SELECT id, name, uri, sensor_type, refresh_rate, created_at, version, active, id_token
+    SELECT id, name, uri, sensor_type, hidden, refresh_rate, created_at, version, active, id_token
     FROM sensors
     ORDER BY id
     `
@@ -221,6 +225,7 @@ func (m SensorModel) GetAll() ([]*Sensor, error) {
 			&sensor.Name,
 			&sensor.URI,
 			&sensor.Type,
+			&sensor.Hidden,
 			&sensor.RefreshRate,
 			&sensor.CreatedAt,
 			&sensor.Version,
@@ -269,8 +274,8 @@ func (m SensorModel) GetUri(id uuid.UUID) (string, error) {
 func (m SensorModel) Update(sensor *Sensor) error {
 	query := `
     UPDATE sensors
-    SET name = $1, uri = $2, sensor_type = $3, refresh_rate = $4, active = $5, id_token = $6, version = version + 1
-    WHERE id = $7
+    SET name = $1, uri = $2, sensor_type = $3, hidden = $4, refresh_rate = $5, active = $6, id_token = $7, version = version + 1
+    WHERE id = $8
     RETURNING version
     `
 
@@ -278,6 +283,7 @@ func (m SensorModel) Update(sensor *Sensor) error {
 		sensor.Name,
 		sensor.URI,
 		sensor.Type,
+		sensor.Hidden,
 		sensor.RefreshRate,
 		sensor.Active,
 		sensor.IdToken,
@@ -334,7 +340,7 @@ func (m SensorModel) DeleteSensorAndMeasurements(id uuid.UUID) error {
 
 func (m SensorModel) GetByIdToken(idToken uuid.UUID) (*Sensor, error) {
 	query := `
-	SELECT *
+    SELECT id, name, uri, sensor_type, hidden, refresh_rate, created_at, version, active, id_token
 	FROM sensors
 	WHERE id_token = $1;
 	`
@@ -347,6 +353,7 @@ func (m SensorModel) GetByIdToken(idToken uuid.UUID) (*Sensor, error) {
 		&sensor.Name,
 		&sensor.URI,
 		&sensor.Type,
+		&sensor.Hidden,
 		&sensor.RefreshRate,
 		&sensor.CreatedAt,
 		&sensor.Version,

@@ -1,0 +1,2 @@
+ALTER TABLE sensors
+DROP COLUMN IF EXISTS hidden;
