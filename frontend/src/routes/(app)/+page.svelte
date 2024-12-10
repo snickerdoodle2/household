@@ -1,5 +1,6 @@
 <script lang="ts">
     // TODO: calculate grid size
+    import Sensor from '@/components/sensor/Sensor.svelte';
     import type { LayoutData } from './$types';
     import { Button } from '@/components/ui/button';
     import { Eye, EyeOff, Plus } from 'lucide-svelte';
@@ -19,7 +20,7 @@
     });
 </script>
 
-<div class="flex flex-col h-full w-full px-4 py-4">
+<div class="flex flex-col h-full w-full px-4 py-4 gap-6">
     <div class="flex justify-end gap-2">
         <Button
             variant="outline"
@@ -38,7 +39,11 @@
             ><Plus class="w-6 h-6" /></Button
         >
     </div>
-    {#each shownSensors as sensor}
-        {sensor.name}
-    {/each}
+    <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8"
+    >
+        {#each shownSensors as sensor (sensor.id)}
+            <Sensor {sensor} />
+        {/each}
+    </div>
 </div>
