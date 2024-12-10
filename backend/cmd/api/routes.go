@@ -58,8 +58,10 @@ func (app *App) routes() http.Handler {
 			r.Post("/notification/debug", app.requestAllNotifsHandler)
 
 			// TODO: make sure only person who can change user data is THE user (or admin)
-			r.Get("/user/me", app.getUserHandler)
+			r.Get("/user/me", app.getCurrentUserHandler)
+
 			r.Get("/user", app.getAllUsersHandler)
+			r.Get("/user/{id}", app.getUserHandler)
 			r.Post("/user", app.createUserHandler)
 			r.Put("/user/{username}", app.updateUserHandler)
 			r.Delete("/user/{username}", app.deleteUserHandler)

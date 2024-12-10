@@ -134,7 +134,7 @@ func (app *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) getCurrentUserHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.contextGetUser(r)
 
 	err := app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
@@ -155,4 +155,8 @@ func (app *App) getAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+}
+
+func (app *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: IMPLEMENT ME!!!
 }
