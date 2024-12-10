@@ -29,7 +29,7 @@
     </Button>
 {/snippet}
 
-<div class="w-full h-full flex flex-row mt-32 ml-40 gap-8">
+<div class="w-full h-full flex flex-row pt-32 pl-40 gap-8">
     <nav>
         {#each LINKS as link (link.href)}
             {@render Link(link.label, link.href)}
