@@ -76,8 +76,8 @@ func TestRuleUnmarshalling(t *testing.T) {
         ]
     },
     "on_valid": {
-		"target-type": "sensor",
-        "target-id": "3a415307-7845-4f05-a790-4e8e203a49c3",
+		"target_type": "sensor",
+        "target_id": "3a415307-7845-4f05-a790-4e8e203a49c3",
         "payload": {
             "data": "loool"
         }
