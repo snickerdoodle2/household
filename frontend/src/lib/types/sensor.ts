@@ -23,7 +23,7 @@ export const sensorSchema = z.object({
     name: z.string(),
     type: sensorTypeSchema,
     active: z.boolean(),
-    hidden: z.boolean().optional(),
+    hidden: z.boolean(),
 });
 
 export type Sensor = z.infer<typeof sensorSchema>;
