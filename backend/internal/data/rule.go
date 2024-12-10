@@ -27,8 +27,8 @@ const (
 )
 
 type ValidRuleAction struct {
-	TargetType TargetType             `json:"target-type"`
-	TargetId   uuid.UUID              `json:"target-id"`
+	TargetType TargetType             `json:"target_type"`
+	TargetId   uuid.UUID              `json:"target_id"`
 	Payload    map[string]interface{} `json:"payload"`
 }
 
