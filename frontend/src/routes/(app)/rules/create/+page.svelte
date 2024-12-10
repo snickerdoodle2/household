@@ -42,7 +42,8 @@
         name: '',
         description: '',
         on_valid: {
-            to: '',
+            target_type: 'sensor',
+            target_id: '',
             payload: {},
         },
         internal: {} as NewRule['internal'],
@@ -58,13 +59,18 @@
         if (isSensorPayload) {
             if (payload && selectedSensor.value !== '') {
                 rule.on_valid = {
-                    to: selectedSensor.value,
+                    target_type: 'sensor',
+                    target_id: selectedSensor.value,
                     payload: { value: Number(payload) },
                 };
             }
         } else {
             if (selectedSequence.value !== '') {
-                rule.on_valid = { sequence: selectedSequence.value };
+                rule.on_valid = {
+                    target_type: 'sequence',
+                    target_id: selectedSequence.value,
+                    payload: {},
+                };
             }
         }
     });
@@ -99,8 +105,8 @@
                     errors['name'] = issue.message;
                 } else if (fieldPath === 'description') {
                     errors['description'] = issue.message;
-                } else if (fieldPath === 'on_valid.to') {
-                    errors['on_valid.to'] = issue.message;
+                } else if (fieldPath === 'on_valid.target_id') {
+                    errors['on_valid.target_id'] = issue.message;
                 } else if (fieldPath === 'on_valid.payload') {
                     errors['on_valid.payload'] = issue.message;
                 } else if (fieldPath === 'internal') {
@@ -175,7 +181,7 @@
                         />
 
                         <Label
-                            name="on_valid.to"
+                            name="on_valid.target_id"
                             class="pr-3 flex items-center justify-between text-base font-semibold"
                         >
                             Payload
@@ -212,7 +218,7 @@
                                         class="flex items-center text-base font-semibold"
                                     >
                                         to
-                                        {#if errors['on_valid.to']}
+                                        {#if errors['on_valid.target_id']}
                                             <span
                                                 class="text-sm font-normal italic text-red-400"
                                                 >{errors['type']}</span
@@ -223,10 +229,10 @@
                                 <Select.Root
                                     bind:selected={selectedSensor}
                                     required
-                                    name="on_valid.to"
+                                    name="on_valid.target_id"
                                 >
                                     <Select.Trigger
-                                        class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                                        class={`w-full ${errors['on_valid.target_id'] ? 'border-2 border-red-600' : ''}`}
                                     >
                                         <Select.Value />
                                     </Select.Trigger>
@@ -242,10 +248,10 @@
                                 <Select.Root
                                     bind:selected={selectedSequence}
                                     required
-                                    name="on_valid.to"
+                                    name="on_valid.target_id"
                                 >
                                     <Select.Trigger
-                                        class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                                        class={`w-full ${errors['on_valid.target_id'] ? 'border-2 border-red-600' : ''}`}
                                     >
                                         <Select.Value />
                                     </Select.Trigger>

@@ -81,16 +81,14 @@ export const ruleSchema = ruleNameDescSchema.merge(
 
 export type Rule = z.infer<typeof ruleSchema>;
 
+const targetTypeEnum = z.enum(['sensor', 'sequence']);
+
 const internalRuleSchema = z.object({
-    on_valid: z.union([
-        z.object({
-            to: z.string().uuid(),
-            payload: z.object({}).passthrough(),
-        }),
-        z.object({
-            sequence: z.string().uuid(),
-        }),
-    ]),
+    on_valid: z.object({
+        target_type: targetTypeEnum,
+        target_id: z.string().uuid(),
+        payload: z.object({}).passthrough(),
+    }),
     internal: ruleInternalSchema,
 });
 

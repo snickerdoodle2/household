@@ -28,7 +28,8 @@
         created_at: new Date(),
         description: '',
         on_valid: {
-            to: '',
+            target_type: 'sensor',
+            target_id: '',
             payload: {},
         },
         internal: {} as RuleDetails['internal'],
@@ -56,13 +57,18 @@
         if (isSensorPayload) {
             if (payload && selectedSensor.value !== '') {
                 rule.on_valid = {
-                    to: selectedSensor.value,
+                    target_type: 'sensor',
+                    target_id: selectedSensor.value,
                     payload: { value: Number(payload) },
                 };
             }
         } else {
             if (selectedSequence.value !== '') {
-                rule.on_valid = { sequence: selectedSequence.value };
+                rule.on_valid = {
+                    target_type: 'sequence',
+                    target_id: selectedSequence.value,
+                    payload: {},
+                };
             }
         }
     });
@@ -72,25 +78,46 @@
     };
 
     const resetRule = async () => {
-        rule = { ...(await data.rule) } as RuleDetails;
-        if ('to' in rule.on_valid) {
-            const sensor = sensors.find(
-                (e) => 'to' in rule.on_valid && e.id === rule.on_valid.to
-            );
-            if (sensor) {
-                selectedSensor = { value: sensor.id, label: sensor.name };
-            }
+        try {
+            rule = { ...(await data.rule) } as RuleDetails;
 
-            payload = JSON.stringify(rule.on_valid.payload['value']);
-        } else {
-            const seqeunce = sequences.find(
-                (e) =>
-                    'seqeunce' in rule.on_valid &&
-                    e.id === rule.on_valid.seqeunce
-            );
-            if (seqeunce) {
-                selectedSequence = { value: seqeunce.id, label: seqeunce.name };
+            loading = false;
+            errors = {};
+
+            if (rule.on_valid.target_type === 'sensor') {
+                const sensor = sensors.find(
+                    (e) => e.id === rule.on_valid.target_id
+                );
+
+                if (sensor) {
+                    selectedSensor = { value: sensor.id, label: sensor.name };
+                    payload = JSON.stringify(rule.on_valid.payload['value']);
+                } else {
+                    selectedSensor = { value: '', label: '' };
+                    payload = '';
+                }
+                isSensorPayload = true;
+            } else if (rule.on_valid.target_type === 'sequence') {
+                const sequence = sequences.find(
+                    (e) => e.id === rule.on_valid.target_id
+                );
+
+                if (sequence) {
+                    selectedSequence = {
+                        value: sequence.id,
+                        label: sequence.name,
+                    };
+                } else {
+                    selectedSequence = { value: '', label: '' };
+                }
+                payload = '';
+                isSensorPayload = false;
             }
+        } catch (error) {
+            errors = { fetch: 'Failed to fetch rule data.' };
+            console.error('Error in resetRule:', error);
+        } finally {
+            loading = false;
         }
     };
 
@@ -125,8 +152,8 @@
                         errors['name'] = issue.message;
                     } else if (fieldPath === 'description') {
                         errors['description'] = issue.message;
-                    } else if (fieldPath === 'on_valid.to') {
-                        errors['on_valid.to'] = issue.message;
+                    } else if (fieldPath === 'on_valid.target_id') {
+                        errors['on_valid.target_id'] = issue.message;
                     } else if (fieldPath === 'on_valid.payload') {
                         errors['on_valid.payload'] = issue.message;
                     } else if (fieldPath === 'internal') {
@@ -202,7 +229,7 @@
                         />
 
                         <Label
-                            name="on_valid.to"
+                            name="on_valid.target_id"
                             class="pr-3 flex items-center justify-between text-base font-semibold"
                         >
                             Payload
@@ -240,7 +267,7 @@
                                         class="flex items-center text-base font-semibold"
                                     >
                                         to
-                                        {#if errors['on_valid.to']}
+                                        {#if errors['on_valid.target_id']}
                                             <span
                                                 class="text-sm font-normal italic text-red-400"
                                                 >{errors['type']}</span
@@ -251,11 +278,11 @@
                                 <Select.Root
                                     bind:selected={selectedSensor}
                                     required
-                                    name="on_valid.to"
+                                    name="on_valid.target_id"
                                     disabled={!editing}
                                 >
                                     <Select.Trigger
-                                        class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                                        class={`w-full ${errors['on_valid.target_id'] ? 'border-2 border-red-600' : ''}`}
                                     >
                                         <Select.Value />
                                     </Select.Trigger>
@@ -271,11 +298,11 @@
                                 <Select.Root
                                     bind:selected={selectedSequence}
                                     required
-                                    name="on_valid.to"
+                                    name="on_valid.target_id"
                                     disabled={!editing}
                                 >
                                     <Select.Trigger
-                                        class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                                        class={`w-full ${errors['on_valid.target_id'] ? 'border-2 border-red-600' : ''}`}
                                     >
                                         <Select.Value />
                                     </Select.Trigger>
