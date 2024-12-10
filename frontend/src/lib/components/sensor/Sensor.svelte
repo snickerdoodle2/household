@@ -17,7 +17,7 @@
         ws.subscribe(sensor.id);
 
         return () => {
-            ws.unsubscribe(sensor.name);
+            ws.unsubscribe(sensor.id);
         };
     });
 
