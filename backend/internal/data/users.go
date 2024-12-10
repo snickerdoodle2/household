@@ -194,6 +194,41 @@ func (m UserModel) DeleteByUsername(username string) error {
 	return nil
 }
 
+func (m UserModel) GetAllUsers() ([]*User, error) {
+	query := `
+    SELECT id, username, display_name, created_at, version
+    FROM users
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	users := make([]*User, 0)
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Name,
+			&user.CreatedAt,
+			&user.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
+}
+
 func (m UserModel) GetForToken(tokenPlaintext string) (*User, error) {
 	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
 	query := `
