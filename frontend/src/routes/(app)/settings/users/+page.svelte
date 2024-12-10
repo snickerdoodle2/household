@@ -10,6 +10,7 @@
 
     const { data }: Props = $props();
     const { users } = data;
+    // TODO: USER ROLE
 </script>
 
 <div class="max-w-[1024px] mx-auto flex flex-col items-end">

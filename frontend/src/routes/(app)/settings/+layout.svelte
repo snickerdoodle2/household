@@ -20,7 +20,7 @@
 {#snippet Link(label: string, href: string)}
     <Button
         variant="link"
-        size={$page.url.pathname === href ? 'bold' : 'default'}
+        size={$page.url.pathname.startsWith(href) ? 'bold' : 'default'}
         class="text-base"
         disabled={$page.url.pathname === href}
         {href}
