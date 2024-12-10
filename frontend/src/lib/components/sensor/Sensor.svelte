@@ -22,8 +22,7 @@
     });
 
     const hideSensor = async () => {
-        sensor.hidden = true;
-        const res = await authFetch(`/api/v1/sensor/${sensor.id}/hidden`, {
+        const res = await authFetch(`/api/v1/sensor/${sensor.id}`, {
             method: 'PUT',
             body: JSON.stringify({
                 hidden: true,
