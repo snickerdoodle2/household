@@ -27,8 +27,9 @@ func TestRuleMarshallingNoError(t *testing.T) {
 		Description: "Nowa reguła",
 		Internal:    &internalOR,
 		OnValid: data.ValidRuleAction{
-			To:      uuid.New(),
-			Payload: map[string]interface{}{"data": "loool"},
+			TargetType: data.SensorTarget,
+			TargetId:   uuid.New(),
+			Payload:    map[string]interface{}{"data": "loool"},
 		},
 	}
 
@@ -75,7 +76,8 @@ func TestRuleUnmarshalling(t *testing.T) {
         ]
     },
     "on_valid": {
-        "to": "3a415307-7845-4f05-a790-4e8e203a49c3",
+		"target_type": "sensor",
+        "target_id": "3a415307-7845-4f05-a790-4e8e203a49c3",
         "payload": {
             "data": "loool"
         }
@@ -130,8 +132,9 @@ func TestMarshalUnmarshal(t *testing.T) {
 		Description: "Przykładowy opis nowej reguły",
 		Internal:    &internal,
 		OnValid: data.ValidRuleAction{
-			To:      uuid.New(),
-			Payload: map[string]interface{}{"data": "loool"},
+			TargetType: data.SensorTarget,
+			TargetId:   uuid.New(),
+			Payload:    map[string]interface{}{"data": "loool"},
 		},
 	}
 

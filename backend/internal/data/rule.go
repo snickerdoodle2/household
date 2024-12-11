@@ -6,7 +6,6 @@ import (
 	"errors"
 	"inzynierka/internal/data/validator"
 	"reflect"
-	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -20,9 +19,17 @@ var (
 	ErrMissingDependencyChan = errors.New("Provided listeners map is missing required dependency")
 )
 
+type TargetType string
+
+const (
+	SensorTarget   TargetType = "sensor"
+	SequenceTarget TargetType = "sequence"
+)
+
 type ValidRuleAction struct {
-	To      uuid.UUID              `json:"to"`
-	Payload map[string]interface{} `json:"payload"`
+	TargetType TargetType             `json:"target_type"`
+	TargetId   uuid.UUID              `json:"target_id"`
+	Payload    map[string]interface{} `json:"payload"`
 }
 
 type Rule struct {
@@ -37,6 +44,10 @@ type Rule struct {
 }
 
 type SensorListeners map[uuid.UUID]*Listener[float64]
+
+func (t TargetType) IsValid() bool {
+	return t == SensorTarget || t == SequenceTarget
+}
 
 // TOOD: Handle stopping on channel close
 // REF: https://pkg.go.dev/reflect#Select
@@ -75,6 +86,7 @@ func (r *Rule) Run(listeners SensorListeners, validCh chan ValidRuleAction, stop
 		}
 		slice := sliceV.Interface().([]float64)
 		values[deps[i]] = slice[len(slice)-1]
+		// updating rule, sending onValid struct to channel if the rule has just been fulfilled
 		r.update(values, validCh, m)
 	}
 	return nil
@@ -130,6 +142,7 @@ func ValidateRule(v *validator.Validator, r *Rule) {
 	v.Check(utf8.RuneCountInString(r.Name) > 0, "name", "must not be empty")
 	v.Check(utf8.RuneCountInString(r.Name) <= 32, "name", "must not be longer than 32 characters")
 	v.Check(utf8.RuneCountInString(r.Description) <= 256, "description", "must not be longer than 256 characters")
+	v.Check(r.OnValid.TargetType.IsValid(), "on_valid.target-type", "must be either 'sensor' or 'sequence'")
 }
 
 type RuleModel struct {
@@ -138,8 +151,8 @@ type RuleModel struct {
 
 func (m *RuleModel) Insert(rule *Rule) error {
 	query := `
-    INSERT INTO rules (id, name, description, internal, valid_sensor_id, valid_payload)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO rules (id, name, description, internal, valid_target_type, valid_target_id, valid_target_payload)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING created_at, version
     `
 
@@ -150,7 +163,7 @@ func (m *RuleModel) Insert(rule *Rule) error {
 
 	rule.ID = uuid
 
-	args := []any{uuid, rule.Name, rule.Description, rule.Internal, rule.OnValid.To, rule.OnValid.Payload}
+	args := []any{uuid, rule.Name, rule.Description, rule.Internal, rule.OnValid.TargetType, rule.OnValid.TargetId, rule.OnValid.Payload}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -158,19 +171,14 @@ func (m *RuleModel) Insert(rule *Rule) error {
 	err = m.DB.QueryRow(ctx, query, args...).Scan(&rule.CreatedAt, &rule.Version)
 
 	if err != nil {
-		switch {
-		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"rules\" violates foreign key constraint \"rules_valid_sensor_id_fkey\""):
-			return ErrNonExistingTo
-		default:
-			return err
-		}
+		return err
 	}
 	return nil
 }
 
 func (m *RuleModel) Get(id uuid.UUID) (*Rule, error) {
 	query := `
-    SELECT id, name, description, internal, valid_sensor_id, valid_payload, created_at, version
+    SELECT id, name, description, internal, valid_target_type, valid_target_id, valid_target_payload, created_at, version
     FROM rules
     WHERE id = $1
     `
@@ -186,7 +194,8 @@ func (m *RuleModel) Get(id uuid.UUID) (*Rule, error) {
 		&ruleS.Name,
 		&ruleS.Description,
 		&internalMap,
-		&ruleS.OnValid.To,
+		&ruleS.OnValid.TargetType,
+		&ruleS.OnValid.TargetId,
 		&ruleS.OnValid.Payload,
 		&ruleS.CreatedAt,
 		&ruleS.Version,
@@ -213,7 +222,7 @@ func (m *RuleModel) Get(id uuid.UUID) (*Rule, error) {
 
 func (m *RuleModel) GetAll() ([]*Rule, error) {
 	query := `
-    SELECT id, name, description, internal, valid_sensor_id, valid_payload, created_at, version
+    SELECT id, name, description, internal, valid_target_type, valid_target_id, valid_target_payload, created_at, version
     FROM rules
     ORDER BY id
     `
@@ -238,7 +247,8 @@ func (m *RuleModel) GetAll() ([]*Rule, error) {
 			&ruleS.Name,
 			&ruleS.Description,
 			&internalMap,
-			&ruleS.OnValid.To,
+			&ruleS.OnValid.TargetType,
+			&ruleS.OnValid.TargetId,
 			&ruleS.OnValid.Payload,
 			&ruleS.CreatedAt,
 			&ruleS.Version,
@@ -314,8 +324,8 @@ func (m RuleModel) GetAllInfo() ([]*RuleSimple, error) {
 func (m RuleModel) Update(rule *Rule) error {
 	query := `
        UPDATE rules
-       SET name = $1, description = $2, internal = $3, valid_sensor_id = $4, valid_payload = $5, version = version + 1
-       WHERE id = $6
+       SET name = $1, description = $2, internal = $3, valid_target_type = $4, valid_target_id = $5, valid_target_payload = $6, version = version + 1
+       WHERE id = $7
        RETURNING version 
     `
 
@@ -323,7 +333,8 @@ func (m RuleModel) Update(rule *Rule) error {
 		rule.Name,
 		rule.Description,
 		rule.Internal,
-		rule.OnValid.To,
+		rule.OnValid.TargetType,
+		rule.OnValid.TargetId,
 		rule.OnValid.Payload,
 		rule.ID,
 	}
@@ -334,12 +345,7 @@ func (m RuleModel) Update(rule *Rule) error {
 	err := m.DB.QueryRow(ctx, query, args...).Scan(&rule.Version)
 
 	if err != nil {
-		switch {
-		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"rules\" violates foreign key constraint \"rules_valid_sensor_id_fkey\""):
-			return ErrNonExistingTo
-		default:
-			return err
-		}
+		return err
 	}
 	return nil
 }
