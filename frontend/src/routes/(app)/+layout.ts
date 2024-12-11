@@ -7,7 +7,7 @@ import { redirect } from '@sveltejs/kit';
 import { getAllSensors } from '@/helpers/sensor';
 
 const getUserData = async (fetchFN: typeof fetch) => {
-    const res = await authFetch(`/api/v1/user`, {}, fetchFN);
+    const res = await authFetch(`/api/v1/user/me`, {}, fetchFN);
     if (!res.ok) {
         return undefined;
     }
