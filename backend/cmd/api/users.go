@@ -92,6 +92,10 @@ func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		user.Name = *input.Name
 	}
 
+	if input.Name != nil {
+		user.Role = *input.Role
+	}
+
 	if input.Password != nil {
 		err = user.Password.Set(*input.Password)
 		if err != nil {

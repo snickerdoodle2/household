@@ -1,19 +1,35 @@
 <script lang="ts">
     import { newUserSchema, type NewUser } from '@/types/user';
+    import { Label } from '$lib/components/ui/label';
+    import * as Select from '$lib/components/ui/select';
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import Button from '$lib/components/ui/button/button.svelte';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
+    import type { Selected } from 'bits-ui';
 
     let user: NewUser = $state({
         name: '',
         username: '',
+        role: 'user',
         password: '',
         confirmPassword: '',
     });
 
     let globalError: string | undefined = $state();
     let fieldErrors: Record<string, string> = $state({});
+    const ROLES = [
+        {
+            label: 'Admin',
+            value: 'admin',
+        },
+        {
+            label: 'User',
+            value: 'user',
+        },
+    ] as const;
+
+    let selectedRole = $state<Selected<'admin' | 'user'>>(ROLES[1]);
 
     async function handleCreate() {
         const { success, error, data } = newUserSchema.safeParse(user);
@@ -60,6 +76,37 @@
             type="text"
             errors={fieldErrors}
         />
+        <Label
+            for="type"
+            class="flex items-center justify-between text-base font-semibold"
+        >
+            Role
+            {#if fieldErrors['role']}
+                <span class="text-sm font-normal italic text-red-400"
+                    >{fieldErrors['role']}</span
+                >
+            {/if}
+        </Label>
+        <Select.Root
+            bind:selected={selectedRole}
+            onSelectedChange={(s) => {
+                if (s) {
+                    user.role = s.value;
+                }
+            }}
+            name="type"
+        >
+            <Select.Trigger
+                class={fieldErrors['type'] ? 'border-2 border-red-600' : ''}
+            >
+                <Select.Value />
+            </Select.Trigger>
+            <Select.Content>
+                {#each ROLES as { label, value }}
+                    <Select.Item {value}>{label}</Select.Item>
+                {/each}
+            </Select.Content>
+        </Select.Root>
         <NewSensorInput
             name="password"
             label="Password"
@@ -74,28 +121,6 @@
             type="password"
             errors={fieldErrors}
         />
-        <!-- <Label -->
-        <!--     for="type" -->
-        <!--     class="flex items-center justify-between text-base font-semibold" -->
-        <!-- > -->
-        <!--     Role -->
-        <!--     {#if fieldErrors['type']} -->
-        <!--         <span class="text-sm font-normal italic text-red-400" -->
-        <!--             >{fieldErrors['type']}</span -->
-        <!--         > -->
-        <!--     {/if} -->
-        <!-- </Label> -->
-        <!-- <Select.Root bind:selected={selectedRole} required name="type"> -->
-        <!--     <Select.Trigger -->
-        <!--         class={fieldErrors['type'] ? 'border-2 border-red-600' : ''} -->
-        <!--     > -->
-        <!--         <Select.Value /> -->
-        <!--     </Select.Trigger> -->
-        <!--     <Select.Content> -->
-        <!--         <Select.Item value={'user'}>User</Select.Item> -->
-        <!--         <Select.Item value={'admin'}>Admin</Select.Item> -->
-        <!--     </Select.Content> -->
-        <!-- </Select.Root> -->
     </div>
 
     {#if globalError}
