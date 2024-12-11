@@ -1,6 +1,17 @@
+DELETE FROM rules
+WHERE valid_target_type = 'sequence';
+
 ALTER TABLE rules
-DROP COLUMN valid_target_type,
-DROP COLUMN valid_target_id,
-DROP COLUMN valid_target_payload,
-ADD COLUMN valid_sensor_id uuid NOT NULL REFERENCES sensors(id),
-ADD COLUMN valid_payload json NOT NULL;
+    DROP COLUMN valid_target_type;
+
+ALTER TABLE rules
+    RENAME COLUMN valid_target_id TO valid_sensor_id;
+
+ALTER TABLE rules
+    RENAME COLUMN valid_target_payload TO valid_payload;
+
+ALTER TABLE rules
+    ADD CONSTRAINT rules_valid_sensor_id_fkey
+        FOREIGN KEY (valid_sensor_id) REFERENCES sensors(id),
+    ALTER COLUMN valid_sensor_id SET NOT NULL,
+    ALTER COLUMN valid_payload SET NOT NULL;
