@@ -22,3 +22,26 @@ export const getAllUsers = async (fetch: FetchFn): Promise<User[]> => {
 
     return data.data;
 };
+
+export const getUser = async (
+    username: string,
+    fetch: FetchFn
+): Promise<User | null> => {
+    const res = await authFetch(`/api/v1/user/${username}`, {}, fetch);
+    const body = await res.json();
+    if (!res.ok) {
+        console.error(body);
+        return null;
+    }
+
+    const { success, data, error } = z
+        .object({ user: userSchema })
+        .safeParse(body);
+
+    if (!success) {
+        console.error(error.issues);
+        return null;
+    }
+
+    return data.user;
+};
