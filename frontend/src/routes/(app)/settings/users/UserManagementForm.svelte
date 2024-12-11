@@ -3,6 +3,7 @@
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import Button from '$lib/components/ui/button/button.svelte';
     import { authFetch } from '@/helpers/fetch';
+    import { goto } from '$app/navigation';
 
     type Props =
         | {
@@ -70,10 +71,24 @@
         } else {
             fieldErrors = resJson.error;
         }
+
+        if (res.ok) {
+            editing = false;
+        }
     }
+
+    const handleDelete = async () => {
+        const res = await authFetch(`/api/v1/user/${props.user?.username}`, {
+            method: 'DELETE',
+        });
+
+        if (res.ok) {
+            goto('/settings/users');
+        }
+    };
 </script>
 
-<div>
+<div class="max-w-[1024px] mx-auto">
     <h3 class="text-3xl">
         {props.action === 'add' ? 'Add User' : 'User Details'}
     </h3>
@@ -121,12 +136,12 @@
     {#if globalError}
         <p class="mb-1 text-center text-sm text-red-500">{globalError}</p>
     {/if}
-    {#if props.action === 'edit'}
-        <div class="flex justify-end p-2 gap-4">
+    <div class="flex justify-end p-2 gap-4">
+        {#if props.action === 'edit'}
             <!-- TODO: DISABLE IF THIS USER IS CURRENT USER -->
             <Button
                 size="bold"
-                on:click={() => {}}
+                on:click={handleDelete}
                 disabled={!editing}
                 variant="destructive">Delete</Button
             >
@@ -143,11 +158,11 @@
                     }}>Edit</Button
                 >
             {/if}
-            <Button
-                size="bold"
-                on:click={props.action === 'edit' ? handleEdit : () => {}}
-                >Submit</Button
-            >
-        </div>
-    {:else}{/if}
+        {/if}
+        <Button
+            size="bold"
+            on:click={props.action === 'edit' ? handleEdit : () => {}}
+            >Submit</Button
+        >
+    </div>
 </div>
