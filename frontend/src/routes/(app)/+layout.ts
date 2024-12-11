@@ -7,7 +7,7 @@ import { redirect } from '@sveltejs/kit';
 import { getAllSensors } from '@/helpers/sensor';
 
 const getUserData = async (fetchFN: typeof fetch) => {
-    const res = await authFetch(`/api/v1/user`, {}, fetchFN);
+    const res = await authFetch(`/api/v1/user/me`, {}, fetchFN);
     if (!res.ok) {
         return undefined;
     }
@@ -19,7 +19,7 @@ const getUserData = async (fetchFN: typeof fetch) => {
 export const load: LayoutLoad = async ({ fetch }) => {
     if (!get(authToken)) redirect(304, '/login');
     return {
-        user: getUserData(fetch),
+        currentUser: await getUserData(fetch),
         sensors: await (async () => {
             const sensors = await getAllSensors(fetch);
             if (sensors.isError) return [];
