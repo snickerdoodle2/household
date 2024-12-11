@@ -1,6 +1,7 @@
 package main
 
 import (
+	"inzynierka/internal/data"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -35,23 +36,26 @@ func (app *App) routes() http.Handler {
 
 			r.Get("/sensor", app.listSensorsHandler)
 			r.Get("/sensor/{id}", app.getSensorHandler)
-			r.Post("/sensor", app.createSensorHandler)
-			r.Put("/sensor/{id}", app.updateSensorHandler)
-			r.Delete("/sensor/{id}", app.deleteSensorHandler)
 			r.Put("/sensor/{id}/value", app.setSensorValue)
+
+			r.Post("/sensor", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.createSensorHandler)))
+			r.Put("/sensor/{id}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.updateSensorHandler)))
+			r.Delete("/sensor/{id}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.deleteSensorHandler)))
 
 			r.Get("/rule", app.listRulesHandler)
 			r.Get("/rule/{id}", app.getRuleHandler)
-			r.Post("/rule", app.createRuleHandler)
-			r.Put("/rule/{id}", app.updateRuleHanlder)
-			r.Delete("/rule/{id}", app.deleteRuleHandler)
 
-			r.Post("/sequence", app.createSequenceHandler)
+			r.Post("/rule", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.createRuleHandler)))
+			r.Put("/rule/{id}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.updateRuleHanlder)))
+			r.Delete("/rule/{id}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.deleteRuleHandler)))
+
 			r.Get("/sequence", app.listSequencesHandler)
 			r.Get("/sequence/{id}", app.getSequenceHandler)
-			r.Put("/sequence/{id}", app.updateSequenceHandler)
-			r.Delete("/sequence/{id}", app.deleteSequenceHandler)
 			r.Post("/sequence/{id}/start", app.startSequenceHandler)
+
+			r.Post("/sequence", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.createSequenceHandler)))
+			r.Put("/sequence/{id}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.updateSequenceHandler)))
+			r.Delete("/sequence/{id}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.deleteSequenceHandler)))
 
 			r.Put("/notification/{id}", app.readNotificationHandler)
 			r.Put("/notification", app.readAllNotificationHandler)
@@ -60,11 +64,11 @@ func (app *App) routes() http.Handler {
 			// TODO: make sure only person who can change user data is THE user (or admin)
 			r.Get("/user/me", app.getCurrentUserHandler)
 
-			r.Get("/user", app.getAllUsersHandler)
-			r.Get("/user/{username}", app.getUserHandler)
-			r.Post("/user", app.createUserHandler)
-			r.Put("/user/{username}", app.updateUserHandler)
-			r.Delete("/user/{username}", app.deleteUserHandler)
+			r.Get("/user", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.getAllUsersHandler)))
+			r.Get("/user/{username}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.getUserHandler)))
+			r.Post("/user", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.createUserHandler)))
+			r.Put("/user/{username}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.updateUserHandler)))
+			r.Delete("/user/{username}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.deleteUserHandler)))
 
 		})
 		r.Post("/login", app.loginHandler)

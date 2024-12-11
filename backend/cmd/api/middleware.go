@@ -77,3 +77,16 @@ func (app *App) requireAuthenticated(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (app *App) requireRole(role data.UserRole, next http.Handler) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+
+		if user.Role != role {
+			app.authenticationRequiredResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
