@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { newUserSchema, userSchema, type User } from '@/types/user';
+    import { userSchema, type User } from '@/types/user';
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import Button from '$lib/components/ui/button/button.svelte';
     import { authFetch } from '@/helpers/fetch';
@@ -7,6 +7,7 @@
 
     type Props = {
         user: User;
+        isMe: boolean;
     };
 
     const props: Props = $props();
@@ -123,7 +124,7 @@
         <Button
             size="bold"
             on:click={handleDelete}
-            disabled={!editing}
+            disabled={props.isMe || !editing}
             variant="destructive">Delete</Button
         >
         {#if editing}
@@ -139,6 +140,8 @@
                 }}>Edit</Button
             >
         {/if}
-        <Button size="bold" on:click={handleEdit}>Submit</Button>
+        <Button size="bold" on:click={handleEdit} disabled={!editing}
+            >Submit</Button
+        >
     </div>
 </div>
