@@ -43,5 +43,5 @@
     </Table.Root>
 
     <!-- TODO: CREATE USER PAGE -->
-    <Button>Create</Button>
+    <Button href="/settings/users/create">Create</Button>
 </div>
