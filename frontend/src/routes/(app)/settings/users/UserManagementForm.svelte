@@ -18,6 +18,7 @@
 
     let user = $state(
         props.user ?? {
+            id: '',
             username: '',
             name: '',
         }
@@ -25,6 +26,7 @@
 
     const cancelEditing = () => {
         user = props.user ?? {
+            id: '',
             username: '',
             name: '',
         };
@@ -36,8 +38,9 @@
     let globalError: string | undefined = $state();
     let fieldErrors: Record<string, string> = $state({});
 
-    async function handleSubmit() {
+    async function handleEdit() {
         const { data, success, error } = userSchema.safeParse({
+            id: user.id,
             username: user.username,
             name: user.name,
         });
@@ -51,9 +54,12 @@
             return;
         }
 
-        const res = await authFetch(`/api/v1/user/${data.username}`, {
-            method: props.action === 'add' ? 'POST' : 'PUT',
-            body: JSON.stringify(data),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { username, id, ...userData } = data;
+
+        const res = await authFetch(`/api/v1/user/${username}`, {
+            method: 'PUT',
+            body: JSON.stringify(userData),
         });
 
         const resJson = await res.json();
@@ -73,17 +79,17 @@
     </h3>
     <div class="grid grid-cols-2 gap-2 p-4 pb-2">
         <NewSensorInput
-            name="name"
-            label="Name"
-            bind:value={user.name}
-            disabled={!editing}
+            name="username"
+            label="Username"
+            bind:value={user.username}
+            disabled
             type="text"
             errors={fieldErrors}
         />
         <NewSensorInput
-            name="username"
-            label="Username"
-            bind:value={user.username}
+            name="name"
+            label="Name"
+            bind:value={user.name}
             disabled={!editing}
             type="text"
             errors={fieldErrors}
@@ -120,7 +126,7 @@
             <!-- TODO: DISABLE IF THIS USER IS CURRENT USER -->
             <Button
                 size="bold"
-                on:click={handleSubmit}
+                on:click={() => {}}
                 disabled={!editing}
                 variant="destructive">Delete</Button
             >
@@ -137,7 +143,11 @@
                     }}>Edit</Button
                 >
             {/if}
-            <Button size="bold" on:click={handleSubmit}>Submit</Button>
+            <Button
+                size="bold"
+                on:click={props.action === 'edit' ? handleEdit : () => {}}
+                >Submit</Button
+            >
         </div>
     {:else}{/if}
 </div>

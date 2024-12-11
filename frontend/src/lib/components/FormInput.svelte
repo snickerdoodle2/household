@@ -18,7 +18,7 @@
         label,
         type,
         value = $bindable(),
-        errors,
+        errors = {},
         disabled = false,
     }: Props = $props();
 </script>
