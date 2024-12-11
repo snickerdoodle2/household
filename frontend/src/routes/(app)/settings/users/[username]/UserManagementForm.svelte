@@ -1,36 +1,20 @@
 <script lang="ts">
-    import { userSchema, type User } from '@/types/user';
+    import { newUserSchema, userSchema, type User } from '@/types/user';
     import NewSensorInput from '$lib/components/FormInput.svelte';
     import Button from '$lib/components/ui/button/button.svelte';
     import { authFetch } from '@/helpers/fetch';
     import { goto } from '$app/navigation';
 
-    type Props =
-        | {
-              user: User;
-              action: 'edit';
-          }
-        | {
-              user: undefined;
-              action: 'add';
-          };
+    type Props = {
+        user: User;
+    };
 
     const props: Props = $props();
 
-    let user = $state(
-        props.user ?? {
-            id: '',
-            username: '',
-            name: '',
-        }
-    );
+    let user = $state(props.user);
 
     const cancelEditing = () => {
-        user = props.user ?? {
-            id: '',
-            username: '',
-            name: '',
-        };
+        user = props.user;
         editing = false;
     };
 
@@ -78,7 +62,7 @@
     }
 
     const handleDelete = async () => {
-        const res = await authFetch(`/api/v1/user/${props.user?.username}`, {
+        const res = await authFetch(`/api/v1/user/${props.user.username}`, {
             method: 'DELETE',
         });
 
@@ -89,9 +73,7 @@
 </script>
 
 <div class="max-w-[1024px] mx-auto">
-    <h3 class="text-3xl">
-        {props.action === 'add' ? 'Add User' : 'User Details'}
-    </h3>
+    <h3 class="text-3xl">User Details</h3>
     <div class="grid grid-cols-2 gap-2 p-4 pb-2">
         <NewSensorInput
             name="username"
@@ -137,32 +119,26 @@
         <p class="mb-1 text-center text-sm text-red-500">{globalError}</p>
     {/if}
     <div class="flex justify-end p-2 gap-4">
-        {#if props.action === 'edit'}
-            <!-- TODO: DISABLE IF THIS USER IS CURRENT USER -->
-            <Button
-                size="bold"
-                on:click={handleDelete}
-                disabled={!editing}
-                variant="destructive">Delete</Button
-            >
-            {#if editing}
-                <Button size="bold" on:click={cancelEditing} variant="outline"
-                    >Cancel</Button
-                >
-            {:else}
-                <Button
-                    variant="outline"
-                    size="bold"
-                    on:click={() => {
-                        editing = true;
-                    }}>Edit</Button
-                >
-            {/if}
-        {/if}
+        <!-- TODO: DISABLE IF THIS USER IS CURRENT USER -->
         <Button
             size="bold"
-            on:click={props.action === 'edit' ? handleEdit : () => {}}
-            >Submit</Button
+            on:click={handleDelete}
+            disabled={!editing}
+            variant="destructive">Delete</Button
         >
+        {#if editing}
+            <Button size="bold" on:click={cancelEditing} variant="outline"
+                >Cancel</Button
+            >
+        {:else}
+            <Button
+                variant="outline"
+                size="bold"
+                on:click={() => {
+                    editing = true;
+                }}>Edit</Button
+            >
+        {/if}
+        <Button size="bold" on:click={handleEdit}>Submit</Button>
     </div>
 </div>

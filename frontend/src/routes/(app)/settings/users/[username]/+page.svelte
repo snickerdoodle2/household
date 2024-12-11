@@ -1,5 +1,5 @@
 <script lang="ts">
-    import UserManagementForm from '../UserManagementForm.svelte';
+    import UserManagementForm from './UserManagementForm.svelte';
     import type { PageData } from './$types';
     type Props = {
         data: PageData;
