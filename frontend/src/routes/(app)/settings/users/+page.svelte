@@ -33,7 +33,7 @@
                         ><Button
                             size="icon"
                             variant="ghost"
-                            href={`/settings/users/${user.id}`}
+                            href={`/settings/users/${user.username}`}
                             ><UserPen /></Button
                         ></Table.Cell
                     >
