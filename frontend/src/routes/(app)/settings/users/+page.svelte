@@ -19,6 +19,7 @@
             <Table.Row>
                 <Table.Cell>Username</Table.Cell>
                 <Table.Cell>Name</Table.Cell>
+                <Table.Cell>Role</Table.Cell>
                 <Table.Cell>Created At</Table.Cell>
                 <Table.Cell>Action</Table.Cell>
             </Table.Row>
@@ -28,7 +29,8 @@
                 <Table.Row>
                     <Table.Cell>{user.username}</Table.Cell>
                     <Table.Cell>{user.name}</Table.Cell>
-                    <Table.Cell>{user.created_at.toLocaleString()}</Table.Cell>
+                    <Table.Cell>{user.role}</Table.Cell>
+                    <Table.Cell>{user.created_at?.toLocaleString()}</Table.Cell>
                     <Table.Cell
                         ><Button
                             size="icon"
