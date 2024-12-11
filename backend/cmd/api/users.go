@@ -11,9 +11,10 @@ import (
 
 func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name     string `json:"name"`
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Name     string        `json:"name"`
+		Username string        `json:"username"`
+		Role     data.UserRole `json:"role"`
+		Password string        `json:"password"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -24,6 +25,7 @@ func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := &data.User{
 		Name:     input.Name,
+		Role:     input.Role,
 		Username: input.Username,
 	}
 
@@ -61,8 +63,9 @@ func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 // NOTE: for now you can update only Name
 func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name     *string `json:"name"`
-		Password *string `json:"password"`
+		Name     *string        `json:"name"`
+		Role     *data.UserRole `json:"role"`
+		Password *string        `json:"password"`
 	}
 
 	err := app.readJSON(w, r, &input)
