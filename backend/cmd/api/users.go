@@ -158,5 +158,20 @@ func (app *App) getAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: IMPLEMENT ME!!!
+	username := chi.URLParam(r, "username")
+
+	user, err := app.models.Users.GetByUsername(username)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
