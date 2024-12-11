@@ -324,7 +324,7 @@ func (m RuleModel) GetAllInfo() ([]*RuleSimple, error) {
 func (m RuleModel) Update(rule *Rule) error {
 	query := `
        UPDATE rules
-       SET name = $1, description = $2, internal = $3, valid_target_type = $4, valid_target_id = $5, valid_payload = $6, version = version + 1
+       SET name = $1, description = $2, internal = $3, valid_target_type = $4, valid_target_id = $5, valid_target_payload = $6, version = version + 1
        WHERE id = $7
        RETURNING version 
     `
