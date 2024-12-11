@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"inzynierka/internal/data/validator"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -87,6 +88,7 @@ func ValidateUsername(v *validator.Validator, username string) {
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "must be provided")
 	v.Check(utf8.RuneCountInString(user.Name) <= 256, "name", "must not be more than 32 characters long")
+	v.Check(slices.Contains([]UserRole{UserRoleAdmin, UserRoleUser}, user.Role), "role", "must be either \"admin\" or \"user\"")
 
 	ValidateUsername(v, user.Username)
 
