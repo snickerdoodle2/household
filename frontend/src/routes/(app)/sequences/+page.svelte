@@ -22,7 +22,7 @@
     <div class="flex-1 flex flex-col gap-8 items-center">
         {#await data.sequences then sequences}
             {#each sequences as sequence}
-                <div class="lg:min-w-[32rem]">
+                <div class="lg:min-w-[48rem]">
                     <a href={`/sequences/${sequence.id}`}>
                         <Card.Root class="hover:bg-accent">
                             <Card.Header>
