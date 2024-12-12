@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import { getSequenceDetails } from '@/helpers/sequence';
 
-export const load: PageLoad = async ({ params }) => {
+export const load: PageLoad = async ({ params, fetch }) => {
     return {
         sequence: (async () => {
             const res = await getSequenceDetails(params.id, fetch);
