@@ -40,9 +40,11 @@
                 <Eye class="w-6 h-6" />
             {/if}
         </Button>
-        <Button variant="outline" size="icon" href="/create"
-            ><Plus class="w-6 h-6" /></Button
-        >
+        {#if data.currentUser.role === 'admin'}
+            <Button variant="outline" size="icon" href="/create"
+                ><Plus class="w-6 h-6" /></Button
+            >
+        {/if}
     </div>
     <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8"

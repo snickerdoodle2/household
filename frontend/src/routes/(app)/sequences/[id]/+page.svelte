@@ -202,12 +202,14 @@
                             <Button on:click={handleStart} size="bold"
                                 >Start</Button
                             >
-                            <Button
-                                on:click={() => {
-                                    editing = true;
-                                }}
-                                size="bold">Edit</Button
-                            >
+                            {#if data.currentUser.role === 'admin'}
+                                <Button
+                                    on:click={() => {
+                                        editing = true;
+                                    }}
+                                    size="bold">Edit</Button
+                                >
+                            {/if}
                         {/if}
                     </Card.Footer>
                 </Card.Root>

@@ -333,12 +333,14 @@
                                         }}
                                         size="bold">Inspect values</Button
                                     >
-                                    <Button
-                                        on:click={() => {
-                                            editing = true;
-                                        }}
-                                        size="bold">Edit</Button
-                                    >
+                                    {#if data.currentUser.role === 'admin'}
+                                        <Button
+                                            on:click={() => {
+                                                editing = true;
+                                            }}
+                                            size="bold">Edit</Button
+                                        >
+                                    {/if}
                                 {/if}
                             </div>
                         </div>

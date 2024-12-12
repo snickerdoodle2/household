@@ -347,12 +347,14 @@
                             >
                         {:else}
                             <Button on:click={close} size="bold">Cancel</Button>
-                            <Button
-                                on:click={() => {
-                                    editing = true;
-                                }}
-                                size="bold">Edit</Button
-                            >
+                            {#if data.currentUser.role === 'admin'}
+                                <Button
+                                    on:click={() => {
+                                        editing = true;
+                                    }}
+                                    size="bold">Edit</Button
+                                >
+                            {/if}
                         {/if}
                     </Card.Footer>
                 </Card.Root>

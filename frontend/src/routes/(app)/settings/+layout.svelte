@@ -2,19 +2,22 @@
     import { page } from '$app/stores';
     import { Button } from '@/components/ui/button';
     import type { Snippet } from 'svelte';
-
-    const LINKS = [
-        {
-            label: 'Users',
-            href: '/settings/users',
-        },
-    ] as const;
+    import type { LayoutData } from './$types';
 
     type Props = {
         children: Snippet;
+        data: LayoutData;
     };
 
-    const { children }: Props = $props();
+    const { children, data }: Props = $props();
+
+    let links = [
+        {
+            label: 'Users',
+            href: '/settings/users',
+            show: data.currentUser.role === 'admin',
+        },
+    ];
 </script>
 
 {#snippet Link(label: string, href: string)}
@@ -31,8 +34,10 @@
 
 <div class="w-full h-full flex flex-row pt-32 pl-40 gap-8">
     <nav>
-        {#each LINKS as link (link.href)}
-            {@render Link(link.label, link.href)}
+        {#each links as link (link.href)}
+            {#if link.show}
+                {@render Link(link.label, link.href)}
+            {/if}
         {/each}
     </nav>
     <main class="flex-1">{@render children()}</main>
