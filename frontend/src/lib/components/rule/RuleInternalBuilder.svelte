@@ -15,6 +15,7 @@
     import { Trash, Plus, Slash } from 'svelte-radix';
     import ConditionBuilder from './ConditionBuilder.svelte';
     import PercentileCondition from './PercentileCondition.svelte';
+    import TimeCondition from './TimeCondition.svelte';
 
     type Parent =
         | RuleDetails
@@ -141,9 +142,9 @@
 
     let background = $derived(
         isNotEmptyRule(internal) &&
-            (internal.type === 'lt' ||
-                internal.type === 'gt' ||
-                internal.type === 'perc')
+            internal.type != 'and' &&
+            internal.type != 'or' &&
+            internal.type != 'not'
             ? ''
             : 'bg-foreground'
     );
@@ -191,6 +192,25 @@
                         </Button>
                     {/if}
                 </PercentileCondition>
+            {:else if internal.type === 'time'}
+                <TimeCondition {internal} {sensors} bind:editingDisabled>
+                    {#if !editingDisabled}
+                        <Button
+                            on:click={negateRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Slash class="w-4" />
+                        </Button>
+                        <Button
+                            on:click={deleteRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Trash class="w-4" />
+                        </Button>
+                    {/if}
+                </TimeCondition>
             {:else}
                 {#if internal.type === 'and' || internal.type === 'or'}
                     <div class="flex">

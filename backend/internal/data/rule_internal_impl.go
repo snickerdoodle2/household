@@ -257,3 +257,62 @@ func (r *RulePerc) Validate(v *validator.Validator) {
 	v.Check(r.Percentile <= 0, "rulePerc", "Percentile smaller or equal 100")
 	v.Check(r.Delta > 0, "rulePerc", "Duration should be larger than 0")
 }
+
+type TimeType string
+
+const (
+	TimeBefore TimeType = "before"
+	TimeAfter  TimeType = "after"
+)
+
+type RuleTime struct {
+	Hour    int      `json:"hour"`
+	Minute  int      `json:"minute"`
+	Variant TimeType `json:"variant"`
+}
+
+func (r RuleTime) MarshalJSON() ([]byte, error) {
+	type FakeTime RuleTime
+	return json.Marshal(struct {
+		FakeTime
+		Type string `json:"type"`
+	}{
+		FakeTime: FakeTime(r),
+		Type:     "time",
+	})
+}
+
+func (r *RuleTime) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
+	now := time.Now()
+	switch r.Variant {
+	case TimeBefore:
+		if r.Hour < now.Hour() {
+			return true, nil
+		}
+		if r.Hour == now.Hour() && r.Minute < now.Minute() {
+			return true, nil
+		}
+	case TimeAfter:
+		if r.Hour > now.Hour() {
+			return true, nil
+		}
+		if r.Hour == now.Hour() && r.Minute > now.Minute() {
+			return true, nil
+		}
+	default:
+		panic("Unhandled time rule variant")
+	}
+	return false, nil
+}
+
+func (r *RuleTime) Dependencies() []uuid.UUID {
+	return []uuid.UUID{}
+}
+
+func (r *RuleTime) Validate(v *validator.Validator) {
+	v.Check(0 <= r.Hour, "ruleTime", "Hour should be >= 0")
+	v.Check(r.Hour <= 23, "ruleTime", "Hour should be <= 23")
+	v.Check(0 <= r.Minute, "ruleTime", "Minutes should be >= 0")
+	v.Check(r.Minute <= 59, "ruleTime", "Minutes should be <= 59")
+	v.Check(slices.Contains([]TimeType{TimeBefore, TimeAfter}, r.Variant), "ruleTime", "Variant should be either \"before\" or \"after\"")
+}

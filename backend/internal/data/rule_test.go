@@ -5,6 +5,7 @@ import (
 	"inzynierka/internal/data"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -167,6 +168,83 @@ func TestMarshalUnmarshal(t *testing.T) {
 	for _, child := range iDeps {
 		if !slices.Contains(uDeps, child) {
 			t.Errorf("Missing %v deps", child)
+		}
+	}
+}
+
+func TestTimeComp(t *testing.T) {
+	cmp := func(hour, minute int, variant data.TimeType, now time.Time) bool {
+		switch variant {
+		case data.TimeBefore:
+			if hour < now.Hour() {
+				return true
+			}
+			if hour == now.Hour() && minute < now.Minute() {
+				return true
+			}
+		case data.TimeAfter:
+			if hour > now.Hour() {
+				return true
+			}
+			if hour == now.Hour() && minute > now.Minute() {
+				return true
+			}
+		default:
+			panic("Unhandled time rule variant")
+		}
+		return false
+	}
+
+	type Test struct {
+		hour     int
+		minute   int
+		variant  data.TimeType
+		now      time.Time
+		expected bool
+	}
+
+	tests := []Test{
+		{
+			hour:     23,
+			minute:   58,
+			variant:  data.TimeBefore,
+			now:      time.Date(0, time.January, 0, 23, 59, 0, 0, time.UTC),
+			expected: true,
+		},
+		{
+			hour:     23,
+			minute:   58,
+			variant:  data.TimeBefore,
+			now:      time.Date(0, time.January, 0, 23, 58, 0, 0, time.UTC),
+			expected: false,
+		},
+		{
+			hour:     21,
+			minute:   58,
+			variant:  data.TimeBefore,
+			now:      time.Date(0, time.January, 0, 22, 58, 0, 0, time.UTC),
+			expected: true,
+		},
+		{
+			hour:     21,
+			minute:   58,
+			variant:  data.TimeAfter,
+			now:      time.Date(0, time.January, 0, 22, 58, 0, 0, time.UTC),
+			expected: false,
+		},
+		{
+			hour:     21,
+			minute:   58,
+			variant:  data.TimeAfter,
+			now:      time.Date(0, time.January, 0, 20, 58, 0, 0, time.UTC),
+			expected: true,
+		},
+	}
+
+	for i, test := range tests {
+		res := cmp(test.hour, test.minute, test.variant, test.now)
+		if res != test.expected {
+			t.Errorf("Failed test %d: (expected) %t != %t (result)", i, test.expected, res)
 		}
 	}
 }
