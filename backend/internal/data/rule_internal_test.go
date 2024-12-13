@@ -5,6 +5,7 @@ import (
 	"inzynierka/internal/data"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -291,4 +292,52 @@ func TestRuleOrProcess(t *testing.T) {
 
 	}
 
+}
+
+func TestRuleDayParseWildcardSingle(t *testing.T) {
+	input := "* * 5"
+	rule, err := data.ParseRuleDay(input)
+	if err != nil {
+		t.Fatalf("expected err to be nil, got %s", err.Error())
+	}
+
+	if len(rule.Days) != 31 {
+		t.Errorf("expected len(rule.Days) to be 31, got %d", len(rule.Days))
+	}
+
+	if len(rule.Months) != 12 {
+		t.Errorf("expected len(rule.Months) to be 12, got %d", len(rule.Months))
+	}
+
+	if len(rule.Weekdays) != 1 {
+		t.Fatalf("expected len(rule.Weekdays) to be 1, got %d", len(rule.Weekdays))
+	}
+
+	if rule.Weekdays[0] != time.Friday {
+		t.Errorf("expected weekday to be Friday, got %s", rule.Weekdays[0].String())
+	}
+}
+
+func TestRuleDayParse2(t *testing.T) {
+	input := "* * 5"
+	rule, err := data.ParseRuleDay(input)
+	if err != nil {
+		t.Fatalf("expected err to be nil, got %s", err.Error())
+	}
+
+	if len(rule.Days) != 31 {
+		t.Errorf("expected len(rule.Days) to be 31, got %d", len(rule.Days))
+	}
+
+	if len(rule.Months) != 12 {
+		t.Errorf("expected len(rule.Months) to be 12, got %d", len(rule.Months))
+	}
+
+	if len(rule.Weekdays) != 1 {
+		t.Fatalf("expected len(rule.Weekdays) to be 1, got %d", len(rule.Weekdays))
+	}
+
+	if rule.Weekdays[0] != time.Friday {
+		t.Errorf("expected weekday to be Friday, got %s", rule.Weekdays[0].String())
+	}
 }

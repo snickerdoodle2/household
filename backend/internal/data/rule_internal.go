@@ -3,6 +3,8 @@ package data
 import (
 	"errors"
 	"inzynierka/internal/data/validator"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -22,6 +24,8 @@ var (
 
 	ErrParseInvalidType = errors.New(`Field is invalid type`)
 	ErrParseUnknownType = errors.New(`Unknown "type" field in provided data`)
+
+	ErrParseInvalidData = errors.New(`Field contains invalid data`)
 )
 
 type RuleData map[uuid.UUID]float64
@@ -157,6 +161,66 @@ func unmarshalTime(data map[string]interface{}) (*RuleTime, error) {
 	}
 
 	return &RuleTime{Hour: int(*hour), Minute: int(*minute), Variant: TimeType(*variant)}, nil
+}
+
+func parseRuleDayField(field string, min, max int) ([]int, error) {
+	if field == "*" {
+		res := make([]int, max-min+1)
+		for i := min; i <= max; i++ {
+			res[i-min] = i
+		}
+		return res, nil
+	}
+
+	x, err := strconv.Atoi(field)
+	if err != nil {
+		return nil, ErrParseInvalidData
+	}
+
+	return []int{x}, nil
+}
+
+func ParseRuleDay(format string) (*RuleDay, error) {
+	fields := strings.Fields(format)
+	if len(fields) != 3 {
+		return nil, ErrParseInvalidData
+	}
+
+	days, err := parseRuleDayField(fields[0], 1, 31)
+	if err != nil {
+		return nil, err
+	}
+
+	monthsInt, err := parseRuleDayField(fields[1], 1, 12)
+	if err != nil {
+		return nil, err
+	}
+
+	months := make([]time.Month, len(monthsInt))
+	for i, v := range monthsInt {
+		months[i] = time.Month(v)
+	}
+
+	weekdaysInt, err := parseRuleDayField(fields[2], 1, 7)
+	if err != nil {
+		return nil, err
+	}
+
+	weekdays := make([]time.Weekday, len(weekdaysInt))
+	for i, v := range weekdaysInt {
+		if v == 7 {
+			weekdays[i] = time.Sunday
+		} else {
+			weekdays[i] = time.Weekday(v)
+		}
+	}
+
+	return &RuleDay{
+		Format:   format,
+		Days:     days,
+		Months:   months,
+		Weekdays: weekdays,
+	}, nil
 }
 
 func UnmarshalInternalRuleJSON(data map[string]interface{}) (RuleInternal, error) {
