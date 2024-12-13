@@ -318,6 +318,16 @@ func UnmarshalInternalRuleJSON(data map[string]interface{}) (RuleInternal, error
 		return unmarshalPerc(data)
 	case "time":
 		return unmarshalTime(data)
+	case "day":
+		format_, ok := data["format"]
+		if !ok {
+			return nil, ErrParseMissingValue
+		}
+		format, ok := format_.(string)
+		if !ok {
+			return nil, ErrParseInvalidType
+		}
+		return ParseRuleDay(format)
 	default:
 		return nil, ErrParseUnknownType
 	}
