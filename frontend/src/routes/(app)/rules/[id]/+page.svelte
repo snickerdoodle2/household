@@ -4,11 +4,7 @@
     import { Label } from '$lib/components/ui/label';
     import * as Select from '$lib/components/ui/select';
     import FormInput from '@/components/FormInput.svelte';
-    import {
-        type RuleDetails,
-        ruleDetailsSchema,
-        ruleInternalSchema,
-    } from '@/types/rule';
+    import { type RuleDetails, ruleDetailsSchema } from '@/types/rule';
     import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import { Button } from '@/components/ui/button';
@@ -19,6 +15,7 @@
     import { RULE_URL } from '@/helpers/rule';
     import Input from '@/components/ui/input/input.svelte';
     import * as Dialog from '$lib/components/ui/dialog';
+    import type { Sequence } from '@/types/sequence';
 
     type Props = {
         data: PageData;
@@ -31,7 +28,8 @@
         created_at: new Date(),
         description: '',
         on_valid: {
-            to: '',
+            target_type: 'sensor',
+            target_id: '',
             payload: {},
         },
         internal: {} as RuleDetails['internal'],
@@ -40,42 +38,37 @@
     let errors: Record<string, string> = $state({});
     let editing = $state(false);
     let sensors: Sensor[] = $state([]);
+    let sequences: Sequence[] = $state([]);
     let selectedSensor: { label: string; value: string } = $state({
         label: '',
         value: '',
     });
-    let internal = $state({});
     let payload = $state('');
+    let selectedSequence: { label: string; value: string } = $state({
+        label: '',
+        value: '',
+    });
+    let isSensorPayload: boolean = $state(true);
 
     // TODO: make single validation function
     run(() => {
-        if (!loading) {
-            rule.on_valid.to = selectedSensor.value;
-        }
-    });
+        if (loading) return;
 
-    run(() => {
-        if (!loading) {
-            try {
-                const { data, success } =
-                    ruleInternalSchema.safeParse(internal);
-                if (success) {
-                    rule.internal = data;
-                }
-            } catch {
-                errors['internal'] = 'Invalid JSON';
+        if (isSensorPayload) {
+            if (payload && selectedSensor.value !== '') {
+                rule.on_valid = {
+                    target_type: 'sensor',
+                    target_id: selectedSensor.value,
+                    payload: { value: Number(payload) },
+                };
             }
-        }
-    });
-
-    run(() => {
-        if (!loading) {
-            try {
-                rule.on_valid.payload = { value: Number(payload) };
-                delete errors['payload'];
-                errors = errors;
-            } catch {
-                errors['payload'] = 'Not a valid JSON';
+        } else {
+            if (selectedSequence.value !== '') {
+                rule.on_valid = {
+                    target_type: 'sequence',
+                    target_id: selectedSequence.value,
+                    payload: {},
+                };
             }
         }
     });
@@ -85,13 +78,47 @@
     };
 
     const resetRule = async () => {
-        rule = { ...(await data.rule) };
-        const sensor = sensors.find((e) => e.id === rule.on_valid.to);
-        if (sensor) {
-            selectedSensor = { value: sensor.id, label: sensor.name };
+        try {
+            rule = { ...(await data.rule) } as RuleDetails;
+
+            loading = false;
+            errors = {};
+
+            if (rule.on_valid.target_type === 'sensor') {
+                const sensor = sensors.find(
+                    (e) => e.id === rule.on_valid.target_id
+                );
+
+                if (sensor) {
+                    selectedSensor = { value: sensor.id, label: sensor.name };
+                    payload = JSON.stringify(rule.on_valid.payload['value']);
+                } else {
+                    selectedSensor = { value: '', label: '' };
+                    payload = '';
+                }
+                isSensorPayload = true;
+            } else if (rule.on_valid.target_type === 'sequence') {
+                const sequence = sequences.find(
+                    (e) => e.id === rule.on_valid.target_id
+                );
+
+                if (sequence) {
+                    selectedSequence = {
+                        value: sequence.id,
+                        label: sequence.name,
+                    };
+                } else {
+                    selectedSequence = { value: '', label: '' };
+                }
+                payload = '';
+                isSensorPayload = false;
+            }
+        } catch (error) {
+            errors = { fetch: 'Failed to fetch rule data.' };
+            console.error('Error in resetRule:', error);
+        } finally {
+            loading = false;
         }
-        payload = JSON.stringify(rule.on_valid.payload['value']);
-        internal = JSON.stringify(rule.internal);
     };
 
     const handleCancel = async () => {
@@ -125,8 +152,8 @@
                         errors['name'] = issue.message;
                     } else if (fieldPath === 'description') {
                         errors['description'] = issue.message;
-                    } else if (fieldPath === 'on_valid.to') {
-                        errors['on_valid.to'] = issue.message;
+                    } else if (fieldPath === 'on_valid.target_id') {
+                        errors['on_valid.target_id'] = issue.message;
                     } else if (fieldPath === 'on_valid.payload') {
                         errors['on_valid.payload'] = issue.message;
                     } else if (fieldPath === 'internal') {
@@ -157,6 +184,7 @@
 
     onMount(async () => {
         sensors = await data.sensors;
+        sequences = await data.sequences;
         await resetRule();
         loading = false;
     });
@@ -201,7 +229,7 @@
                         />
 
                         <Label
-                            name="on_valid.to"
+                            name="on_valid.target_id"
                             class="pr-3 flex items-center justify-between text-base font-semibold"
                         >
                             Payload
@@ -209,49 +237,84 @@
                         <div
                             class="flex grid-cols-3 gap-3 justify-center items-center"
                         >
-                            <Input
-                                type={'number'}
-                                bind:value={payload}
-                                required
-                                step="0.1"
-                                class={`w-full ${errors['on_valid.payload'] ? 'border-2 border-red-600' : ''}`}
-                                disabled={!editing}
-                            />
-
-                            <div class="flex items-center justify-center">
-                                <Label
-                                    for="type"
-                                    class="flex items-center text-base font-semibold"
+                            <div class="flex">
+                                <Button
+                                    disabled={isSensorPayload || !editing}
+                                    on:click={() => {
+                                        isSensorPayload = true;
+                                    }}>Sensor</Button
                                 >
-                                    to
-                                    {#if errors['on_valid.to']}
-                                        <span
-                                            class="text-sm font-normal italic text-red-400"
-                                            >{errors['type']}</span
-                                        >
-                                    {/if}
-                                </Label>
+                                <Button
+                                    disabled={!isSensorPayload || !editing}
+                                    on:click={() => {
+                                        isSensorPayload = false;
+                                    }}>Sequence</Button
+                                >
                             </div>
 
-                            <Select.Root
-                                bind:selected={selectedSensor}
-                                required
-                                name="on_valid.to"
-                                disabled={!editing}
-                            >
-                                <Select.Trigger
-                                    class={`w-full ${errors['on_valid.to'] ? 'border-2 border-red-600' : ''}`}
+                            {#if isSensorPayload}
+                                <Input
+                                    type={'number'}
+                                    bind:value={payload}
+                                    required
+                                    class={`w-full ${errors['on_valid.payload'] ? 'border-2 border-red-600' : ''}`}
+                                    disabled={!editing}
+                                />
+
+                                <div class="flex items-center justify-center">
+                                    <Label
+                                        for="type"
+                                        class="flex items-center text-base font-semibold"
+                                    >
+                                        to
+                                        {#if errors['on_valid.target_id']}
+                                            <span
+                                                class="text-sm font-normal italic text-red-400"
+                                                >{errors['type']}</span
+                                            >
+                                        {/if}
+                                    </Label>
+                                </div>
+                                <Select.Root
+                                    bind:selected={selectedSensor}
+                                    required
+                                    name="on_valid.target_id"
+                                    disabled={!editing}
                                 >
-                                    <Select.Value />
-                                </Select.Trigger>
-                                <Select.Content>
-                                    {#each sensors as type}
-                                        <Select.Item value={type.id}
-                                            >{type.name}</Select.Item
-                                        >
-                                    {/each}
-                                </Select.Content>
-                            </Select.Root>
+                                    <Select.Trigger
+                                        class={`w-full ${errors['on_valid.target_id'] ? 'border-2 border-red-600' : ''}`}
+                                    >
+                                        <Select.Value />
+                                    </Select.Trigger>
+                                    <Select.Content>
+                                        {#each sensors as type}
+                                            <Select.Item value={type.id}
+                                                >{type.name}</Select.Item
+                                            >
+                                        {/each}
+                                    </Select.Content>
+                                </Select.Root>
+                            {:else}
+                                <Select.Root
+                                    bind:selected={selectedSequence}
+                                    required
+                                    name="on_valid.target_id"
+                                    disabled={!editing}
+                                >
+                                    <Select.Trigger
+                                        class={`w-full ${errors['on_valid.target_id'] ? 'border-2 border-red-600' : ''}`}
+                                    >
+                                        <Select.Value />
+                                    </Select.Trigger>
+                                    <Select.Content>
+                                        {#each sequences as sequence}
+                                            <Select.Item value={sequence.id}
+                                                >{sequence.name}</Select.Item
+                                            >
+                                        {/each}
+                                    </Select.Content>
+                                </Select.Root>
+                            {/if}
                         </div>
                         <Label
                             for="type"
@@ -284,12 +347,14 @@
                             >
                         {:else}
                             <Button on:click={close} size="bold">Cancel</Button>
-                            <Button
-                                on:click={() => {
-                                    editing = true;
-                                }}
-                                size="bold">Edit</Button
-                            >
+                            {#if data.currentUser.role === 'admin'}
+                                <Button
+                                    on:click={() => {
+                                        editing = true;
+                                    }}
+                                    size="bold">Edit</Button
+                                >
+                            {/if}
                         {/if}
                     </Card.Footer>
                 </Card.Root>

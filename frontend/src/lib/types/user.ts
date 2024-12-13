@@ -4,13 +4,25 @@ export const userSchema = z.object({
     id: z.string().uuid(),
     username: z.string(),
     name: z.string(),
-    created_at: z.string().transform((d) => new Date(d)),
+    role: z.enum(['user', 'admin']),
+    created_at: z
+        .string()
+        .transform((d) => new Date(d))
+        .optional(),
 });
+
+export const newUserSchema = userSchema
+    .omit({ id: true, created_at: true })
+    .merge(
+        z.object({
+            password: z.string().min(8).max(32),
+            confirmPassword: z.string().min(8).max(32),
+        })
+    )
+    .refine((e) => e.password === e.confirmPassword, {
+        message: 'Passwords must match!',
+        path: ['confirmPassword'],
+    });
 
 export type User = z.infer<typeof userSchema>;
-
-export const newUserSchema = z.object({
-    username: z.string(),
-    name: z.string(),
-    password: z.string().max(32),
-});
+export type NewUser = z.infer<typeof newUserSchema>;

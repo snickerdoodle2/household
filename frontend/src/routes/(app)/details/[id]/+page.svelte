@@ -33,10 +33,14 @@
         active: false,
         refresh_rate: 0,
         uri: '',
+        hidden: false,
     });
 
     let fieldErrors: Partial<
-        Record<'uri' | 'name' | 'refresh_rate' | 'type' | 'active', string>
+        Record<
+            'uri' | 'name' | 'refresh_rate' | 'type' | 'active' | 'hidden',
+            string
+        >
     > = $state({});
 
     let globalError: string | null = $state(null);
@@ -178,6 +182,26 @@
                             disabled={!editing}
                         />
                         <Label
+                            for="type"
+                            class="flex items-center justify-between text-base font-semibold"
+                        >
+                            Hidden
+                            {#if fieldErrors['hidden']}
+                                <span
+                                    class="text-sm font-normal italic text-red-400"
+                                    >{fieldErrors['hidden']}</span
+                                >
+                            {/if}
+                        </Label>
+                        <Input
+                            type="checkbox"
+                            class="ml-2 w-8 {fieldErrors['hidden']
+                                ? 'border-2 border-red-600'
+                                : ''}"
+                            disabled={!editing}
+                            bind:checked={sensor.hidden}
+                        />
+                        <Label
                             for={'refresh_rate'}
                             class="flex items-center justify-between text-base font-semibold"
                             >{'Refresh rate'}
@@ -309,12 +333,14 @@
                                         }}
                                         size="bold">Inspect values</Button
                                     >
-                                    <Button
-                                        on:click={() => {
-                                            editing = true;
-                                        }}
-                                        size="bold">Edit</Button
-                                    >
+                                    {#if data.currentUser.role === 'admin'}
+                                        <Button
+                                            on:click={() => {
+                                                editing = true;
+                                            }}
+                                            size="bold">Edit</Button
+                                        >
+                                    {/if}
                                 {/if}
                             </div>
                         </div>

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"inzynierka/internal/broker"
 	"inzynierka/internal/data"
 	"net/http"
 	"os"
@@ -40,8 +41,9 @@ type App struct {
 		channel      chan data.ValidRuleAction
 		stopChannels map[uuid.UUID]chan struct{}
 	}
-	client   *http.Client
-	settings Settings
+	notificationBroker *broker.Broker[data.UserNotification]
+	client             *http.Client
+	settings           Settings
 }
 
 func main() {
@@ -78,12 +80,13 @@ func main() {
 	httpClient.Timeout = 5 * time.Second
 
 	app := App{
-		logger:     logger,
-		config:     cfg,
-		models:     data.NewModels(db),
-		listeners:  make(data.SensorListeners),
-		initBuffer: make(data.SensorInitBuffer),
-		client:     httpClient,
+		logger:             logger,
+		config:             cfg,
+		models:             data.NewModels(db),
+		listeners:          make(data.SensorListeners),
+		initBuffer:         make(data.SensorInitBuffer),
+		client:             httpClient,
+		notificationBroker: broker.NewBroker[data.UserNotification](),
 		rules: struct {
 			channel      chan data.ValidRuleAction
 			stopChannels map[uuid.UUID]chan struct{}

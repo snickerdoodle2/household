@@ -2,6 +2,7 @@ import { invalidateAll } from '$app/navigation';
 import { authFetch } from '@/helpers/fetch';
 import type { Login } from '@/types/login';
 import { persisted } from 'svelte-persisted-store';
+import { get } from 'svelte/store';
 import { z } from 'zod';
 
 const authTokenSchema = z.object({
@@ -12,7 +13,17 @@ const authTokenSchema = z.object({
 type AuthToken = z.infer<typeof authTokenSchema>;
 
 export const authToken = (() => {
-    const { set, subscribe } = persisted<AuthToken | null>('authToken', null);
+    const auth = persisted<AuthToken | null>('authToken', null);
+
+    const currentToken = get(auth);
+    if (currentToken) {
+        const expiry = new Date(currentToken.expiry);
+        if (expiry < new Date()) {
+            auth.set(null);
+        }
+    }
+
+    const { subscribe, set } = auth;
 
     return {
         subscribe,

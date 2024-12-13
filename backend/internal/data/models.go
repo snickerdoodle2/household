@@ -24,6 +24,8 @@ type Models struct {
 	Users              UserModel
 	Tokens             TokenModel
 	SensorMeasurements SensorMeasurementModel
+	Sequences          SequenceModel
+	Notifications      NotificationModel
 }
 
 func NewModels(db *pgxpool.Pool) Models {
@@ -33,5 +35,7 @@ func NewModels(db *pgxpool.Pool) Models {
 		Users:              UserModel{DB: db},
 		Tokens:             TokenModel{DB: db},
 		SensorMeasurements: SensorMeasurementModel{DB: db},
+		Sequences:          SequenceModel{DB: db},
+		Notifications:      NotificationModel{DB: db},
 	}
 }

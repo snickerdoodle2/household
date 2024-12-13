@@ -11,9 +11,10 @@ import (
 
 func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name     string `json:"name"`
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Name     string        `json:"name"`
+		Username string        `json:"username"`
+		Role     data.UserRole `json:"role"`
+		Password string        `json:"password"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -24,6 +25,7 @@ func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := &data.User{
 		Name:     input.Name,
+		Role:     input.Role,
 		Username: input.Username,
 	}
 
@@ -61,8 +63,9 @@ func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 // NOTE: for now you can update only Name
 func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name     *string `json:"name"`
-		Password *string `json:"password"`
+		Name     *string        `json:"name"`
+		Role     *data.UserRole `json:"role"`
+		Password *string        `json:"password"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -87,6 +90,10 @@ func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	if input.Name != nil {
 		user.Name = *input.Name
+	}
+
+	if input.Name != nil {
+		user.Role = *input.Role
 	}
 
 	if input.Password != nil {
@@ -134,10 +141,43 @@ func (app *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) getCurrentUserHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.contextGetUser(r)
 
 	err := app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *App) getAllUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := app.models.Users.GetAllUsers()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"data": users}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
+	username := chi.URLParam(r, "username")
+
+	user, err := app.models.Users.GetByUsername(username)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

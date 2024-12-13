@@ -2,34 +2,55 @@
     // TODO: calculate grid size
     import Sensor from '@/components/sensor/Sensor.svelte';
     import type { LayoutData } from './$types';
-    import { goto } from '$app/navigation';
-    import { Plus } from 'svelte-radix';
     import { Button } from '@/components/ui/button';
-
-    const handleCreate = () => {
-        goto(window.location.href + 'create');
-    };
+    import { Eye, EyeOff, Plus } from 'lucide-svelte';
 
     type Props = {
         data: LayoutData;
     };
 
     let { data }: Props = $props();
+    const { sensors } = data;
+    let disableShowButton = $derived(
+        sensors.filter((sensor) => sensor.hidden).length === 0
+    );
+
+    let showHidden = $state(false);
+    let shownSensors = $derived.by(() => {
+        if (showHidden) {
+            return sensors;
+        }
+        return sensors.filter((sensor) => !sensor.hidden);
+    });
 </script>
 
-<div class="flex h-full items-start gap-4 md:py-20">
-    {#await data.sensors then sensors}
-        <div
-            class="grid flex-1 grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+<div class="flex flex-col h-full w-full px-4 py-4 gap-6">
+    <div class="flex justify-end gap-2">
+        <Button
+            variant="outline"
+            size="icon"
+            disabled={disableShowButton}
+            onclick={() => {
+                showHidden = !showHidden;
+            }}
         >
-            {#each sensors as sensor}
-                <Sensor {sensor} />
-            {/each}
-            <div class="flex items-center justify-center">
-                <Button variant="outline" size="icon" on:click={handleCreate}>
-                    <Plus />
-                </Button>
-            </div>
-        </div>
-    {/await}
+            {#if showHidden}
+                <EyeOff class="w-6 h-6" />
+            {:else}
+                <Eye class="w-6 h-6" />
+            {/if}
+        </Button>
+        {#if data.currentUser.role === 'admin'}
+            <Button variant="outline" size="icon" href="/create"
+                ><Plus class="w-6 h-6" /></Button
+            >
+        {/if}
+    </div>
+    <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8"
+    >
+        {#each shownSensors as sensor (sensor.id)}
+            <Sensor {sensor} />
+        {/each}
+    </div>
 </div>

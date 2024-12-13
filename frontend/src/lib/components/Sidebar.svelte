@@ -5,9 +5,11 @@
     import { authToken } from '@/auth/token';
     import { Reader } from 'radix-icons-svelte';
     import * as Dialog from '$lib/components/ui/dialog';
-    import { Bell } from 'radix-icons-svelte';
-    import Notifications from './Notifications.svelte';
-    import { Avatar } from 'radix-icons-svelte';
+    import NotificationList from './notifications/NotificationList.svelte';
+    import { AppWebsocket } from '@/helpers/socket.svelte';
+    import { Bell, BellDot, Settings } from 'lucide-svelte';
+
+    const ws = new AppWebsocket();
 
     const LINKS = [
         {
@@ -66,7 +68,11 @@
             class="h-11 w-11"
             on:click={() => (notificationsOpen = true)}
         >
-            <Bell class="scale-150" />
+            {#if ws.notifications.length > 0}
+                <BellDot />
+            {:else}
+                <Bell />
+            {/if}
         </Button>
 
         <Button
@@ -74,8 +80,8 @@
             size="icon"
             class="hidden h-11 w-11 group-hover:inline-flex"
         >
-            <a href="/users">
-                <Avatar class="scale-150" />
+            <a href="/settings">
+                <Settings class="h-6 w-6" />
             </a>
         </Button>
 
@@ -112,8 +118,7 @@
         <Dialog.Overlay />
         <Dialog.Content
             class="flex max-w-none items-center justify-center px-8 py-4 md:w-fit"
+            ><NotificationList /></Dialog.Content
         >
-            <Notifications />
-        </Dialog.Content>
     </Dialog.Portal>
 </Dialog.Root>

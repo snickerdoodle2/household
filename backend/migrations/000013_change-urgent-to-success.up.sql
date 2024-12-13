@@ -1,0 +1,1 @@
+ALTER TYPE notification_level RENAME VALUE 'urgent' TO 'success';

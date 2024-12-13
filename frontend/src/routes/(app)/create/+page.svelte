@@ -23,9 +23,13 @@
     let uri: string | undefined = $state(undefined);
     let type: { value: string; label: string } | undefined = $state();
     let active: boolean = $state(false);
+    let hidden: boolean = $state(false);
     let timeout: number;
     let errors: Partial<
-        Record<'uri' | 'name' | 'refresh_rate' | 'type' | 'active', string>
+        Record<
+            'uri' | 'name' | 'refresh_rate' | 'type' | 'active' | 'hidden',
+            string
+        >
     > = $state({});
 
     const getRefreshRate = () => {
@@ -59,7 +63,7 @@
     };
 
     run(() => {
-        debounce(validate, name, refresh_rate, uri, type, active);
+        debounce(validate, name, refresh_rate, uri, type, active, hidden);
     });
 
     const handleSubmit = async () => {
@@ -69,6 +73,7 @@
             uri,
             type: type?.value,
             active,
+            hidden,
         });
 
         if (!success) return;
@@ -118,6 +123,25 @@
                             bind:value={name}
                             type="text"
                             {errors}
+                        />
+                        <Label
+                            for="type"
+                            class="flex items-center justify-between text-base font-semibold"
+                        >
+                            Hidden
+                            {#if errors['hidden']}
+                                <span
+                                    class="text-sm font-normal italic text-red-400"
+                                    >{errors['hidden']}</span
+                                >
+                            {/if}
+                        </Label>
+                        <Input
+                            type="checkbox"
+                            class="ml-2 w-8 {errors['hidden']
+                                ? 'border-2 border-red-600'
+                                : ''}"
+                            bind:checked={hidden}
                         />
                         <Label
                             for={'refresh_rate'}

@@ -1,10 +1,10 @@
 import type { PageLoad } from './$types';
-import { getDummySequenceDetails } from '@/helpers/sequence';
+import { getSequenceDetails } from '@/helpers/sequence';
 
-export const load: PageLoad = async ({ params }) => {
+export const load: PageLoad = async ({ params, fetch }) => {
     return {
         sequence: (async () => {
-            const res = await getDummySequenceDetails(params.id);
+            const res = await getSequenceDetails(params.id, fetch);
             if (res.isError) {
                 throw res.error;
             }

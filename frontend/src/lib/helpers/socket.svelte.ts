@@ -2,6 +2,8 @@ import { authToken } from '@/auth/token';
 import { SvelteMap } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 import { z } from 'zod';
+import { toast } from 'svelte-sonner';
+import { authFetch } from './fetch';
 
 const durationSchema = z
     .string()
@@ -53,6 +55,33 @@ const subscribeSchema = z.object({
     ),
 });
 
+const notificationLevelSchema = z.enum(['error', 'success', 'warning', 'info']);
+export type NotificationLevel = z.infer<typeof notificationLevelSchema>;
+
+const notificationSchema = z.object({
+    id: z.string().uuid(),
+    level: notificationLevelSchema,
+    title: z.string().min(1),
+    description: z.string(),
+    created_at: z
+        .string()
+        .or(z.date())
+        .transform((d) => new Date(d)),
+    read: z.boolean(),
+});
+
+const unreadNotificationMessageSchema = z.object({
+    type: z.literal('notifications_unread'),
+    data: notificationSchema.array(),
+});
+
+const notificationMessageSchema = z.object({
+    type: z.literal('notification'),
+    data: notificationSchema,
+});
+
+export type Notification = z.infer<typeof notificationSchema>;
+
 const measurementSchema = z.object({
     type: z.literal('measurment'),
     sensor_id: z.string().uuid(),
@@ -70,21 +99,24 @@ const messageSchema = z.discriminatedUnion('type', [
     subscribeSchema,
     measurementSchema,
     measurementResponseSchema,
+    notificationMessageSchema,
+    unreadNotificationMessageSchema,
 ]);
 
-export class SensorWebsocket {
+export class AppWebsocket {
     private websocket!: WebSocket;
     private subscriptionCount!: Map<string, number>;
     ready = $state(false);
     data: SvelteMap<string, SvelteMap<Date, number>> = $state(new SvelteMap());
-    private static _instance: SensorWebsocket | null = null;
+    notifications: Notification[] = $state([]);
+    private static _instance: AppWebsocket | null = null;
 
     constructor() {
-        if (SensorWebsocket._instance) {
-            return SensorWebsocket._instance;
+        if (AppWebsocket._instance) {
+            return AppWebsocket._instance;
         }
 
-        SensorWebsocket._instance = this;
+        AppWebsocket._instance = this;
 
         this.subscriptionCount = new Map();
 
@@ -128,6 +160,12 @@ export class SensorWebsocket {
             if (message.type === 'measurement_req') {
                 this.handleMeasurementResponse(message);
             }
+            if (
+                message.type === 'notification' ||
+                message.type === 'notifications_unread'
+            ) {
+                this.handleNotification(message.data);
+            }
         });
 
         this.websocket.addEventListener('open', () => {
@@ -156,6 +194,48 @@ export class SensorWebsocket {
         for (const [key, value] of Object.entries(message.data)) {
             if (value.status === 'error') continue;
             this.data.set(key, value.values);
+        }
+    }
+
+    private handleNotification(notification: Notification | Notification[]) {
+        if (Array.isArray(notification)) {
+            this.notifications.push(...notification);
+            return;
+        }
+        const method = toast[notification.level];
+        method(notification.title, {
+            description: notification.description,
+            action: {
+                label: 'Mark as read',
+                onClick: () => this.markNotificationAsRead(notification.id),
+            },
+        });
+
+        this.notifications.push(notification);
+    }
+
+    async markNotificationAsRead(id: string) {
+        const res = await authFetch(`/api/v1/notification/${id}`, {
+            method: 'PUT',
+        });
+
+        if (res.ok) {
+            this.notifications.splice(
+                this.notifications.findIndex((e) => e.id === id),
+                1
+            );
+        }
+    }
+
+    async markAllAsRead() {
+        const res = await authFetch(`/api/v1/notification`, {
+            method: 'PUT',
+        });
+
+        if (res.ok) {
+            this.notifications = [];
+        } else {
+            console.log(await res.json());
         }
     }
 

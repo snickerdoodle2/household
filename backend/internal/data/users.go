@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"inzynierka/internal/data/validator"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -51,10 +52,18 @@ func (p *password) Matches(plaintext string) (bool, error) {
 	return true, nil
 }
 
+type UserRole string
+
+const (
+	UserRoleAdmin UserRole = "admin"
+	UserRoleUser  UserRole = "user"
+)
+
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	Username  string    `json:"username"`
 	Name      string    `json:"name"`
+	Role      UserRole  `json:"role"`
 	Password  password  `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 	Version   int       `json:"-"`
@@ -79,6 +88,7 @@ func ValidateUsername(v *validator.Validator, username string) {
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "must be provided")
 	v.Check(utf8.RuneCountInString(user.Name) <= 256, "name", "must not be more than 32 characters long")
+	v.Check(slices.Contains([]UserRole{UserRoleAdmin, UserRoleUser}, user.Role), "role", "must be either \"admin\" or \"user\"")
 
 	ValidateUsername(v, user.Username)
 
@@ -128,7 +138,7 @@ func (m UserModel) Insert(user *User) error {
 
 func (m UserModel) GetByUsername(username string) (*User, error) {
 	query := `
-    SELECT id, username, display_name, password_hash, created_at, version
+    SELECT id, username, display_name, role, password_hash, created_at, version
     FROM users
     WHERE username = $1
     `
@@ -142,6 +152,7 @@ func (m UserModel) GetByUsername(username string) (*User, error) {
 		&user.ID,
 		&user.Username,
 		&user.Name,
+		&user.Role,
 		&user.Password.hash,
 		&user.CreatedAt,
 		&user.Version,
@@ -162,15 +173,15 @@ func (m UserModel) GetByUsername(username string) (*User, error) {
 func (m UserModel) Update(user *User) error {
 	query := `
     UPDATE users
-    SET display_name = $1, password_hash = $2, version = version + 1
-    WHERE id = $3
+    SET display_name = $1, role = $2, password_hash = $3, version = version + 1
+    WHERE id = $4
     RETURNING version
     `
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return m.DB.QueryRow(ctx, query, user.Name, user.Password.hash, user.ID).Scan(&user.Version)
+	return m.DB.QueryRow(ctx, query, user.Name, user.Role, user.Password.hash, user.ID).Scan(&user.Version)
 }
 
 func (m UserModel) DeleteByUsername(username string) error {
@@ -194,10 +205,46 @@ func (m UserModel) DeleteByUsername(username string) error {
 	return nil
 }
 
+func (m UserModel) GetAllUsers() ([]*User, error) {
+	query := `
+    SELECT id, username, display_name, role, created_at, version
+    FROM users
+    `
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	users := make([]*User, 0)
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Name,
+			&user.Role,
+			&user.CreatedAt,
+			&user.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
+}
+
 func (m UserModel) GetForToken(tokenPlaintext string) (*User, error) {
 	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
 	query := `
-    SELECT users.id, users.username, users.display_name, users.password_hash, users.created_at, users.version
+    SELECT users.id, users.username, users.display_name, users.role, users.password_hash, users.created_at, users.version
     FROM users
     INNER JOIN tokens
     ON users.id = tokens.user_id
@@ -216,6 +263,7 @@ func (m UserModel) GetForToken(tokenPlaintext string) (*User, error) {
 		&user.ID,
 		&user.Username,
 		&user.Name,
+		&user.Role,
 		&user.Password.hash,
 		&user.CreatedAt,
 		&user.Version,

@@ -3,7 +3,6 @@
     import * as Card from '$lib/components/ui/card/index.js';
     import Button from '@/components/ui/button/button.svelte';
     import { Plus } from 'radix-icons-svelte';
-    import { goto } from '$app/navigation';
 
     type Props = {
         data: PageData;
@@ -12,13 +11,18 @@
     let { data }: Props = $props();
 </script>
 
-<div class="flex h-full items-start">
-    {#await data.sequences then sequences}
-        <div
-            class="grid flex-1 grid-cols-1 gap-8 py-20 sm:grid-cols-1 lg:grid-cols-2"
-        >
+<div class="flex flex-col h-full w-full px-4 py-4 gap-6">
+    <div class="flex justify-end">
+        {#if data.currentUser.role === 'admin'}
+            <Button variant="outline" size="icon" href="/sequences/create">
+                <Plus class="w-6 h-6" />
+            </Button>
+        {/if}
+    </div>
+    <div class="flex-1 flex flex-col gap-8 items-center">
+        {#await data.sequences then sequences}
             {#each sequences as sequence}
-                <div class="lg:min-w-[32rem]">
+                <div class="lg:min-w-[48rem]">
                     <a href={`/sequences/${sequence.id}`}>
                         <Card.Root class="hover:bg-accent">
                             <Card.Header>
@@ -33,16 +37,6 @@
                     </a>
                 </div>
             {/each}
-
-            <div class="flex items-center justify-center">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    on:click={() => goto(`/sequences/create`)}
-                >
-                    <Plus />
-                </Button>
-            </div>
-        </div>
-    {/await}
+        {/await}
+    </div>
 </div>

@@ -60,6 +60,7 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		Name        string          `json:"name"`
 		URI         string          `json:"uri"`
 		Type        data.SensorType `json:"type"`
+		Hidden      bool            `json:"hidden"`
 		RefreshRate int             `json:"refresh_rate"`
 		Active      bool            `json:"active"`
 	}
@@ -75,6 +76,7 @@ func (app *App) createSensorHandler(w http.ResponseWriter, r *http.Request) {
 		Name:        input.Name,
 		URI:         input.URI,
 		Type:        input.Type,
+		Hidden:      input.Hidden,
 		RefreshRate: input.RefreshRate,
 		Active:      input.Active,
 	}
@@ -209,6 +211,7 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 		Name        *string          `json:"name"`
 		URI         *string          `json:"uri"`
 		Type        *data.SensorType `json:"type"`
+		Hidden      *bool            `json:"hidden"`
 		RefreshRate *int             `json:"refresh_rate"`
 		Active      *bool            `json:"active"`
 	}
@@ -229,6 +232,10 @@ func (app *App) updateSensorHandler(w http.ResponseWriter, r *http.Request) {
 
 	if input.Type != nil {
 		sensor.Type = *input.Type
+	}
+
+	if input.Hidden != nil {
+		sensor.Hidden = *input.Hidden
 	}
 
 	if input.RefreshRate != nil {

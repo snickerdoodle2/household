@@ -1,28 +1,34 @@
 <script lang="ts">
     import { type Sensor } from '@/types/sensor';
     import { DotsVertical } from 'svelte-radix';
-    import { SensorWebsocket } from '@/helpers/socket.svelte';
+    import { AppWebsocket } from '@/helpers/socket.svelte';
     import Chart from './Chart.svelte';
+    import { cn } from '@/utils';
     type Props = {
         sensor: Sensor;
     };
 
-    let { sensor }: Props = $props();
-    const ws = new SensorWebsocket();
+    let { sensor = $bindable() }: Props = $props();
+    const ws = new AppWebsocket();
 
     $effect(() => {
         if (!ws.ready) return;
         ws.subscribe(sensor.id);
 
         return () => {
-            ws.unsubscribe(sensor.name);
+            ws.unsubscribe(sensor.id);
         };
     });
 
     let data = $derived(ws.data.get(sensor.id));
 </script>
 
-<div class="flex flex-col gap-2 rounded-lg bg-accent px-4 py-2">
+<div
+    class={cn(
+        'flex flex-col gap-2 rounded-lg bg-accent px-4 py-2',
+        sensor.hidden ? 'border-4 border-dashed opacity-75' : ''
+    )}
+>
     <div class="flex items-center justify-between">
         <span class="text-xl">{sensor.name} </span>
         <div class="flex items-center gap-2">

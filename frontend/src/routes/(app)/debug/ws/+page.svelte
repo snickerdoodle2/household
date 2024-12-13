@@ -1,11 +1,11 @@
 <script lang="ts">
     import * as Select from '@/components/ui/select';
-    import { SensorWebsocket } from '@/helpers/socket.svelte';
+    import { AppWebsocket } from '@/helpers/socket.svelte';
     import type { PageData } from './$types';
     import { Button } from '@/components/ui/button';
     import { untrack } from 'svelte';
     import { X, History } from 'lucide-svelte';
-    let ws = new SensorWebsocket();
+    let ws = new AppWebsocket();
 
     let selected = $state('');
 

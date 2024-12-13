@@ -5,7 +5,7 @@
     import * as Dialog from '$lib/components/ui/dialog';
     import * as Card from '$lib/components/ui/card';
     import { goto } from '$app/navigation';
-    import { SensorWebsocket } from '@/helpers/socket.svelte';
+    import { AppWebsocket } from '@/helpers/socket.svelte';
     import type { SvelteMap } from 'svelte/reactivity';
     import Chart from '@/components/sensor/Chart.svelte';
     import Button from '@/components/ui/button/button.svelte';
@@ -170,7 +170,7 @@
     });
 
     // websocket stuff
-    const ws = new SensorWebsocket();
+    const ws = new AppWebsocket();
     $effect(() => {
         if (!ws.ready) return;
         ws.subscribe(sensorId);
