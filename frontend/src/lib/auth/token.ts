@@ -19,11 +19,11 @@ export const authToken = (() => {
     if (currentToken) {
         const expiry = new Date(currentToken.expiry);
         if (expiry < new Date()) {
-            auth.reset();
+            auth.set(null);
         }
     }
 
-    const { subscribe, set, reset } = auth;
+    const { subscribe, set } = auth;
 
     return {
         subscribe,
@@ -52,7 +52,7 @@ export const authToken = (() => {
                     method: 'POST',
                 });
             } finally {
-                reset();
+                set(null);
                 invalidateAll();
             }
         },
