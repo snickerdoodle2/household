@@ -17,6 +17,7 @@
 
     let {
         internal = $bindable(),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         sensors,
         editingDisabled = $bindable(false),
         children,
