@@ -122,7 +122,6 @@ func unmarshalPerc(data map[string]interface{}) (*RulePerc, error) {
 	}
 	perc, ok := percData.(float64)
 	if !ok {
-		log.Errorf("perc type is %T", percData)
 		return nil, ErrParseInvalidType
 	}
 
@@ -137,7 +136,6 @@ func unmarhsalField[T any](fieldName string, data map[string]interface{}) (*T, e
 	}
 	value, ok := str.(T)
 	if !ok {
-		log.Errorf("unmarshalField", "field", fieldName, "action", "type")
 		return nil, ErrParseInvalidType
 	}
 
