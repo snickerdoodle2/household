@@ -318,26 +318,63 @@ func TestRuleDayParseWildcardSingle(t *testing.T) {
 	}
 }
 
+var MONTHS []time.Month = []time.Month{
+	time.January,
+	time.February,
+	time.March,
+	time.April,
+	time.May,
+	time.June,
+	time.July,
+	time.August,
+	time.September,
+	time.October,
+	time.November,
+	time.December,
+}
+
+var WEEKDAYS []time.Weekday = []time.Weekday{
+	time.Monday,
+	time.Tuesday,
+	time.Wednesday,
+	time.Thursday,
+	time.Friday,
+	time.Saturday,
+	time.Sunday,
+}
+
 func TestRuleDayParse2(t *testing.T) {
-	input := "* * 5"
+	input := "2 2-9 4-7"
 	rule, err := data.ParseRuleDay(input)
 	if err != nil {
 		t.Fatalf("expected err to be nil, got %s", err.Error())
 	}
 
-	if len(rule.Days) != 31 {
-		t.Errorf("expected len(rule.Days) to be 31, got %d", len(rule.Days))
+	if len(rule.Days) != 1 {
+		t.Fatalf("expected len(rule.Days) to be 1, got %d", len(rule.Days))
 	}
 
-	if len(rule.Months) != 12 {
-		t.Errorf("expected len(rule.Months) to be 12, got %d", len(rule.Months))
+	if rule.Days[0] != 2 {
+		t.Errorf("expected day to be 2, got %d", rule.Days[0])
 	}
 
-	if len(rule.Weekdays) != 1 {
-		t.Fatalf("expected len(rule.Weekdays) to be 1, got %d", len(rule.Weekdays))
+	if len(rule.Months) != 8 {
+		t.Fatalf("expected len(rule.Months) to be 12, got %d", len(rule.Months))
 	}
 
-	if rule.Weekdays[0] != time.Friday {
-		t.Errorf("expected weekday to be Friday, got %s", rule.Weekdays[0].String())
+	for i := 2; i <= 9; i++ {
+		if !slices.Contains(rule.Months, MONTHS[i-1]) {
+			t.Errorf("expected rule.Months to contain %s", MONTHS[i-1].String())
+		}
+	}
+
+	if len(rule.Weekdays) != 4 {
+		t.Fatalf("expected len(rule.Weekdays) to be 4, got %d", len(rule.Weekdays))
+	}
+
+	for i := 4; i <= 7; i++ {
+		if !slices.Contains(rule.Weekdays, WEEKDAYS[i-1]) {
+			t.Errorf("expected rule.Months to contain %s", WEEKDAYS[i-1].String())
+		}
 	}
 }
