@@ -172,6 +172,30 @@ func parseRuleDayField(field string, min, max int) ([]int, error) {
 		return res, nil
 	}
 
+	if strings.Contains(field, "-") {
+		tmp := strings.Split(field, "-")
+
+		left, err := strconv.Atoi(tmp[0])
+		if err != nil {
+			return nil, ErrParseInvalidData
+		}
+
+		right, err := strconv.Atoi(tmp[1])
+		if err != nil {
+			return nil, ErrParseInvalidData
+		}
+
+		if left > right {
+			return nil, ErrParseInvalidData
+		}
+
+		res := make([]int, right-left+1)
+		for i := left; i <= right; i++ {
+			res[i-left] = i
+		}
+		return res, nil
+	}
+
 	x, err := strconv.Atoi(field)
 	if err != nil {
 		return nil, ErrParseInvalidData
