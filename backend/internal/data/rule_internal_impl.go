@@ -319,10 +319,10 @@ func (r *RuleTime) Validate(v *validator.Validator) {
 }
 
 type RuleDay struct {
-	Format   string `json:"format"`
-	days     []int
-	months   []time.Month
-	weekdays []time.Weekday
+	Format   string         `json:"format"`
+	Days     []int          `json:"-"`
+	Months   []time.Month   `json:"-"`
+	Weekdays []time.Weekday `json:"-"`
 }
 
 func (r RuleDay) MarshalJSON() ([]byte, error) {
@@ -342,15 +342,15 @@ func (r *RuleDay) Process(data RuleData, m *SensorMeasurementModel) (bool, error
 	month := now.Month()
 	weekday := now.Weekday()
 
-	if !slices.Contains(r.days, day) {
+	if !slices.Contains(r.Days, day) {
 		return false, nil
 	}
 
-	if !slices.Contains(r.months, month) {
+	if !slices.Contains(r.Months, month) {
 		return false, nil
 	}
 
-	return slices.Contains(r.weekdays, weekday), nil
+	return slices.Contains(r.Weekdays, weekday), nil
 }
 
 func (r *RuleDay) Dependencies() []uuid.UUID {
@@ -368,7 +368,7 @@ func checkRange[T cmp.Ordered](input []T, min, max T) bool {
 
 func (r *RuleDay) Validate(v *validator.Validator) {
 	v.Check(true, "format", "")
-	v.Check(checkRange(r.days, 1, 31), "format", "days should contain values between 1 and 31")
-	v.Check(checkRange(r.months, 1, 12), "format", "months should contain values between 1 and 12")
-	v.Check(checkRange(r.weekdays, 1, 7), "format", "weekdays should contain values between 1 and 7")
+	v.Check(checkRange(r.Days, 1, 31), "format", "days should contain values between 1 and 31")
+	v.Check(checkRange(r.Months, 1, 12), "format", "months should contain values between 1 and 12")
+	v.Check(checkRange(r.Weekdays, 1, 7), "format", "weekdays should contain values between 1 and 7")
 }
