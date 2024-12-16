@@ -16,6 +16,7 @@
     import ConditionBuilder from './ConditionBuilder.svelte';
     import PercentileCondition from './PercentileCondition.svelte';
     import TimeCondition from './TimeCondition.svelte';
+    import DayCondition from './DayCondition.svelte';
 
     type Parent =
         | RuleDetails
@@ -192,6 +193,25 @@
                         </Button>
                     {/if}
                 </PercentileCondition>
+            {:else if internal.type === 'day'}
+                <DayCondition {internal} {editingDisabled}>
+                    {#if !editingDisabled}
+                        <Button
+                            on:click={negateRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Slash class="w-4" />
+                        </Button>
+                        <Button
+                            on:click={deleteRule}
+                            variant="outline"
+                            size="icon"
+                        >
+                            <Trash class="w-4" />
+                        </Button>
+                    {/if}
+                </DayCondition>
             {:else if internal.type === 'time'}
                 <TimeCondition {internal} {sensors} bind:editingDisabled>
                     {#if !editingDisabled}
