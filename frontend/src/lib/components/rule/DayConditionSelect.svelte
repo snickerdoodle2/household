@@ -101,38 +101,32 @@
         // Helper function to map part to its full text label
         const getDayOptions = (value: string) => {
             if (value === '*') return [{ value: 'all', label: 'All Days' }];
-            return value
-                .split(',')
-                .flatMap((v) =>
-                    expandRange(v).map((d) => ({
-                        value: d.toString(),
-                        label: `${d}`,
-                    }))
-                );
+            return value.split(',').flatMap((v) =>
+                expandRange(v).map((d) => ({
+                    value: d.toString(),
+                    label: `${d}`,
+                }))
+            );
         };
 
         const getMonthOptions = (value: string) => {
             if (value === '*') return [{ value: 'all', label: 'All Months' }];
-            return value
-                .split(',')
-                .flatMap((v) =>
-                    expandRange(v).map((m) => ({
-                        value: m.toString(),
-                        label: months[parseInt(m)],
-                    }))
-                );
+            return value.split(',').flatMap((v) =>
+                expandRange(v).map((m) => ({
+                    value: m.toString(),
+                    label: months[parseInt(m)],
+                }))
+            );
         };
 
         const getWeekdayOptions = (value: string) => {
             if (value === '*') return [{ value: 'all', label: 'All Weekdays' }];
-            return value
-                .split(',')
-                .flatMap((v) =>
-                    expandRange(v).map((w) => ({
-                        value: w.toString(),
-                        label: weekdays[parseInt(w)],
-                    }))
-                );
+            return value.split(',').flatMap((v) =>
+                expandRange(v).map((w) => ({
+                    value: w.toString(),
+                    label: weekdays[parseInt(w)],
+                }))
+            );
         };
 
         selectedDay = getDayOptions(dayPart);
