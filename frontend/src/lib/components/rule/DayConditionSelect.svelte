@@ -158,7 +158,7 @@
         <Select.Value />
     </Select.Trigger>
     <Select.Content class="overflow-y-auto h-64">
-        {#each Array(31) as nb, idx}
+        {#each Array(31).keys() as idx}
             <Select.Item value={idx.toString()}>{idx.toString()}</Select.Item>
         {/each}
         <Select.Item value={'all'}>{'All Days'}</Select.Item>
