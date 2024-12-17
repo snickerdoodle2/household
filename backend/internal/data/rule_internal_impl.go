@@ -1,6 +1,7 @@
 package data
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"inzynierka/internal/data/validator"
@@ -315,4 +316,59 @@ func (r *RuleTime) Validate(v *validator.Validator) {
 	v.Check(0 <= r.Minute, "ruleTime", "Minutes should be >= 0")
 	v.Check(r.Minute <= 59, "ruleTime", "Minutes should be <= 59")
 	v.Check(slices.Contains([]TimeType{TimeBefore, TimeAfter}, r.Variant), "ruleTime", "Variant should be either \"before\" or \"after\"")
+}
+
+type RuleDay struct {
+	Format   string         `json:"format"`
+	Days     []int          `json:"-"`
+	Months   []time.Month   `json:"-"`
+	Weekdays []time.Weekday `json:"-"`
+}
+
+func (r RuleDay) MarshalJSON() ([]byte, error) {
+	type FakeTime RuleDay
+	return json.Marshal(struct {
+		FakeTime
+		Type string `json:"type"`
+	}{
+		FakeTime: FakeTime(r),
+		Type:     "day",
+	})
+}
+
+func (r *RuleDay) Process(data RuleData, m *SensorMeasurementModel) (bool, error) {
+	now := time.Now()
+	day := now.Day()
+	month := now.Month()
+	weekday := now.Weekday()
+
+	if !slices.Contains(r.Days, day) {
+		return false, nil
+	}
+
+	if !slices.Contains(r.Months, month) {
+		return false, nil
+	}
+
+	return slices.Contains(r.Weekdays, weekday), nil
+}
+
+func (r *RuleDay) Dependencies() []uuid.UUID {
+	return []uuid.UUID{}
+}
+
+func checkRange[T cmp.Ordered](input []T, min, max T) bool {
+	for _, v := range input {
+		if v < min || v > max {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *RuleDay) Validate(v *validator.Validator) {
+	v.Check(true, "format", "")
+	v.Check(checkRange(r.Days, 1, 31), "format", "days should contain values between 1 and 31")
+	v.Check(checkRange(r.Months, 1, 12), "format", "months should contain values between 1 and 12")
+	v.Check(checkRange(r.Weekdays, 1, 7), "format", "weekdays should contain values between 1 and 7")
 }

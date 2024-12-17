@@ -34,7 +34,18 @@ const RuleTime = z.object({
     minute: z.number().min(0).max(59),
 });
 
-export type RuleTimeType = z.infer<typeof RulePerc>;
+export type RuleTimeType = z.infer<typeof RuleTime>;
+
+const RuleDay = z.object({
+    type: z.literal('day'),
+    format: z
+        .string()
+        .regex(
+            /^(\*|(\d+(?:,\d+)*|\d+-\d+)) (\*|(\d+(?:,\d+)*|\d+-\d+)) (\*|(\d+(?:,\d+)*|\d+-\d+))$/
+        ),
+});
+
+export type RuleDayType = z.infer<typeof RuleDay>;
 
 const RuleNot: z.ZodType<RuleNotType> = z.object({
     type: z.literal('not'),
@@ -74,6 +85,7 @@ export const ruleInternalSchema = z.union([
     RuleLT,
     RulePerc,
     RuleTime,
+    RuleDay,
 ]);
 
 export type RuleInternal = z.infer<typeof ruleInternalSchema>;

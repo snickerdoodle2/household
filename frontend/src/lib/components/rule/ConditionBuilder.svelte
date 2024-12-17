@@ -12,6 +12,7 @@
         RuleNotType,
         RuleOrType,
     } from '@/types/rule';
+    import DayConditionSelect from './DayConditionSelect.svelte';
 
     type Props = {
         open: boolean;
@@ -39,6 +40,7 @@
         { value: 'or', label: 'Or' },
         { value: 'perc', label: 'Perc' },
         { value: 'time', label: 'Time' },
+        { value: 'day', label: 'Day' },
     ];
 
     let selectedVariant: { value: string; label: string } = $state({
@@ -49,6 +51,7 @@
         value: '',
         label: '---',
     });
+    let dayFormat: string = $state('');
     let time: string = $state('-:-');
     let value: number = $state(0);
     let percentile: number = $state(0);
@@ -112,6 +115,13 @@
                 variant: selectedVariant.value as 'before' | 'after',
                 hour,
                 minute,
+            };
+        } else if (selectedType.value === 'day') {
+            if (!dayFormat) return;
+
+            return {
+                type: selectedType.value,
+                format: dayFormat,
             };
         } else {
             return;
@@ -293,6 +303,8 @@
                     : ''}"
                 bind:value={time}
             />
+        {:else if selectedType.value === 'day'}
+            <DayConditionSelect bind:format={dayFormat} />
         {/if}
 
         <div class="flex">
