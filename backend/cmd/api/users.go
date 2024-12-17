@@ -62,22 +62,8 @@ func (app *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
 
 // NOTE: for now you can update only Name
 func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Name     *string        `json:"name"`
-		Role     *data.UserRole `json:"role"`
-		Password *string        `json:"password"`
-	}
-
-	err := app.readJSON(w, r, &input)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
 	username := chi.URLParam(r, "username")
-
 	user, err := app.models.Users.GetByUsername(username)
-
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -87,12 +73,32 @@ func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	curUser := app.contextGetUser(r)
+	if !(curUser.Role == data.UserRoleAdmin || curUser.ID == user.ID) {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
+	var input struct {
+		Name     *string        `json:"name"`
+		Role     *data.UserRole `json:"role"`
+		Password *string        `json:"password"`
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if curUser.Role != data.UserRoleAdmin {
+		input.Role = nil
+	}
 
 	if input.Name != nil {
 		user.Name = *input.Name
 	}
 
-	if input.Name != nil {
+	if input.Role != nil {
 		user.Role = *input.Role
 	}
 
@@ -151,13 +157,20 @@ func (app *App) getCurrentUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) getAllUsersHandler(w http.ResponseWriter, r *http.Request) {
-	users, err := app.models.Users.GetAllUsers()
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
+	var users []*data.User
+	curUser := app.contextGetUser(r)
+	if curUser.Role == data.UserRoleAdmin {
+		usersTMP, err := app.models.Users.GetAllUsers()
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		users = usersTMP
+	} else {
+		users = []*data.User{curUser}
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"data": users}, nil)
+	err := app.writeJSON(w, http.StatusOK, envelope{"data": users}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -175,6 +188,13 @@ func (app *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
+	}
+
+	curUser := app.contextGetUser(r)
+	if !(curUser.Role == data.UserRoleAdmin || curUser.ID == user.ID) {
+		app.logger.Debug("updateUserHandler", "role", curUser.Role)
+		app.authenticationRequiredResponse(w, r)
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)

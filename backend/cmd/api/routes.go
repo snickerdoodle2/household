@@ -64,10 +64,10 @@ func (app *App) routes() http.Handler {
 			// TODO: make sure only person who can change user data is THE user (or admin)
 			r.Get("/user/me", app.getCurrentUserHandler)
 
-			r.Get("/user", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.getAllUsersHandler)))
-			r.Get("/user/{username}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.getUserHandler)))
+			r.Get("/user", app.getAllUsersHandler)
+			r.Get("/user/{username}", app.getUserHandler)
 			r.Post("/user", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.createUserHandler)))
-			r.Put("/user/{username}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.updateUserHandler)))
+			r.Put("/user/{username}", app.updateUserHandler)
 			r.Delete("/user/{username}", app.requireRole(data.UserRoleAdmin, http.HandlerFunc(app.deleteUserHandler)))
 
 		})
