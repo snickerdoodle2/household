@@ -9,13 +9,12 @@
         data: LayoutData;
     };
 
-    const { children, data }: Props = $props();
+    const { children }: Props = $props();
 
     let links = [
         {
             label: 'Users',
             href: '/settings/users',
-            show: data.currentUser.role === 'admin',
         },
     ];
 </script>
@@ -35,9 +34,7 @@
 <div class="w-full h-full flex flex-row pt-32 pl-40 gap-8">
     <nav>
         {#each links as link (link.href)}
-            {#if link.show}
-                {@render Link(link.label, link.href)}
-            {/if}
+            {@render Link(link.label, link.href)}
         {/each}
     </nav>
     <main class="flex-1">{@render children()}</main>
