@@ -2,7 +2,7 @@
     import type { PageData } from './$types';
     import * as Table from '$lib/components/ui/table';
     import { Button } from '@/components/ui/button';
-    import { UserPen } from 'lucide-svelte';
+    import { RectangleEllipsis, UserPen } from 'lucide-svelte';
 
     type Props = {
         data: PageData;
@@ -31,8 +31,15 @@
                     <Table.Cell>{user.name}</Table.Cell>
                     <Table.Cell>{user.role}</Table.Cell>
                     <Table.Cell>{user.created_at?.toLocaleString()}</Table.Cell>
-                    <Table.Cell
-                        ><Button
+                    <Table.Cell>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            href={`/settings/users/${user.username}/password`}
+                        >
+                            <RectangleEllipsis />
+                        </Button>
+                        <Button
                             size="icon"
                             variant="ghost"
                             href={`/settings/users/${user.username}`}

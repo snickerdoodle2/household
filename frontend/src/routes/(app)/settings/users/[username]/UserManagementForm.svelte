@@ -10,7 +10,7 @@
 
     type Props = {
         user: User;
-        isMe: boolean;
+        currentUser: User;
     };
 
     const props: Props = $props();
@@ -128,7 +128,7 @@
                     user.role = s.value;
                 }
             }}
-            disabled={!editing}
+            disabled={props.currentUser.role != 'admin' || !editing}
             name="type"
         >
             <Select.Trigger
@@ -152,7 +152,7 @@
         <Button
             size="bold"
             on:click={handleDelete}
-            disabled={props.isMe || !editing}
+            disabled={props.currentUser.id === user.id || !editing}
             variant="destructive">Delete</Button
         >
         {#if editing}

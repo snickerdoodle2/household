@@ -80,7 +80,7 @@
             size="icon"
             class="hidden h-11 w-11 group-hover:inline-flex"
         >
-            <a href="/settings">
+            <a href="/settings/users">
                 <Settings class="h-6 w-6" />
             </a>
         </Button>

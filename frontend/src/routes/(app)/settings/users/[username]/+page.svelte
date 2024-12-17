@@ -10,4 +10,4 @@
     let { user, currentUser } = data;
 </script>
 
-<UserManagementForm action="edit" {user} isMe={currentUser.id === user.id} />
+<UserManagementForm action="edit" {user} {currentUser} />
