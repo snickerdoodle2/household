@@ -35,11 +35,25 @@ void handleToggle()
 
 void handleSetValue()
 {
-    if(!server.hasArg("value")){
-        server.send(400, "text/plain", "400: Invalid Request, no 'value' argument found");
+    String body = server.arg("plain");
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, body);
+
+    if (error)
+    {
         return;
-    }else if (server.arg("value") != "1" && server.arg("value") != "0") {
-        server.send(400, "text/plain", "400: Invalid Request, 'value' argument must be 0 or 1");
+    }
+
+    if (!doc["value"].is<int>())
+    {
+        return;
+    }
+
+    int value = doc["value"].as<int>();
+
+    if (value != 1 && value != 0)
+    {
         return;
     }
     // Implement your setValue logic
