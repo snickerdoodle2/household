@@ -50,14 +50,14 @@
     });
     let errors: Record<string, string> = $state({});
     let internal = $state({});
-    let payload: string = $state('');
+    let payload: string | null = $state(null);
     let isSensorPayload: boolean = $state(true);
 
     run(() => {
         if (loading) return;
 
         if (isSensorPayload) {
-            if (payload && selectedSensor.value !== '') {
+            if (payload !== null && selectedSensor.value !== '') {
                 rule.on_valid = {
                     target_type: 'sensor',
                     target_id: selectedSensor.value,

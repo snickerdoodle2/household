@@ -43,7 +43,7 @@
         label: '',
         value: '',
     });
-    let payload = $state('');
+    let payload: string | null = $state(null);
     let selectedSequence: { label: string; value: string } = $state({
         label: '',
         value: '',
@@ -55,7 +55,7 @@
         if (loading) return;
 
         if (isSensorPayload) {
-            if (payload && selectedSensor.value !== '') {
+            if (payload !== null && selectedSensor.value !== '') {
                 rule.on_valid = {
                     target_type: 'sensor',
                     target_id: selectedSensor.value,
@@ -94,7 +94,7 @@
                     payload = JSON.stringify(rule.on_valid.payload['value']);
                 } else {
                     selectedSensor = { value: '', label: '' };
-                    payload = '';
+                    payload = null;
                 }
                 isSensorPayload = true;
             } else if (rule.on_valid.target_type === 'sequence') {
@@ -110,7 +110,7 @@
                 } else {
                     selectedSequence = { value: '', label: '' };
                 }
-                payload = '';
+                payload = null;
                 isSensorPayload = false;
             }
         } catch (error) {
