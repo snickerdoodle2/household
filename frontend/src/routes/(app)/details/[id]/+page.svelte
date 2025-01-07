@@ -227,6 +227,7 @@
                                     ? 'border-2 border-red-600'
                                     : ''}
                             />
+                            <span class="pl-2">s</span>
 
                             <div class="ml-2 flex flex-row items-center">
                                 <Label
