@@ -170,6 +170,7 @@
                                     }`}
                                 />
                             </div>
+                            <span class="pl-2">s</span>
 
                             <div
                                 class="ml-2 flex flex-row items-center justify-end"

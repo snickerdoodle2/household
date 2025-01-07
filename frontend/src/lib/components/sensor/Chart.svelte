@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Chart } from 'chart.js/auto';
+    import dayjs from 'dayjs';
     import { onMount } from 'svelte';
     import type { SvelteMap } from 'svelte/reactivity';
 
@@ -74,57 +75,59 @@
         return aggregated;
     });
 
+    const formatDate = (date: Date, diffInHours?: number) => {
+        if (diffInHours === undefined) {
+            return dayjs(date).format('HH:mm:ss');
+        }
+        // If the range is within a few minutes, show minutes and seconds
+        if (diffInHours < 1) {
+            return new Date(date).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+        }
+
+        // If the range is within a few hours, show only hours and minutes
+        if (diffInHours < 24) {
+            return new Date(date).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        }
+
+        const diffInDays = diffInHours / 24;
+
+        // If the range is within a few days, show only the date (month/day)
+        if (diffInDays < 7) {
+            return new Date(date).toLocaleDateString([], {
+                month: '2-digit',
+                day: '2-digit',
+            });
+        }
+
+        // Otherwise, return the full UTC date string
+        return dayjs(date).format('HH:mm:ss');
+    };
+
     $effect(() => {
         if (!mounted) return;
 
         if (fixedView) {
-            if (chart.options.scales?.x?.display !== undefined)
-                chart.options.scales.x.display = true;
             const diffInHours =
                 (filteredData[filteredData.length - 1]?.date.getTime() -
                     filteredData[0]?.date.getTime()) /
                 (1000 * 60 * 60);
-            const diffInDays = diffInHours / 24;
-
-            const formatDate = (date: Date) => {
-                // If the range is within a few minutes, show minutes and seconds
-                if (diffInHours < 1) {
-                    return new Date(date).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                    });
-                }
-
-                // If the range is within a few hours, show only hours and minutes
-                if (diffInHours < 24) {
-                    return new Date(date).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    });
-                }
-
-                // If the range is within a few days, show only the date (month/day)
-                if (diffInDays < 7) {
-                    return new Date(date).toLocaleDateString([], {
-                        month: '2-digit',
-                        day: '2-digit',
-                    });
-                }
-
-                // Otherwise, return the full UTC date string
-                return new Date(date).toUTCString();
-            };
 
             chart.data.labels = [
-                ...filteredData.values().map((e) => formatDate(e.date)),
+                ...filteredData
+                    .values()
+                    .map((e) => formatDate(e.date, diffInHours)),
             ];
             chart.data.datasets[0].data = [
                 ...filteredData.values().map((e) => e.value),
             ];
         } else {
-            if (chart.options.scales?.x?.display)
-                chart.options.scales.x.display = false;
             if (
                 chart.data?.labels?.[defaultRecordCount - 1] !==
                 filteredData[filteredData.length - 2]?.date.toUTCString()
@@ -132,9 +135,7 @@
                 // still has fixed view data shown, have to clear it first
                 if (chart.data?.labels)
                     chart.data.labels = [
-                        ...filteredData
-                            .values()
-                            .map((e) => e.date.toUTCString()),
+                        ...filteredData.values().map((e) => formatDate(e.date)),
                     ];
                 chart.data.datasets[0].data = [
                     ...filteredData.values().map((e) => e.value),
@@ -143,7 +144,7 @@
             // TODO: yikes + do not shift if there is less than MAX_RECORDS
             const newData = filteredData.pop();
             chart.data?.labels?.shift();
-            chart.data?.labels?.push(newData?.date.toUTCString());
+            chart.data?.labels?.push(formatDate(newData?.date ?? new Date()));
             chart.data?.datasets[0].data.shift();
             chart.data?.datasets[0].data.push(newData?.value ?? 0);
         }
@@ -162,11 +163,7 @@
                     tooltip: {},
                 },
                 scales: {
-                    x: {
-                        ticks: {
-                            display: true,
-                        },
-                    },
+                    x: {},
                 },
             },
             data: {
