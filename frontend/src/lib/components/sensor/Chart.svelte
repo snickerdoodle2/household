@@ -143,7 +143,7 @@
             // }
             // TODO: yikes + do not shift if there is less than MAX_RECORDS
             const newData = filteredData.pop();
-            if (chart.data?.labels.length >= MAX_RECORDS) {
+            if (chart.data?.labels.length >= DEFAULT_RECORD_COUNT) {
                 chart.data?.labels?.shift();
                 chart.data?.datasets[0].data.shift();
             }
