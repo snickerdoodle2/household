@@ -128,19 +128,19 @@
                 ...filteredData.values().map((e) => e.value),
             ];
         } else {
-            if (
-                chart.data?.labels?.[defaultRecordCount - 1] !==
-                filteredData[filteredData.length - 2]?.date.toUTCString()
-            ) {
-                // still has fixed view data shown, have to clear it first
-                if (chart.data?.labels)
-                    chart.data.labels = [
-                        ...filteredData.values().map((e) => formatDate(e.date)),
-                    ];
-                chart.data.datasets[0].data = [
-                    ...filteredData.values().map((e) => e.value),
-                ];
-            }
+            // if (
+            //     chart.data?.labels?.[defaultRecordCount - 1] !==
+            //     filteredData[filteredData.length - 2]?.date.toUTCString()
+            // ) {
+            //     // still has fixed view data shown, have to clear it first
+            //     if (chart.data?.labels)
+            //         chart.data.labels = [
+            //             ...filteredData.values().map((e) => formatDate(e.date)),
+            //         ];
+            //     chart.data.datasets[0].data = [
+            //         ...filteredData.values().map((e) => e.value),
+            //     ];
+            // }
             // TODO: yikes + do not shift if there is less than MAX_RECORDS
             const newData = filteredData.pop();
             chart.data?.labels?.shift();
@@ -167,7 +167,7 @@
                 },
             },
             data: {
-                labels: filteredData.map((e) => e.date.toUTCString()),
+                labels: filteredData.map((e) => formatDate(e.date)),
                 datasets: [
                     {
                         label: '',
