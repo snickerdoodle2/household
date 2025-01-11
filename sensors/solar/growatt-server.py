@@ -3,11 +3,16 @@ from datetime import datetime, timedelta
 from jproperties import Properties
 from flask import Flask, jsonify
 
+plantid = None
+
 
 def login():
     configs = Properties()
-    with open('credentials.properties', 'rb') as config_file:
+    with open('growatt-sensor.properties', 'rb') as config_file:
         configs.load(config_file)
+
+    global plantid
+    plantid = configs.get("PLANTID").data
 
     url = 'http://server.growatt.com/LoginAPI.do'
 
@@ -42,7 +47,7 @@ def get_plant_detail(cookies):
     plant_url = 'http://server.growatt.com/newPlantDetailAPI.do'
 
     params = {
-        'plantId': '418844',
+        'plantId': plantid,
         'type': '1',
         'date': datetime.now().strftime('%Y-%m-%d')
     }
@@ -68,6 +73,7 @@ def get_most_recent_value(response_json):
     plant_data = response_json.get('back', {}).get('data', {})
 
     if not plant_data:
+        print("plant data error")
         return 0
 
     now = datetime.now()
@@ -101,7 +107,8 @@ def get_value():
         print("plant details error")
         return "Get plant detail error", 500
 
-    return jsonify(value=get_most_recent_value(response_json))
+    print(type(get_most_recent_value(response_json)))
+    return jsonify(value=float(get_most_recent_value(response_json)))
 
 
 @api.route('/status', methods=['GET'])
@@ -112,4 +119,4 @@ def get_status():
 
 
 if __name__ == '__main__':
-    api.run()
+    api.run(host="0.0.0.0")

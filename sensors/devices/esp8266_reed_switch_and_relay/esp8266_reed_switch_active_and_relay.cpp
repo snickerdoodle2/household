@@ -62,28 +62,49 @@ void handleRelayGetValue()
 
 void handleRelayPostValue()
 {
-    if (!relay_server.hasArg("value"))
+    String body = server.arg("plain");
+    Serial.println("Received body: " + body);
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, body);
+
+    if (error)
     {
-        relay_server.send(400, "text/plain", "400: Invalid Request, no 'value' argument found");
+        Serial.println("Failed to parse JSON: " + String(error.c_str()));
+        server.send(400, "text/plain", "400: Invalid Request, failed to parse JSON");
         return;
     }
 
-    if (relay_server.arg("value") == "1")
+    if (!doc["value"].is<int>())
     {
+        Serial.println("No 'value' key in JSON or 'value' is not an integer");
+        server.send(400, "text/plain", "400: Invalid Request, no 'value' key in JSON or invalid type");
+        return;
+    }
+
+    int value = doc["value"].as<int>();
+    Serial.println("Parsed value: " + String(value));
+
+    if (value == 1)
+    {
+        Serial.println("post value 1");
         digitalWrite(RELAY_PIN, HIGH);
     }
-    else if (relay_server.arg("value") == "0")
+    else if (value == 0)
     {
+        Serial.println("post value 0");
         digitalWrite(RELAY_PIN, LOW);
     }
     else
     {
-        relay_server.send(400, "text/plain", "400: Invalid Request, 'value' argument incorrect [0/1]");
+        Serial.println("post value incorrect");
+        server.send(400, "text/plain", "400: Invalid Request, 'value' argument incorrect [0/1]");
         return;
     }
 
     int current_state = digitalRead(RELAY_PIN);
-    relay_server.send(200, "text/json", "{\"value\":" + String(current_state) + "}");
+    Serial.println("pin set to " + String(current_state));
+    server.send(200, "application/json", "{\"value\": " + String(current_state) + "}");
 }
 
 void setup(void)

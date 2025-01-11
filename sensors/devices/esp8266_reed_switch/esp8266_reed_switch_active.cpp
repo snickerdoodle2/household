@@ -3,31 +3,131 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPClient.h>
+#include <ArduinoJson.h>
 
-#define STASSID "your-wifi-ssid"
+// Replace with your network credentials
+#define STASSID "WIFI_SSID"
+#define STAPSK "WIFI_PASSWORD"
+
+// Set your sensor type here
+const char *sensor_type = "binary_sensor";
+
+// Set your sensor pins here
 #define SENSOR_PIN D7
-#define STAPSK "your-wifi-password"
-
-const char *ssid = STASSID;
-const char *password = STAPSK;
-
-// test python server ip - to be changed
-const char *serverName = "http://10.0.0.55:5000/activesensorupdate";
 
 int previous_sensor_value = 0;
 
 ESP8266WebServer server(80);
+const char *ssid = STASSID;
+const char *password = STAPSK;
+
+struct SensorConfig
+{
+    String serverUri;
+    String initAckEndpoint;
+    String measurementsEndpoint;
+    String idToken;
+    bool isConfigured = false;
+};
+
+SensorConfig sensorConfig;
+
+int measure()
+{
+    // Implement your sensor reading here
+    return digitalRead(SENSOR_PIN);
+}
+
+bool sendingCondition(int current_sensor_value)
+{
+    // Implement your sending condition here
+    return current_sensor_value != previous_sensor_value;
+}
+
+void handleValue()
+{
+    float value = measure();
+    server.send(200, "text/json", "{\"value\":" + String(value) + "}");
+}
 
 void handleStatus()
 {
-    server.send(200, "text/json", "{ \"status\": \"online\", \"type\": \"binary_sensor_active\" }");
+    server.send(200, "text/json", "{ \"status\": \"online\", \"type\": \"" + String(sensor_type) + "\" }");
 }
 
-void handleGetValue()
+void handleInit()
 {
-    int current_state = digitalRead(SENSOR_PIN);
-    // Serial.println(current_state);
-    server.send(200, "text/json", "{\"value\":" + String(current_state) + "}");
+    if (server.method() != HTTP_POST)
+    {
+        server.send(405, "text/plain", "Method Not Allowed");
+        return;
+    }
+
+    JsonDocument requestBody;
+    DeserializationError error = deserializeJson(requestBody, server.arg("plain"));
+
+    if (error)
+    {
+        server.send(400, "text/plain", "Invalid JSON");
+        return;
+    }
+
+    String serverUri = requestBody["server-uri"].as<String>();
+    if (serverUri.startsWith("http://") != 0 && serverUri.startsWith("https://") != 0)
+    {
+        serverUri = "http://" + serverUri;
+    }
+    sensorConfig.serverUri = serverUri;
+    sensorConfig.idToken = requestBody["id-token"].as<String>();
+    sensorConfig.measurementsEndpoint = requestBody["measurements-endpoint"].as<String>();
+    sensorConfig.initAckEndpoint = requestBody["init-ack-endpoint"].as<String>();
+    sensorConfig.isConfigured = true;
+
+    server.send(200, "text/plain", "Initialization successful");
+
+    sendInitAck();
+}
+
+void sendInitAck()
+{
+    JsonDocument requestBody;
+    requestBody["id-token"] = sensorConfig.idToken;
+    requestBody["server-uri"] = sensorConfig.serverUri;
+    requestBody["init-ack-endpoint"] = sensorConfig.initAckEndpoint;
+    requestBody["measurements-endpoint"] = sensorConfig.measurementsEndpoint;
+
+    String jsonString;
+    serializeJson(requestBody, jsonString);
+
+    WiFiClient client;
+    HTTPClient http;
+
+    http.begin(client, sensorConfig.serverUri + sensorConfig.initAckEndpoint);
+    http.addHeader("Content-Type", "application/json");
+    int httpResponseCode = http.POST(jsonString);
+
+    http.end();
+}
+
+void sendValue(int value)
+{
+    JsonDocument requestBody;
+    requestBody["message-type"] = "measurement";
+    requestBody["sensor-type"] = sensor_type;
+    requestBody["value"] = value;
+    requestBody["id-token"] = sensorConfig.idToken;
+
+    String jsonString;
+    serializeJson(requestBody, jsonString);
+
+    WiFiClient client;
+    HTTPClient http;
+
+    http.begin(client, sensorConfig.serverUri + sensorConfig.measurementsEndpoint);
+    http.addHeader("Content-Type", "application/json");
+    int httpResponseCode = http.POST(jsonString);
+
+    http.end();
 }
 
 void setup(void)
@@ -37,7 +137,6 @@ void setup(void)
     WiFi.begin(ssid, password);
     Serial.println("");
 
-    // Wait for connection
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
@@ -54,8 +153,9 @@ void setup(void)
         Serial.println("MDNS responder started");
     }
 
-    server.on("/value", HTTP_GET, handleGetValue);
     server.on("/status", HTTP_GET, handleStatus);
+    server.on("/value", HTTP_GET, handleValue);
+    server.on("/init", HTTP_POST, handleInit);
 
     server.begin();
     Serial.println("HTTP server started");
@@ -63,25 +163,15 @@ void setup(void)
 
 void loop(void)
 {
-    int current_sensor_value = digitalRead(SENSOR_PIN);
+    server.handleClient();
 
-    if (current_sensor_value != previous_sensor_value)
+    int current_sensor_value = measure();
+
+    if (sensorConfig.isConfigured && sendingCondition(current_sensor_value))
     {
-        WiFiClient client;
-        HTTPClient http;
-
-        // Serial.println("value changed from " + String(previous_sensor_value) + " to " + String(current_sensor_value));
-
-        http.begin(client, serverName);
-        http.addHeader("Content-Type", "application/json");
-        int httpResponseCode = http.POST("{\"sensor_id\":\"abc123\",\"value\":\"" + String(current_sensor_value) + "\"}");
-
-        // Serial.println("HTTP Response code: ");
-        // Serial.println(httpResponseCode);
-
-        http.end();
+        sendValue(current_sensor_value);
         previous_sensor_value = current_sensor_value;
     }
-    server.handleClient();
+
     MDNS.update();
 }
