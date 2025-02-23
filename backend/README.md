@@ -1,4 +1,4 @@
-#### Prerequisites
+#### Requirements
 
 1. `golang 1.22`
 2. `docker`
