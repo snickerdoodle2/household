@@ -27,7 +27,7 @@ Conscious use of all the application's components gives the user the opportunity
 
 ### Backend
 
-#### Prerequisites
+#### Requirements
 
 1. `golang 1.22`
 2. `docker`
