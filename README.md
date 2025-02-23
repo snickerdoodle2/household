@@ -54,7 +54,7 @@ DATABASE_URL=postgresql://postgres:<DB_PASSWORD>@localhost:5432/<DB_NAME>?sslmod
 ### Frontend
 #### Requirements
 
-1. [bun](https://bun.sh/)
+1. `bun` - [bun.sh](https://bun.sh/)
 
 #### Setup
 
