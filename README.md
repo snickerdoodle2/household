@@ -79,7 +79,7 @@ state of the effector, or execution of a sequence.
 
 ## License
 
-Distributed under the CC BY-NC-SA 4.0. See (LICENSE)[LICENSE.MD] for more information.
+Distributed under the CC BY-NC-SA 4.0. See [LICENSE](LICENSE.md) for more information.
 
 [Bun.dev]: https://img.shields.io/badge/Bun-4A4A55?style=for-the-badge&logo=bun&logoColor=ffffff
 [Bun-url]: https://bun.sh/
