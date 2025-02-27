@@ -64,6 +64,19 @@ DATABASE_URL=postgresql://postgres:<DB_PASSWORD>@localhost:5432/<DB_NAME>?sslmod
 
 1. `bun run dev`
 
+## Usage
+The main page of the application displays tiles that provide latest device measurements. The base system functionalities are communication with IoT devices, running Sequences and evaluating Rules.
+### Devices
+Sensors and effectors, which are external devices interacting with the system, can take any form. Their only requirement is to expose a REST API that is understood by the backend part of Household. This API can be exposed by Arduino boards managing any connected devices, "virtual" devices running as a server on a personal computer, in the cloud, or in any other way.
+
+Creating new devices, adding them to the system and using of the ones provided with the system is described [here](sensors/README.md).
+### Sequences
+Changing the state of individual effectors in a specific order. Between subsequent state changes it is possible to introduce a delay.
+### Rules
+In addition to the name and description, it has a logical condition and an effect. When the condition is
+fulfilled, an action is executed, which is the effect of the rule. This action can be a change of the
+state of the effector, or execution of a sequence.
+
 ## License
 
 Distributed under the XXXXXXXX See `LICENSE.txt` for more information.
