@@ -1,45 +1,23 @@
-# Backend
-
-## Wymagania
+#### Requirements
 
 1. `golang 1.22`
-1. `docker`
-1. `just` - [github](https://github.com/casey/just)
-1. `watchexec` - [github](https://github.com/watchexec/watchexec)
-1. `migrate cli` - [github](https://github.com/golang-migrate/migrate)
+2. `docker`
+3. `just` - [github](https://github.com/casey/just)
+4. `watchexec` - [github](https://github.com/watchexec/watchexec)
+5. `migrate cli` - [github](https://github.com/golang-migrate/migrate)
 
-## Uruchomienie
+#### Setup
 
-### `.env`
-Uzupełnij plik `.env`:
+##### `.env` Configuration
+Fill in the `.env` file:
 ```bash
 DATABASE_ADDRESS=localhost:5432
-POSTGRES_PASSWORD=<YOUR PASSWORD>
-POSTGRES_DB=<JAK NAZYWAMY>
-DATABASE_URL=postgresql://postgres:<YOUR PASSWORD>@localhost:5432/<JAK NAZYWAMY>?sslmode=disable
+POSTGRES_PASSWORD=<DB_PASSWORD>
+POSTGRES_DB=<DB_NAME>
+DATABASE_URL=postgresql://postgres:<DB_PASSWORD>@localhost:5432/<DB_NAME>?sslmode=disable
 ```
 
-### Pierwsze uruchomienie
+#### First run
 1. `docker compose up -d`
-1. `just up`
-1. `just run`
-
-## Routes
-```
-GET    /api/v1/healthcheck - zwraca status serwera
-
-GET    /api/v1/sensor      - zwraca wszystkie sensory
-GET    /api/v1/sensor/{id} - szczegóły sensora
-POST   /api/v1/sensor      - tworzy nowy sensor
-PUT    /api/v1/sensor/{id} - update sensora
-DELETE /api/v1/sensor/{id} - usuwa sensor
-
-GET    /api/v1/rule      - zwraca wszystkie reguły
-GET    /api/v1/rule/{id} - szczegóły reguły
-POST   /api/v1/rule      - tworzy nową regułę
-PUT    /api/v1/rule/{id} - update reguły
-DELETE /api/v1/rule/{id} - usuwa regułę
-```
-
-## TODO
-1. Nazwy reguł powinny być unikalne
+2. `just up`
+3. `just run`

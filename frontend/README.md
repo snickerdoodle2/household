@@ -1,15 +1,11 @@
-# Frontend
-
-## Wymagania
+#### Requirements
 
 1. [bun](https://bun.sh/)
 
-## Uruchomienie
+#### Setup
 
-### Instalacja bibliotek
+2. `bun install`
 
-1. `bun install`
-
-### Uruchomienie serwera
+#### Run
 
 1. `bun run dev`

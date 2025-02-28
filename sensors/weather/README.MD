@@ -1,31 +1,31 @@
-# Serwer Danych Pogodowych
+# Weather Data Server
 
-Serwer zintegrowany z projektem Household - po skonfigurowaniu i uruchomieniu serwera, sensory automatycznie dodawane są do aplikacji Household, serwer pogodowy uruchamiany i zaczyna się standardowe działanie pasywnych sensorów.
+The server is integrated with the Household project – after configuring and starting the server, sensors are automatically added to the Household application, the weather server starts running, and the standard operation of passive sensors begins.
 
-Serwer korzysta z API open-meteo i umożliwia korzystanie z wszystkich danych znajdujących się w sekcjach **_Hourly Weather Variables_** i **_Current Weather_**. Jeden sensor zajmuje się przetwarzaniem tylko jednej zmiennej pogodowej.
+The server uses the Open-Meteo API and allows access to all data found in the **_Hourly Weather Variables_** and **_Current Weather_** sections. Each sensor processes only one weather variable.
 
-## Uruchomienie
+## Running the Server
 
-Program uruchamiamy z linii komend wywołując:
+Start the program from the command line using:
 
 ```
 python weather-sensor-server.py
 ```
 
-### Parametry wywołania programu
+### Program Execution Parameters
 
-- `-h, --help ` - wyświetlenie panelu pomocy
-- `-u, --username` - konfiguracja nazwy użytkownika w _Household_
-- `-p, --password` - konfiguracja hasła użytkownika w _Household_
-- `-c, --configpath` - konfiguracja ścieżki do pliku konfiguracyjnego
+- `-h, --help` - displays the help panel
+- `-u, --username` - sets the username in _Household_
+- `-p, --password` - sets the user password in _Household_
+- `-c, --configpath` - sets the path to the configuration file
 
-Wszystkie parametry są opcjonalne, w przypadku niepodania username lub hasła, program podejmie próbę odczytania ich z pliku konfiguracyjnego. Domyślną lokalizacją pliku konfiguracyjnego jest katalog główny serwera (z niego wywołujemy komendę uruchamiającą), a jego nazwa to config.json
+All parameters are optional. If the username or password is not provided, the program will attempt to read them from the configuration file. The default location for the configuration file is the server's root directory (from which the launch command is executed), and its name is `config.json`.
 
-## Konfiguracja
+## Configuration
 
-Konfiguracja serwera odbywa się poprzez plik config.json. W tym pliku należy zdefiniować parametry serwera pogodowego, serwera aplikacji _Household_ oraz listę sensorów pogodowych w odpowiednim formacie.
+The server is configured through the `config.json` file. This file should define the parameters for the weather server, the Household application server, and the list of weather sensors in the correct format.
 
-**Przykładowy fragment pliku konfiguracyjnego:**
+**Example configuration file snippet:**
 
 ```json
 {
@@ -61,58 +61,63 @@ Konfiguracja serwera odbywa się poprzez plik config.json. W tym pliku należy z
                 "hourly": "rain",
                 "forecast_days": 3
             }
-        },
+        }
+    ]
+}
 ```
 
-### Struktura najwyższego poziomu
+### Top-Level Structure
 
-- `weather-server` - konfiguracja hosta i portu na którym uruchmia się serwer pogodowy
-- `household-server` - konfiguracja połączenia do systemu _Household_
-- `sensors` - lista sensorów, każdy z odpowiednimi atrybutami
+- `weather-server` - configuration for the host and port where the weather server runs
+- `household-server` - configuration for connecting to the _Household_ system
+- `sensors` - list of sensors, each with its respective attributes
 
-### obiekt `weather-server`
+### `weather-server` Object
 
-- `host` - host na którym uruchomi serwer pogodowy
-- `port` - port na którym uruchomi się serwer pogodowy
+- `host` - the host on which the weather server runs
+- `port` - the port on which the weather server runs
 
-### obiekt `household-server`
+### `household-server` Object
 
-- `host` - host na którym działa serwer systemu _Household_
-- `port` - port na którym działa serwer systemu _Household_
-- `username` - [**opcjonalne**] nazwa użytkownika do autentykacji z serwerem _Household_, można go również podać jako parametr wywołania programu
-- `password` - [**opcjonalne**] hasło użytkownika do autentykacji z serwerem _Household_, można je również podać jako parametr wywołania programu
+- `host` - the host on which the _Household_ system server runs
+- `port` - the port on which the _Household_ system server runs
+- `username` - [**optional**] the username for authentication with the _Household_ server, can also be provided as a program execution parameter
+- `password` - [**optional**] the password for authentication with the _Household_ server, can also be provided as a program execution parameter
 
-### tablica `sensors`
+### `sensors` Array
 
-Tablica sensors zawiera konfigurację każdego z sensorów. Każdy sensor to obiekt z następującymi polami:
+The `sensors` array contains the configuration for each sensor. Each sensor is an object with the following fields:
 
-- `name` - nazwa sensora
-- `refresh-rate` - częstotliwość odświeżania danych z sensora w aplikacji _Household_ (w sekundach)
-- `processing` - definiuje typ przetwarzania danych przez sensor. Dozwolone wartości:
-  - `"sum_past"` - suma wartości przeszłych danych pogodowych
-  - `"sum_future"` - suma wartości prognozowanych danych pogodowych
-  - `"max_past"` - maksimum wartości przeszłych danych pogodowych
-  - `"max_future"`- maksimum wartości prognozowanych danych pogodowych
-  - `"min_past"` - minimum wartości przeszłych danych pogodowych
-  - `"min_future"` - minimum wartości prognozowanych danych pogodowych
-  - `"avg_past"` - średnia wartości przeszłych danych pogodowych
-  - `"avg_future"` - średnia wartości prognozowanych danych pogodowych
-  - `"current"` - dane aktualne
-- `number_of_hours` - określa z ilu godzin w przód lub w tył (w zależności od pola processing) dane mają być przetwarzane. Jeśli `processing` jest `current` pole nie jest wymagane. Należy zadbać, aby dane otrzymane z _open-meteo_ miały odpowiednio długi timeframe by umożliwić przetwarzenie w określonej tutaj licznnie godzin
-- `params` - obiekt parametrów zapytania wysyłanego do _open-meteo_. Najłatwiej jest otrzymać ten obiekt poprzez 'wyklikanie' interesujących nas danch na stronie https://open-meteo.com/en/docs , a następnie skopiowanie obiektu params z sekcji _Api Response_ > _Python_. Wspierane są dane otrzymane z sekcji _Hourly Weather Variables_ (zarówno dla _opcji forecast days_ jak i _past days_) oraz dane z sekcji _Current Weather_. Ważne aby obiekt ten nie zawierał zmiennych pogodowych poza tą jedną za której przetwarzanie odpowiedzialny jest sensor, gdyż może to spowodować nieoczekiwane działanie sensora.
+- `name` - the sensor name
+- `refresh-rate` - the data refresh rate in the _Household_ application (in seconds)
+- `processing` - defines the type of data processing performed by the sensor. Allowed values:
+  - `"sum_past"` - sum of past weather data values
+  - `"sum_future"` - sum of forecasted weather data values
+  - `"max_past"` - maximum of past weather data values
+  - `"max_future"` - maximum of forecasted weather data values
+  - `"min_past"` - minimum of past weather data values
+  - `"min_future"` - minimum of forecasted weather data values
+  - `"avg_past"` - average of past weather data values
+  - `"avg_future"` - average of forecasted weather data values
+  - `"current"` - current data
 
-Każdy sensor jest typu `decimal_sensor`
+- `number_of_hours` - defines how many hours into the past or future (depending on the `processing` field) the data should be processed. If `processing` is `current`, this field is not required. It is important to ensure that the data obtained from _Open-Meteo_ has a sufficiently long timeframe to allow processing for the specified number of hours.
 
-## Wymagania
+- `params` - the query parameters object sent to _Open-Meteo_. The easiest way to obtain this object is by selecting the desired data on [Open-Meteo's website](https://open-meteo.com/en/docs) and copying the `params` object from the _API Response_ > _Python_ section. Supported data includes _Hourly Weather Variables_ (for both _forecast days_ and _past days_ options) and _Current Weather_ data. It is crucial that this object contains only the single weather variable for which the sensor is responsible, as including additional variables may cause unexpected sensor behavior.
 
-- python (działa na 3.13.0)
-- wymagane biblioteki:
+Each sensor is of type `decimal_sensor`.
+
+## Requirements
+
+- Python (tested on version 3.13.0)
+- Required libraries:
   - `requests`
   - `flask`
   - `openmeteo_requests`
   - `numpy`
   - `pandas`
 
-## Uwagi
+## Notes
 
-- parametr `forecast_days` w `params` określa liczbę dni prognozy pogody włącznie z dniem bieżącym, niezalecane użycie wartości `1` gdyż będziemy mieli dostęp do prognozy wyłącznie z dnia bieżącego, wartość `3` zwróci prognozę dla dnia bieżącego, kolejnego i następnego po nim
+- The `forecast_days` parameter in `params` specifies the number of forecasted days, including the current day. Using a value of `1` is not recommended, as it provides a forecast for only the current day. A value of `3` will return a forecast for the current day, the next day, and the day after that.
+
